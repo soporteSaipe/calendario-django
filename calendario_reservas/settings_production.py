@@ -26,19 +26,26 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 # Base de datos para producción (PostgreSQL recomendado)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'calendario_db'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+# Railway proporciona DATABASE_URL, si no existe, usar variables individuales
+if os.getenv('DATABASE_URL'):
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('PGDATABASE', os.getenv('DB_NAME', 'calendario_db')),
+            'USER': os.getenv('PGUSER', os.getenv('DB_USER', 'postgres')),
+            'PASSWORD': os.getenv('PGPASSWORD', os.getenv('DB_PASSWORD', '')),
+            'HOST': os.getenv('PGHOST', os.getenv('DB_HOST', 'localhost')),
+            'PORT': os.getenv('PGPORT', os.getenv('DB_PORT', '5432')),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
+    }
 
 # Configuración de cache (Redis recomendado)
 CACHES = {
