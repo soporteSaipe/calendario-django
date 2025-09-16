@@ -1,0 +1,70 @@
+{% extends 'calendario/base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Sesión - Sistema de Reservas{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card-modern">
+                <div class="card-header-modern text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-sign-in-alt me-2 spring-icon"></i>
+                        Iniciar Sesión
+                    </h4>
+                </div>
+                <div class="card-body-modern">
+                    {% if form.errors %}
+                        <div class="alert-modern alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Usuario o contraseña incorrectos. Inténtalo de nuevo.
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Usuario
+                            </label>
+                            <input type="text" 
+                                   class="form-control-modern" 
+                                   id="{{ form.username.id_for_label }}" 
+                                   name="{{ form.username.name }}" 
+                                   value="{{ form.username.value|default:'' }}"
+                                   required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Contraseña
+                            </label>
+                            <input type="password" 
+                                   class="form-control-modern" 
+                                   id="{{ form.password.id_for_label }}" 
+                                   name="{{ form.password.name }}" 
+                                   required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn-modern btn-primary-modern bloom-button">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Iniciar Sesión
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Usuario de prueba: <strong>usuario_ejemplo</strong><br>
+                            Contraseña: <strong>password123</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

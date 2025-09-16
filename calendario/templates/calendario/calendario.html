@@ -1,0 +1,368 @@
+{% extends 'calendario/base.html' %}
+{% load static %}
+
+{% block title %}Calendario de salas - Equipos internos SAIPE{% endblock %}
+
+{% block content %}
+<div class="accounting-header">
+    <h1><i class="fas fa-calendar-alt me-3"></i>Sistema de reservas de salas</h1>
+    <p>Reserva salas de reunión para tu equipo de manera rápida y organizada</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0">
+                    <i class="fas fa-door-open me-2"></i>Seleccionar sala
+                </h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="salaFilter" class="form-label">Sala de reunión:</label>
+                        <select id="salaFilter" class="form-select form-select-modern">
+                            {% for recurso in recursos %}
+                            <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" {% if forloop.first %}selected{% endif %}>
+                                {{ recurso.nombre }} (capacidad: {{ recurso.capacidad }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="sala-info">
+                            <div class="sala-color-indicator" id="salaColorIndicator"></div>
+                            <small class="text-muted" id="salaInfo">
+                                Selecciona una sala para ver su calendario de reservas
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card-modern">
+            <div class="calendar-header-modern d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    <span id="salaTitulo">Calendario de sala</span>
+                </h4>
+                {% if user.is_authenticated %}
+                <button type="button" class="btn btn-primary" id="abrirModalReserva">
+                    <i class="fas fa-plus-circle"></i>
+                    Reservar sala
+                </button>
+                {% endif %}
+            </div>
+            <div class="card-body-modern">
+                <div class="calendar-container">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reservaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title modal-title-modern" id="reservaModalTitle">
+                    <i class="fas fa-calendar-check me-2"></i>Detalles de la reserva
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="reservaModalBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern btn-secondary-modern " data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                    <span>Cerrar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para crear reserva - VERSIÓN SIMPLE -->
+<div class="modal fade" id="modalCrearReserva" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crear Nueva Reserva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCrearReserva" method="post" action="{% url 'calendario:crear_reserva' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="recurso" class="form-label">Sala *</label>
+                        <select name="recurso" id="recurso" class="form-select" required>
+                            <option value="">Selecciona una sala</option>
+                            {% for recurso in recursos %}
+                            <option value="{{ recurso.id }}">{{ recurso.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título *</label>
+                        <input type="text" name="titulo" id="titulo" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha" class="form-label">Fecha *</label>
+                        <input type="date" name="fecha" id="fecha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="hora_inicio" class="form-label">Hora inicio *</label>
+                        <select name="hora_inicio" id="hora_inicio" class="form-select" required>
+                            <option value="">Seleccionar hora</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="hora_fin" class="form-label">Hora fin *</label>
+                        <select name="hora_fin" id="hora_fin" class="form-select" required>
+                            <option value="">Seleccionar hora</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea name="descripcion" id="descripcion" class="form-control" rows="3" placeholder="Descripción opcional de la reserva"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnCrearReserva" onclick="crearReserva()">
+                    Crear Reserva
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // URLs para el JavaScript
+    window.calendarioApiUrl = '{% url "calendario:api_reservas" %}';
+    window.crearReservaUrl = '{% url "calendario:crear_reserva" %}';
+</script>
+
+<!-- JavaScript MEJORADO para el modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Iniciando modal mejorado...');
+    
+    const btnAbrir = document.getElementById('abrirModalReserva');
+    const modal = document.getElementById('modalCrearReserva');
+    const form = document.getElementById('formCrearReserva');
+    const fecha = document.getElementById('fecha');
+    const horaInicio = document.getElementById('hora_inicio');
+    const horaFin = document.getElementById('hora_fin');
+    const recursoSelect = document.getElementById('recurso');
+    
+    if (!btnAbrir || !modal || !form) {
+        console.error('❌ Elementos no encontrados');
+        return;
+    }
+    
+    console.log('✅ Elementos encontrados');
+    
+    // Configurar fecha mínima
+    fecha.min = new Date().toISOString().split('T')[0];
+    
+    // Generar opciones de hora (07:00 a 15:30, intervalos de 30 min)
+    function generarHoras() {
+        horaInicio.innerHTML = '<option value="">Seleccionar hora</option>';
+        horaFin.innerHTML = '<option value="">Seleccionar hora</option>';
+        
+        for (let h = 7; h <= 15; h++) {
+            for (let m = 0; m < 60; m += 30) {
+                if (h === 15 && m > 30) break; // Parar en 15:30
+                const hora = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                horaInicio.innerHTML += `<option value="${hora}">${hora}</option>`;
+                horaFin.innerHTML += `<option value="${hora}">${hora}</option>`;
+            }
+        }
+    }
+    
+    // Validar que la hora fin sea posterior a la hora inicio
+    horaInicio.addEventListener('change', function() {
+        const horaInicioVal = this.value;
+        horaFin.innerHTML = '<option value="">Seleccionar hora</option>';
+        
+        if (horaInicioVal) {
+            const [hora, minuto] = horaInicioVal.split(':').map(Number);
+            const horaInicioMinutos = hora * 60 + minuto;
+            
+            // Generar solo horas posteriores a la hora de inicio
+            for (let h = 7; h <= 15; h++) {
+                for (let m = 0; m < 60; m += 30) {
+                    if (h === 15 && m > 30) break;
+                    
+                    const horaActualMinutos = h * 60 + m;
+                    if (horaActualMinutos > horaInicioMinutos) {
+                        const hora = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                        horaFin.innerHTML += `<option value="${hora}">${hora}</option>`;
+                    }
+                }
+            }
+        } else {
+            generarHoras();
+        }
+    });
+    
+    // Inicializar horas
+    generarHoras();
+    
+    // Abrir modal
+    btnAbrir.addEventListener('click', function() {
+        console.log('📝 Abriendo modal...');
+        form.reset();
+        fecha.min = new Date().toISOString().split('T')[0];
+        generarHoras();
+        
+        // Preseleccionar la sala actual si hay una seleccionada
+        const salaActual = document.getElementById('salaFilter');
+        if (salaActual && recursoSelect) {
+            recursoSelect.value = salaActual.value;
+        }
+        
+        new bootstrap.Modal(modal).show();
+        console.log('✅ Modal abierto');
+    });
+    
+    console.log('✅ Modal configurado');
+});
+
+// Función mejorada para crear reserva
+function crearReserva() {
+    console.log('🔥 Creando reserva...');
+    
+    const form = document.getElementById('formCrearReserva');
+    const formData = new FormData(form);
+    
+    // Validar campos obligatorios
+    const camposRequeridos = ['recurso', 'titulo', 'fecha', 'hora_inicio', 'hora_fin'];
+    let errores = [];
+    
+    for (let campo of camposRequeridos) {
+        const valor = formData.get(campo);
+        if (!valor || valor.trim() === '') {
+            errores.push(`${campo.replace('_', ' ')} es obligatorio`);
+        }
+    }
+    
+    // Validar que la hora fin sea posterior a la hora inicio
+    const horaInicio = formData.get('hora_inicio');
+    const horaFin = formData.get('hora_fin');
+    if (horaInicio && horaFin) {
+        const [h1, m1] = horaInicio.split(':').map(Number);
+        const [h2, m2] = horaFin.split(':').map(Number);
+        const minutosInicio = h1 * 60 + m1;
+        const minutosFin = h2 * 60 + m2;
+        
+        if (minutosFin <= minutosInicio) {
+            errores.push('La hora de fin debe ser posterior a la hora de inicio');
+        }
+    }
+    
+    if (errores.length > 0) {
+        alert('Errores encontrados:\n' + errores.join('\n'));
+        return;
+    }
+    
+    // Mostrar datos que se van a enviar
+    console.log('📋 Datos del formulario:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
+    }
+    
+    // Deshabilitar botón para evitar doble envío
+    const btnCrear = document.getElementById('btnCrearReserva');
+    btnCrear.disabled = true;
+    btnCrear.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+    
+    // Enviar formulario
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('✅ Respuesta del servidor:', response.status);
+        
+        // Restaurar botón
+        btnCrear.disabled = false;
+        btnCrear.innerHTML = 'Crear Reserva';
+        
+        if (response.ok) {
+            // Intentar parsear como JSON primero
+            return response.json().then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearReserva'));
+                    modal.hide();
+                    
+                    // Refrescar calendario
+                    if (window.CalendarioApp && window.CalendarioApp.calendar) {
+                        console.log('🔄 Refrescando calendario...');
+                        window.CalendarioApp.calendar.refetchEvents();
+                    }
+                    
+                    // Mostrar mensaje de éxito
+                    alert(data.message || '¡Reserva creada exitosamente!');
+                } else {
+                    // Error del servidor
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                }
+            }).catch(() => {
+                // Si no es JSON, es probable que sea un redirect (respuesta HTML)
+                // Cerrar modal y refrescar página
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearReserva'));
+                modal.hide();
+                
+                // Refrescar calendario
+                if (window.CalendarioApp && window.CalendarioApp.calendar) {
+                    console.log('🔄 Refrescando calendario...');
+                    window.CalendarioApp.calendar.refetchEvents();
+                }
+                
+                alert('¡Reserva creada exitosamente!');
+            });
+        } else {
+            // Error HTTP
+            return response.json().then(data => {
+                alert('Error: ' + (data.error || 'Error del servidor'));
+            }).catch(() => {
+                alert('Error al crear la reserva. Verifica los datos e intenta nuevamente.');
+            });
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error:', error);
+        
+        // Restaurar botón
+        btnCrear.disabled = false;
+        btnCrear.innerHTML = 'Crear Reserva';
+        
+        alert('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
+    });
+}
+</script>
+
+<!-- Módulos del calendario -->
+<script src="{% static 'js/calendario-init.js' %}"></script>
+<script src="{% static 'js/calendario-events.js' %}"></script>
+<script src="{% static 'js/calendario-colors.js' %}"></script>
+<script src="{% static 'js/calendario-filters.js' %}"></script>
+<script src="{% static 'js/calendario-utils.js' %}"></script>
+{% endblock %}

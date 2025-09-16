@@ -1,0 +1,32 @@
+/* Override temporal para forzar colores primaverales en el header */
+body .accounting-header {
+  background: linear-gradient(135deg, #F8BBD9 0%, #E91E63 100%) !important;
+  color: white !important;
+}
+
+body .accounting-header::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: linear-gradient(135deg, rgba(248, 187, 217, 0.9) 0%, rgba(233, 30, 99, 0.9) 100%) !important;
+  z-index: 999 !important;
+}
+
+body .accounting-header h1,
+body .accounting-header p {
+  position: relative !important;
+  z-index: 1000 !important;
+  color: white !important;
+}
+
+body .accounting-header h1 *,
+body .accounting-header p * {
+  color: white !important;
+}
+
+body .accounting-header h1 i {
+  color: white !important;
+}

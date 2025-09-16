@@ -1,0 +1,251 @@
+/* Estilos específicos para el calendario - Simple y funcional */
+
+/* Contenedor del calendario */
+.calendar-container {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* FullCalendar personalizado */
+.fc {
+  font-family: 'Inter', sans-serif;
+}
+
+.fc-toolbar {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-accent);
+  border-radius: var(--border-radius-md);
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fc-button {
+  background: var(--primary-pink);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.fc-button:hover {
+  background: var(--secondary-pink);
+  color: white;
+}
+
+.fc-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(248, 187, 217, 0.25);
+}
+
+.fc-button-primary:not(:disabled):active {
+  background: var(--primary-pink);
+  color: white;
+}
+
+.fc-button-primary:not(:disabled).fc-button-active {
+  background: var(--secondary-pink);
+  color: white;
+}
+
+/* Eventos del calendario */
+.fc-event {
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fc-event:hover {
+  opacity: 0.8;
+}
+
+.fc-event-title {
+  font-weight: 600;
+}
+
+.fc-event-time {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+/* Celdas del calendario */
+.fc-daygrid-day {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.fc-daygrid-day:hover {
+  background: rgba(248, 187, 217, 0.1);
+}
+
+.fc-daygrid-day-number {
+  padding: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Día actual */
+.fc-day-today {
+  background: rgba(248, 187, 217, 0.1);
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  background: var(--primary-pink);
+  color: white;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem;
+}
+
+/* Headers de días */
+.fc-col-header-cell {
+  background: var(--bg-accent);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+/* Vista de mes */
+.fc-daygrid-day-frame {
+  min-height: 6rem;
+  padding: 0.25rem;
+}
+
+.fc-daygrid-day-events {
+  margin-top: 0.25rem;
+}
+
+.fc-daygrid-event {
+  margin-bottom: 0.125rem;
+}
+
+/* Vista de semana */
+.fc-timegrid-slot {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  height: 2rem;
+}
+
+.fc-timegrid-slot-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.25rem;
+}
+
+.fc-timegrid-event {
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.25rem;
+  font-size: 0.875rem;
+}
+
+/* Vista de día */
+.fc-timegrid-event-harness {
+  margin-bottom: 0.125rem;
+}
+
+/* Popover del calendario */
+.fc-popover {
+  border: none;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.fc-popover-header {
+  background: var(--primary-pink);
+  color: white;
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.fc-popover-body {
+  background: var(--bg-secondary);
+  padding: 1rem;
+}
+
+/* Modal del calendario */
+.fc-event-main {
+  padding: 0.25rem;
+}
+
+/* Responsive para calendario */
+@media (max-width: 768px) {
+  .fc-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.25rem;
+  }
+  
+  .fc-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+  }
+  
+  .fc-daygrid-day-frame {
+    min-height: 4rem;
+  }
+  
+  .fc-event {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .fc-daygrid-day-number {
+    font-size: 0.875rem;
+  }
+  
+  .fc-day-today .fc-daygrid-day-number {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .calendar-container {
+    padding: 0.5rem;
+  }
+  
+  .fc-toolbar {
+    padding: 0.75rem;
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.1rem;
+  }
+  
+  .fc-button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .fc-daygrid-day-frame {
+    min-height: 3rem;
+  }
+  
+  .fc-event {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.2rem;
+  }
+  
+  .fc-col-header-cell {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}

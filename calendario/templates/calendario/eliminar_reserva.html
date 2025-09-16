@@ -1,0 +1,99 @@
+{% extends 'calendario/base.html' %}
+
+{% block title %}Eliminar Reserva{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card-modern card-danger-modern">
+            <div class="card-header-modern card-header-danger-modern">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2 spring-icon"></i>Eliminar Reserva
+                </h4>
+            </div>
+            <div class="card-body-modern">
+                <div class="alert alert-warning-modern">
+                    <i class="fas fa-warning me-2"></i>
+                    <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                </div>
+                
+                <h5 class="mb-4">¿Estás seguro de que quieres eliminar esta reserva?</h5>
+                
+                <div class="card-modern bg-light">
+                    <div class="card-body-modern">
+                        <h6 class="card-title">
+                            <i class="fas fa-calendar-check me-2"></i>{{ reserva.titulo }}
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="card-text">
+                                    <strong><i class="fas fa-building me-1"></i>Recurso:</strong><br>
+                                    <span class="badge-modern" data-color="{{ reserva.recurso.color|default:'#64748B' }}">
+                                        {{ reserva.recurso.nombre }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="card-text">
+                                    <strong><i class="fas fa-info-circle me-1"></i>Estado:</strong><br>
+                                    <span class="badge-modern badge-{{ reserva.estado|default:'secondary' }}">
+                                        {{ reserva.get_estado_display }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="card-text">
+                                    <strong><i class="fas fa-clock me-1"></i>Fecha de inicio:</strong><br>
+                                    {{ reserva.fecha_inicio|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="card-text">
+                                    <strong><i class="fas fa-clock me-1"></i>Fecha de fin:</strong><br>
+                                    {{ reserva.fecha_fin|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% if reserva.descripcion %}
+                            <p class="card-text">
+                                <strong><i class="fas fa-align-left me-1"></i>Descripción:</strong><br>
+                                {{ reserva.descripcion }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'calendario:mis_reservas' %}" class="btn-modern btn-secondary-modern">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Cancelar</span>
+                        </a>
+                        <button type="submit" class="btn-modern btn-danger-modern bloom-button">
+                            <i class="fas fa-trash"></i>
+                            <span>Eliminar Reserva</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplicar colores dinámicos a los badges
+    const badges = document.querySelectorAll('.badge-modern[data-color]');
+    badges.forEach(badge => {
+        const color = badge.getAttribute('data-color');
+        badge.style.backgroundColor = color;
+        badge.style.color = 'white';
+    });
+});
+</script>
+{% endblock %}

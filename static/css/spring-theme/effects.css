@@ -1,0 +1,215 @@
+/* Efectos Especiales del Tema Primaveral */
+
+/* Efectos primaverales */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Transiciones suaves para colores dinámicos */
+.calendar-header-modern.dynamic-colors,
+.card-header-modern.dynamic-colors {
+  transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+.calendar-header-modern.dynamic-colors h4,
+.calendar-header-modern.dynamic-colors h5,
+.calendar-header-modern.dynamic-colors i,
+.calendar-header-modern.dynamic-colors #salaTitulo,
+.card-header-modern.dynamic-colors h4,
+.card-header-modern.dynamic-colors h5,
+.card-header-modern.dynamic-colors i {
+  transition: color 0.5s ease;
+}
+
+.calendar-header-modern.dynamic-colors .btn-modern,
+.card-header-modern.dynamic-colors .btn-modern {
+  transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+}
+
+/* Borde dinámico primaveral */
+.card-modern.dynamic-border {
+  transition: border-left-color 0.5s ease;
+}
+
+/* Iconos temáticos primaverales */
+.spring-icon {
+  color: var(--primary-pink);
+  transition: all 0.3s ease;
+}
+
+.spring-icon:hover {
+  color: var(--accent-lavender);
+  transform: scale(1.1);
+}
+
+/* Efectos de acuarela avanzados */
+.watercolor-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.watercolor-effect::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, 
+    rgba(248, 187, 217, 0.1) 0%, 
+    rgba(206, 147, 216, 0.05) 25%, 
+    rgba(255, 249, 196, 0.05) 50%, 
+    rgba(129, 199, 132, 0.05) 75%, 
+    transparent 100%);
+  animation: watercolorFlow 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes watercolorFlow {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translate(-40%, -60%) rotate(90deg) scale(1.1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-60%, -40%) rotate(180deg) scale(0.9);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translate(-45%, -55%) rotate(270deg) scale(1.05);
+    opacity: 0.6;
+  }
+}
+
+/* Efecto de pétalos en hover */
+.petal-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.petal-hover::after {
+  content: '🌸';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 20px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.petal-hover:hover::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0.8;
+  animation: petalFloat 1s ease-out;
+}
+
+@keyframes petalFloat {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -60%) scale(1) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -80%) scale(0.8) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Efecto de brisa en tarjetas */
+.breeze-card {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.breeze-card:hover {
+  transform: translateY(-3px) rotate(0.5deg);
+  box-shadow: 0 8px 25px rgba(248, 187, 217, 0.15);
+}
+
+.breeze-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.2), 
+    transparent);
+  transition: left 0.5s ease;
+}
+
+.breeze-card:hover::before {
+  left: 100%;
+}
+
+/* Efecto de floración en botones */
+.bloom-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.bloom-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+  border-radius: 50%;
+}
+
+.bloom-button:hover::before {
+  width: 200px;
+  height: 200px;
+}
+
+/* Efecto de polen dorado */
+.pollen-effect {
+  position: relative;
+}
+
+.pollen-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 20%, 
+    rgba(255, 249, 196, 0.1) 0%, 
+    transparent 50%),
+    radial-gradient(circle at 80% 80%, 
+    rgba(255, 249, 196, 0.1) 0%, 
+    transparent 50%);
+  pointer-events: none;
+  animation: pollenDance 4s ease-in-out infinite;
+}
+
+@keyframes pollenDance {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}

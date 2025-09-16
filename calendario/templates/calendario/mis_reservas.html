@@ -1,0 +1,209 @@
+{% extends 'calendario/base.html' %}
+
+{% block title %}Mis Reservas - Equipos Internos{% endblock %}
+
+{% block content %}
+<div class="accounting-header">
+    <h1><i class="fas fa-clipboard-list me-3"></i>Mis Reservas de Salas</h1>
+    <p>Administra y controla todas tus reservas de salas de reunión</p>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card-modern">
+            <div class="card-header-modern d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2 spring-icon"></i>Mis Reservas de Salas
+                </h4>
+                <a href="{% url 'calendario:crear_reserva' %}" class="btn-modern btn-primary-modern bloom-button btn-glass">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Reservar Sala</span>
+                </a>
+            </div>
+            <div class="card-body-modern">
+                {% if reservas %}
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-heading me-2"></i>Título</th>
+                                    <th><i class="fas fa-door-open me-2"></i>Sala</th>
+                                    <th><i class="fas fa-clock me-2"></i>Fecha de Inicio</th>
+                                    <th><i class="fas fa-clock me-2"></i>Fecha de Fin</th>
+                                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                                    <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reserva in reservas %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ reserva.titulo }}</strong>
+                                        {% if reserva.descripcion %}
+                                            <br><small class="text-muted">{{ reserva.descripcion|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge-modern" data-color="{{ reserva.recurso.color|default:'#64748B' }}">
+                                            {{ reserva.recurso.nombre }}
+                                        </span>
+                                    </td>
+                                    <td>{{ reserva.fecha_inicio|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge-modern badge-{% if reserva.estado %}{{ reserva.estado }}{% else %}secondary{% endif %}">
+                                            {{ reserva.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Acciones de reserva">
+                                            <a href="{% url 'calendario:editar_reserva' reserva.id %}" 
+                                               class="btn-modern btn-secondary-modern btn-glass" 
+                                               title="Editar reserva: {{ reserva.titulo }}"
+                                               aria-label="Editar reserva: {{ reserva.titulo }}">
+                                                <i class="fas fa-edit" aria-hidden="true"></i>
+                                                <span class="sr-only">Editar</span>
+                                            </a>
+                                            <a href="{% url 'calendario:eliminar_reserva' reserva.id %}" 
+                                               class="btn-modern btn-danger-modern btn-glass" 
+                                               title="Eliminar reserva: {{ reserva.titulo }}"
+                                               aria-label="Eliminar reserva: {{ reserva.titulo }}"
+                                               data-confirm="¿Estás seguro de que quieres eliminar esta reserva?">
+                                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                                <span class="sr-only">Eliminar</span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No tienes reservas de salas</h5>
+                        <p class="text-muted">Comienza a reservar salas para tus reuniones de equipo.</p>
+                        <a href="{% url 'calendario:crear_reserva' %}" class="btn-modern btn-primary-modern bloom-button">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Hacer Primera Reserva</span>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2 spring-icon"></i>Estados de Reservas
+                </h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="badge-modern badge-pendiente fs-6 mb-2">Pendiente</div>
+                            <p class="small text-muted mb-0">Reservas esperando confirmación</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="badge-modern badge-confirmada fs-6 mb-2">Confirmada</div>
+                            <p class="small text-muted mb-0">Reservas confirmadas y listas</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="badge-modern badge-cancelada fs-6 mb-2">Cancelada</div>
+                            <p class="small text-muted mb-0">Reservas canceladas</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="badge-modern badge-completada fs-6 mb-2">Completada</div>
+                            <p class="small text-muted mb-0">Reservas finalizadas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función mejorada para confirmar eliminación
+    const deleteButtons = document.querySelectorAll('a[data-confirm]');
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const confirmMessage = this.getAttribute('data-confirm');
+            const reservaTitle = this.getAttribute('aria-label').replace('Eliminar reserva: ', '');
+            
+            // Crear modal de confirmación personalizado
+            const confirmModal = CalendarioApp.Accessibility.createConfirmModal(
+                'Confirmar eliminación',
+                `${confirmMessage}<br><br><strong>Reserva:</strong> ${reservaTitle}`,
+                'Eliminar',
+                'Cancelar'
+            );
+            
+            confirmModal.then(confirmed => {
+                if (confirmed) {
+                    // Mostrar indicador de carga
+                    CalendarioApp.Accessibility.showGlobalLoading('Eliminando reserva...');
+                    
+                    // Simular eliminación (en producción esto sería una petición real)
+                    setTimeout(() => {
+                        CalendarioApp.Accessibility.hideGlobalLoading();
+                        CalendarioApp.Accessibility.announceToScreenReader('Reserva eliminada exitosamente');
+                        window.location.href = this.href;
+                    }, 1000);
+                }
+            });
+        });
+    });
+    
+    // Aplicar colores dinámicos a los badges
+    const badges = document.querySelectorAll('.badge-modern[data-color]');
+    badges.forEach(badge => {
+        const color = badge.getAttribute('data-color');
+        badge.style.backgroundColor = color;
+        badge.style.color = 'white';
+    });
+    
+    // Mejorar accesibilidad de la tabla
+    const table = document.querySelector('.table-modern');
+    if (table) {
+        table.setAttribute('role', 'table');
+        table.setAttribute('aria-label', 'Lista de reservas de salas');
+    }
+    
+    // Agregar navegación por teclado a las filas de la tabla
+    const tableRows = document.querySelectorAll('.table-modern tbody tr');
+    tableRows.forEach((row, index) => {
+        row.setAttribute('tabindex', '0');
+        row.setAttribute('role', 'row');
+        
+        row.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const editButton = this.querySelector('a[href*="editar"]');
+                if (editButton) {
+                    editButton.click();
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
