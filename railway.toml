@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "gunicorn calendario_reservas.wsgi:application --bind 0.0.0.0:$PORT"
+startCommand = "python manage.py migrate && gunicorn calendario_reservas.wsgi:application --bind 0.0.0.0:$PORT"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
