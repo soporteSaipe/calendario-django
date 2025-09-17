@@ -1,0 +1,31 @@
+@echo off
+REM Script de deploy de emergencia para Calendario de Reservas (Windows)
+REM Usa configuración simplificada para evitar problemas
+
+echo 🚨 Deploy de emergencia iniciado...
+
+REM Verificar que estamos en el directorio correcto
+if not exist "manage.py" (
+    echo ❌ Error: No se encontró manage.py. Ejecuta este script desde la raíz del proyecto.
+    pause
+    exit /b 1
+)
+
+echo 🔧 Configurando variables de entorno...
+set DJANGO_SETTINGS_MODULE=calendario_reservas.settings_simple
+set DEBUG=False
+set SECRET_KEY=emergency-secret-key-12345
+
+echo 📦 Instalando dependencias...
+pip install -r requirements.txt
+
+echo 🗄️ Ejecutando migraciones...
+python manage.py migrate
+
+echo 📁 Recopilando archivos estáticos...
+python manage.py collectstatic --noinput
+
+echo 🚀 Iniciando servidor...
+python manage.py runserver 0.0.0.0:8000
+
+pause

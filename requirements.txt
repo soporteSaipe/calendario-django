@@ -6,15 +6,15 @@ dj-database-url>=2.1.0
 # Base de datos
 psycopg2-binary>=2.9.0
 
-# Cache y sesiones
-redis>=4.5.0
-django-redis>=5.4.0
-
 # Servidor web para producción
 gunicorn>=20.1.0
 
 # Archivos estáticos
 whitenoise>=6.0.0
+
+# Cache y sesiones (opcional)
+# redis>=4.5.0
+# django-redis>=5.4.0
 
 # Herramientas de desarrollo (opcional)
 # django-debug-toolbar>=4.2.0

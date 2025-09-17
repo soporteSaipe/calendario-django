@@ -26,8 +26,8 @@ COPY . /app/
 # Create directories for logs and static files
 RUN mkdir -p /app/logs /app/staticfiles
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Collect static files (solo si hay archivos estáticos)
+RUN python manage.py collectstatic --noinput || echo "No static files to collect"
 
 # Expose port
 EXPOSE 8000
