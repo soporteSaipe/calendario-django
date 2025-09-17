@@ -43,7 +43,7 @@ else:
             'HOST': os.getenv('PGHOST', os.getenv('DB_HOST', 'localhost')),
             'PORT': os.getenv('PGPORT', os.getenv('DB_PORT', '5432')),
             'OPTIONS': {
-                'sslmode': 'require',
+                'sslmode': 'prefer',
             },
         }
     }

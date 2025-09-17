@@ -25,10 +25,7 @@ def redirect_to_calendario(request):
 
 def healthcheck(request):
     # Healthcheck simple que no depende de la base de datos
-    try:
-        return JsonResponse({'status': 'ok', 'message': 'Django app is running'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'ok', 'message': 'Django app is running'})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
