@@ -18,12 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
+from django.http import JsonResponse
 
 def redirect_to_calendario(request):
     return redirect('calendario:calendario')
 
+def healthcheck(request):
+    return JsonResponse({'status': 'ok'})
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('health/', healthcheck),
     path('', redirect_to_calendario),
     path('calendario/', include('calendario.urls')),
     # URLs de autenticación
