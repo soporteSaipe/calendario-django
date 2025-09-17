@@ -38,10 +38,12 @@ MEDIA_URL = '/media/'
 
 # Base de datos para producción (PostgreSQL)
 # Railway siempre proporciona DATABASE_URL
+DATABASE_URL = os.getenv('DATABASE_URL')
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required for production")
+
 DATABASES = {
-    'default': dj_database_url.parse(
-        os.getenv('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/calendario_db')
-    )
+    'default': dj_database_url.parse(DATABASE_URL)
 }
 
 # Configuración de cache
