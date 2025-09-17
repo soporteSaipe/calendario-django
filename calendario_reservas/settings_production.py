@@ -32,6 +32,7 @@ if os.getenv('DATABASE_URL'):
         'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
 else:
+    # Usar variables individuales de Railway PostgreSQL
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
