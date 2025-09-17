@@ -37,25 +37,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 # Base de datos para producción (PostgreSQL)
-if os.getenv('DATABASE_URL'):
-    DATABASES = {
-        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
-    }
-else:
-    # Fallback a variables individuales de Railway PostgreSQL
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('PGDATABASE', 'calendario_db'),
-            'USER': os.getenv('PGUSER', 'postgres'),
-            'PASSWORD': os.getenv('PGPASSWORD', ''),
-            'HOST': os.getenv('PGHOST', 'localhost'),
-            'PORT': os.getenv('PGPORT', '5432'),
-            'OPTIONS': {
-                'sslmode': 'prefer',
-            },
-        }
-    }
+# Railway siempre proporciona DATABASE_URL
+DATABASES = {
+    'default': dj_database_url.parse(
+        os.getenv('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/calendario_db')
+    )
+}
 
 # Configuración de cache
 CACHES = {
