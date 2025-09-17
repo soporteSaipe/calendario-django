@@ -12,14 +12,16 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-railway')
 # ALLOWED_HOSTS - crítico para Railway
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else [
     'healthcheck.railway.app',  # Para healthcheck de Railway
-    '*.railway.app',  # Todos los dominios de Railway
+    'calendario-django-production.up.railway.app',  # Tu dominio específico
+    '*.up.railway.app',  # Todos los dominios de Railway
     'localhost',
     '127.0.0.1'
 ]
 
 # CSRF_TRUSTED_ORIGINS para Railway
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else [
-    'https://*.railway.app',  # Todos los dominios HTTPS de Railway
+    'https://calendario-django-production.up.railway.app',  # Tu dominio específico
+    'https://*.up.railway.app',  # Todos los dominios HTTPS de Railway
     'https://healthcheck.railway.app'
 ]
 
