@@ -8,9 +8,16 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 
 import os
+import sys
+from pathlib import Path
+
+# Add the project directory to the Python path
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
 
 from django.core.asgi import get_asgi_application
 
+# Use production settings for Railway
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'calendario_reservas.settings_production')
 
 application = get_asgi_application()

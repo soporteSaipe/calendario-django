@@ -1,26 +1,31 @@
 """
-Configuración para producción
+Configuración para producción en Railway
 """
 from .settings import *
 import os
+import dj_database_url
 
 # Configuración de seguridad para producción
-DEBUG = False
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 SECRET_KEY = os.getenv('SECRET_KEY')
+
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is required for production")
+
+# ALLOWED_HOSTS - crítico para Railway
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else ['*']
 
-# Configuración de seguridad adicional (deshabilitado temporalmente)
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_CONTENT_TYPE_NOSNIFF = True
+# CSRF_TRUSTED_ORIGINS para Railway
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
+
+# Configuración de seguridad
 X_FRAME_OPTIONS = 'DENY'
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Configuración de archivos estáticos para producción
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Configuración de archivos multimedia
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -28,20 +33,19 @@ MEDIA_URL = '/media/'
 
 # Base de datos para producción (PostgreSQL)
 if os.getenv('DATABASE_URL'):
-    import dj_database_url
     DATABASES = {
         'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
 else:
-    # Usar variables individuales de Railway PostgreSQL
+    # Fallback a variables individuales de Railway PostgreSQL
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('PGDATABASE', os.getenv('DB_NAME', 'calendario_db')),
-            'USER': os.getenv('PGUSER', os.getenv('DB_USER', 'postgres')),
-            'PASSWORD': os.getenv('PGPASSWORD', os.getenv('DB_PASSWORD', '')),
-            'HOST': os.getenv('PGHOST', os.getenv('DB_HOST', 'localhost')),
-            'PORT': os.getenv('PGPORT', os.getenv('DB_PORT', '5432')),
+            'NAME': os.getenv('PGDATABASE', 'calendario_db'),
+            'USER': os.getenv('PGUSER', 'postgres'),
+            'PASSWORD': os.getenv('PGPASSWORD', ''),
+            'HOST': os.getenv('PGHOST', 'localhost'),
+            'PORT': os.getenv('PGPORT', '5432'),
             'OPTIONS': {
                 'sslmode': 'prefer',
             },
@@ -56,7 +60,7 @@ CACHES = {
     }
 }
 
-# Configuración de logging para producción (solo consola para evitar problemas de archivos)
+# Configuración de logging para producción
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -104,9 +108,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@tu-dominio.com')
 
-# Configuración de sesiones (deshabilitado temporalmente para healthcheck)
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
+# Configuración de sesiones
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
@@ -117,3 +119,9 @@ if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
 # Configuración adicional de WhiteNoise
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
+
+# Configuración específica para Railway
+if os.getenv('RAILWAY_ENVIRONMENT'):
+    # Configuraciones adicionales cuando se ejecuta en Railway
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_TZ = True

@@ -1,2 +1,2 @@
-web: gunicorn calendario_reservas.wsgi:application --bind 0.0.0.0:$PORT
+web: gunicorn --config gunicorn.conf.py calendario_reservas.wsgi:application
 release: python manage.py migrate
