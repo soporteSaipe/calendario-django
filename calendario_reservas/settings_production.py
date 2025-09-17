@@ -19,7 +19,7 @@ SECURE_HSTS_PRELOAD = True
 
 # Configuración de archivos estáticos para producción
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Configuración de archivos multimedia
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -112,3 +112,7 @@ CSRF_COOKIE_HTTPONLY = True
 # Configuración de archivos estáticos con WhiteNoise
 if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+# Configuración adicional de WhiteNoise
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
