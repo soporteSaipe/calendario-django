@@ -22,6 +22,10 @@ def initialize_database():
     """Inicializar la base de datos"""
     print("=== Inicializando base de datos ===")
     
+    # Railway ya configuró DJANGO_SETTINGS_MODULE
+    # Solo necesitamos configurar Django
+    django.setup()
+    
     # Ejecutar migraciones
     if not run_command("python manage.py migrate --noinput"):
         print("Error ejecutando migraciones")
@@ -31,10 +35,6 @@ def initialize_database():
     if not run_command("python manage.py collectstatic --noinput"):
         print("Error recopilando archivos estáticos")
         return False
-    
-    # Configurar Django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'calendario_reservas.settings_production')
-    django.setup()
     
     # Crear superusuario si no existe
     from django.contrib.auth.models import User

@@ -11,5 +11,6 @@ restartPolicyMaxRetries = 10
 [environments.production]
 variables = { 
   DJANGO_SETTINGS_MODULE = "calendario_reservas.settings_production",
-  DEBUG = "False"
+  DEBUG = "False",
+  RAILWAY_ENVIRONMENT = "production"
 }
