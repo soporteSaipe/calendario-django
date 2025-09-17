@@ -42,6 +42,9 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is required for production")
 
+# Debug: mostrar información de conexión (solo en logs)
+print(f"🔗 DATABASE_URL encontrada: {DATABASE_URL[:50]}...")
+
 DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL)
 }
