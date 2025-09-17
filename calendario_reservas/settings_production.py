@@ -12,7 +12,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-railway')
 # ALLOWED_HOSTS - crítico para Railway
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else [
     'healthcheck.railway.app',  # Para healthcheck de Railway
-    'calendario-django-production.up.railway.app',  # Tu dominio específico
+    'calendariosaipe.up.railway.app',  # Tu dominio específico
     '*.up.railway.app',  # Todos los dominios de Railway
     'localhost',
     '127.0.0.1'
