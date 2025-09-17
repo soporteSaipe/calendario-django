@@ -20,21 +20,32 @@
 - ✅ **Problema**: `collectstatic` fallaba durante el build
 - ✅ **Solución**: Agregado fallback para casos sin archivos estáticos
 
+### 5. **PROBLEMA PRINCIPAL: Conexión a PostgreSQL**
+- ❌ **Problema**: `settings_production.py` intenta conectarse a PostgreSQL en localhost:5432
+- ❌ **Error**: `connection to server at "localhost" (::1), port 5432 failed: Connection refused`
+- ✅ **Solución**: Cambiar a `settings_simple.py` que usa SQLite como fallback
+
 ## Opciones de Deploy
 
-### Opción 1: Deploy Normal (Recomendado)
+### Opción 1: Deploy con SQLite (Recomendado para empezar)
 ```bash
-# Railway
+# Railway (usando configuración simplificada)
 railway up
 
-# Render
+# Render (usando configuración simplificada)
 render deploy
 
-# Heroku
+# Heroku (usando configuración simplificada)
 git push heroku main
 ```
 
-### Opción 2: Deploy de Emergencia
+### Opción 2: Deploy con PostgreSQL (Avanzado)
+```bash
+# Primero configurar PostgreSQL en el servicio
+# Luego cambiar DJANGO_SETTINGS_MODULE a settings_production
+```
+
+### Opción 3: Deploy de Emergencia
 Si el deploy normal falla, usa la configuración simplificada:
 
 ```bash
@@ -45,7 +56,7 @@ deploy_emergency.bat
 ./deploy_emergency.sh
 ```
 
-### Opción 3: Deploy Manual
+### Opción 4: Deploy Manual
 ```bash
 # Configurar variables de entorno
 export DJANGO_SETTINGS_MODULE=calendario_reservas.settings_simple

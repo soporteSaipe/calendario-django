@@ -33,4 +33,4 @@ RUN python manage.py collectstatic --noinput || echo "No static files to collect
 EXPOSE 8000
 
 # Run the application
-CMD ["gunicorn", "calendario_reservas.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["sh", "-c", "export DJANGO_SETTINGS_MODULE=calendario_reservas.settings_simple && gunicorn calendario_reservas.wsgi:application --bind 0.0.0.0:8000"]

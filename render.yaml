@@ -11,7 +11,7 @@ services:
       - key: DEBUG
         value: "False"
       - key: DJANGO_SETTINGS_MODULE
-        value: "calendario_reservas.settings_production"
+        value: "calendario_reservas.settings_simple"
       - key: ALLOWED_HOSTS
         value: "calendario-reservas.onrender.com"
 

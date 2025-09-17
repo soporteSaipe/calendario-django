@@ -11,5 +11,6 @@ restartPolicyMaxRetries = 10
 [environments.production]
 variables = { 
   DJANGO_SETTINGS_MODULE = "calendario_reservas.settings_simple",
-  DEBUG = "False"
+  DEBUG = "False",
+  SECRET_KEY = "your-secret-key-here-change-in-production"
 }
