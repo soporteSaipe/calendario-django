@@ -25,8 +25,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-# Base de datos para producción (PostgreSQL recomendado)
-# Railway proporciona DATABASE_URL, si no existe, usar variables individuales
+# Base de datos para producción (PostgreSQL)
 if os.getenv('DATABASE_URL'):
     import dj_database_url
     DATABASES = {
@@ -47,25 +46,13 @@ else:
         }
     }
 
-# Configuración de cache (Redis opcional)
-if os.getenv('REDIS_URL'):
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': os.getenv('REDIS_URL'),
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            }
-        }
+# Configuración de cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
-else:
-    # Cache en memoria como fallback
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
-        }
-    }
+}
 
 # Configuración de logging para producción (solo consola para evitar problemas de archivos)
 LOGGING = {
