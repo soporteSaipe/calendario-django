@@ -7,8 +7,6 @@ healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
-[deploy.preDeploy]
-command = "python init_db.py"
 
 [environments.production]
 variables = { 

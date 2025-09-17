@@ -1,1 +1,1 @@
-web: gunicorn calendario_reservas.wsgi:application --bind 0.0.0.0:$PORT
+web: python start_app.py
