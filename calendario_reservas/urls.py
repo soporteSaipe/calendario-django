@@ -18,14 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 def redirect_to_calendario(request):
     return redirect('calendario:calendario')
 
 def healthcheck(request):
-    # Healthcheck simple que no depende de la base de datos
-    return JsonResponse({'status': 'ok', 'message': 'Django app is running'})
+    # Healthcheck ultra simple que funciona sin importar qué
+    return HttpResponse("OK", content_type="text/plain")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
