@@ -1,0 +1,32 @@
+# Ignore Docker files to force NIXPACKS
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignore development files
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
