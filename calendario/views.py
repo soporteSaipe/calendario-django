@@ -100,15 +100,24 @@ def crear_reserva(request):
                 print(f"DEBUG - Fecha inicio naive: {fecha_inicio_naive}")
                 print(f"DEBUG - Fecha fin naive: {fecha_fin_naive}")
                 print(f"DEBUG - Zona horaria actual: {timezone.get_current_timezone()}")
+                print(f"DEBUG - TIME_ZONE setting: {settings.TIME_ZONE}")
                 
-                # Convertir a la zona horaria configurada en Django
-                # Esto asegura que las horas se interpreten correctamente
-                fecha_inicio = timezone.make_aware(fecha_inicio_naive, timezone.get_current_timezone())
-                fecha_fin = timezone.make_aware(fecha_fin_naive, timezone.get_current_timezone())
+                # Importar pytz para manejo más preciso de zonas horarias
+                import pytz
+                
+                # Obtener la zona horaria de Buenos Aires
+                buenos_aires_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+                
+                # Localizar las fechas en la zona horaria de Buenos Aires
+                # Esto asegura que 10:30 se interprete como 10:30 en Buenos Aires, no en US East
+                fecha_inicio = buenos_aires_tz.localize(fecha_inicio_naive)
+                fecha_fin = buenos_aires_tz.localize(fecha_fin_naive)
                 
                 # Debug: Imprimir fechas después de la conversión
                 print(f"DEBUG - Fecha inicio aware: {fecha_inicio}")
                 print(f"DEBUG - Fecha fin aware: {fecha_fin}")
+                print(f"DEBUG - Fecha inicio UTC: {fecha_inicio.astimezone(pytz.UTC)}")
+                print(f"DEBUG - Fecha fin UTC: {fecha_fin.astimezone(pytz.UTC)}")
             except ValueError as e:
                 error_msg = f'Error en el formato de fecha: {str(e)}'
                 if is_ajax:

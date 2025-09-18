@@ -91,3 +91,14 @@ if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
 # Configuración adicional de WhiteNoise
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
+
+# Configuración de zona horaria para Railway (US East)
+# Railway está en US East (Virginia) que es UTC-5 (EST) o UTC-4 (EDT)
+# Pero queremos mantener la zona horaria de Buenos Aires para los usuarios
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
+USE_TZ = True
+
+# Configuración específica para manejo de fechas en producción
+# Esto asegura que las fechas se interpreten correctamente
+import os
+os.environ['TZ'] = 'America/Argentina/Buenos_Aires'
