@@ -18,6 +18,20 @@ class Recurso(models.Model):
     
     def __str__(self):
         return self.nombre
+    
+    def get_horarios_restringidos(self):
+        """Obtener horarios restringidos específicos para este recurso"""
+        horarios_restringidos = []
+        
+        # Restricción especial para la sala Comedor
+        if self.nombre.lower() == 'comedor':
+            horarios_restringidos.append({
+                'inicio': '11:30',
+                'fin': '14:30',
+                'motivo': 'Horario de almuerzo'
+            })
+        
+        return horarios_restringidos
 
 class Reserva(models.Model):
     """Modelo para representar las reservas"""

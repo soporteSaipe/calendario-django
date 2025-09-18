@@ -152,6 +152,7 @@
     // URLs para el JavaScript
     window.calendarioApiUrl = '{% url "calendario:api_reservas" %}';
     window.crearReservaUrl = '{% url "calendario:crear_reserva" %}';
+    window.horariosOcupadosUrl = '{% url "calendario:api_horarios_ocupados" %}';
 </script>
 
 <!-- JavaScript MEJORADO para el modal -->
@@ -177,44 +178,120 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurar fecha mínima
     fecha.min = new Date().toISOString().split('T')[0];
     
-    // Generar opciones de hora (07:00 a 15:30, intervalos de 30 min)
-    function generarHoras() {
+    // Generar opciones de hora (07:00 a 16:00, intervalos de 30 min)
+    function generarHoras(horariosOcupados = []) {
         horaInicio.innerHTML = '<option value="">Seleccionar hora</option>';
         horaFin.innerHTML = '<option value="">Seleccionar hora</option>';
         
+        // Función para verificar si una hora está ocupada
+        function esHoraOcupada(hora) {
+            return horariosOcupados.some(ocupado => {
+                return hora >= ocupado.inicio && hora < ocupado.fin;
+            });
+        }
+        
+        // Generar horas de inicio (07:00 a 15:30)
         for (let h = 7; h <= 15; h++) {
             for (let m = 0; m < 60; m += 30) {
-                if (h === 15 && m > 30) break; // Parar en 15:30
+                if (h === 15 && m > 30) break; // Parar en 15:30 para hora inicio
                 const hora = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                horaInicio.innerHTML += `<option value="${hora}">${hora}</option>`;
-                horaFin.innerHTML += `<option value="${hora}">${hora}</option>`;
+                
+                // Solo agregar si no está ocupada
+                if (!esHoraOcupada(hora)) {
+                    horaInicio.innerHTML += `<option value="${hora}">${hora}</option>`;
+                }
+            }
+        }
+        
+        // Generar horas de fin (07:30 a 16:00)
+        for (let h = 7; h <= 16; h++) {
+            for (let m = 0; m < 60; m += 30) {
+                if (h === 16 && m > 0) break; // Parar en 16:00 para hora fin
+                const hora = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                
+                // Solo agregar si no está ocupada
+                if (!esHoraOcupada(hora)) {
+                    horaFin.innerHTML += `<option value="${hora}">${hora}</option>`;
+                }
             }
         }
     }
     
+    // Función para obtener horarios ocupados
+    async function obtenerHorariosOcupados(recursoId, fecha) {
+        if (!recursoId || !fecha) return [];
+        
+        try {
+            const response = await fetch(`${window.horariosOcupadosUrl}?recurso_id=${recursoId}&fecha=${fecha}`);
+            if (response.ok) {
+                const data = await response.json();
+                return data.horarios_ocupados || [];
+            }
+        } catch (error) {
+            console.error('Error obteniendo horarios ocupados:', error);
+        }
+        return [];
+    }
+    
+    // Función para actualizar horarios cuando cambie fecha o recurso
+    async function actualizarHorarios() {
+        const recursoId = recursoSelect.value;
+        const fechaSeleccionada = fecha.value;
+        
+        if (recursoId && fechaSeleccionada) {
+            // Mostrar indicador de carga
+            horaInicio.innerHTML = '<option value="">Cargando horarios...</option>';
+            horaFin.innerHTML = '<option value="">Cargando horarios...</option>';
+            
+            // Obtener horarios ocupados
+            const horariosOcupados = await obtenerHorariosOcupados(recursoId, fechaSeleccionada);
+            
+            // Generar horarios filtrados
+            generarHoras(horariosOcupados);
+        } else {
+            generarHoras();
+        }
+    }
+    
+    // Event listeners para actualizar horarios
+    fecha.addEventListener('change', actualizarHorarios);
+    recursoSelect.addEventListener('change', actualizarHorarios);
+    
     // Validar que la hora fin sea posterior a la hora inicio
-    horaInicio.addEventListener('change', function() {
+    horaInicio.addEventListener('change', async function() {
         const horaInicioVal = this.value;
         horaFin.innerHTML = '<option value="">Seleccionar hora</option>';
         
         if (horaInicioVal) {
+            const recursoId = recursoSelect.value;
+            const fechaSeleccionada = fecha.value;
+            const horariosOcupados = await obtenerHorariosOcupados(recursoId, fechaSeleccionada);
+            
             const [hora, minuto] = horaInicioVal.split(':').map(Number);
             const horaInicioMinutos = hora * 60 + minuto;
             
-            // Generar solo horas posteriores a la hora de inicio
-            for (let h = 7; h <= 15; h++) {
+            // Función para verificar si una hora está ocupada
+            function esHoraOcupada(hora) {
+                return horariosOcupados.some(ocupado => {
+                    return hora >= ocupado.inicio && hora < ocupado.fin;
+                });
+            }
+            
+            // Generar solo horas posteriores a la hora de inicio y no ocupadas
+            for (let h = 7; h <= 16; h++) {
                 for (let m = 0; m < 60; m += 30) {
-                    if (h === 15 && m > 30) break;
+                    if (h === 16 && m > 0) break; // Parar en 16:00
                     
                     const horaActualMinutos = h * 60 + m;
-                    if (horaActualMinutos > horaInicioMinutos) {
-                        const hora = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                        horaFin.innerHTML += `<option value="${hora}">${hora}</option>`;
+                    const horaStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                    
+                    if (horaActualMinutos > horaInicioMinutos && !esHoraOcupada(horaStr)) {
+                        horaFin.innerHTML += `<option value="${horaStr}">${horaStr}</option>`;
                     }
                 }
             }
         } else {
-            generarHoras();
+            await actualizarHorarios();
         }
     });
     
@@ -222,17 +299,19 @@ document.addEventListener('DOMContentLoaded', function() {
     generarHoras();
     
     // Abrir modal
-    btnAbrir.addEventListener('click', function() {
+    btnAbrir.addEventListener('click', async function() {
         console.log('📝 Abriendo modal...');
         form.reset();
         fecha.min = new Date().toISOString().split('T')[0];
-        generarHoras();
         
         // Preseleccionar la sala actual si hay una seleccionada
         const salaActual = document.getElementById('salaFilter');
         if (salaActual && recursoSelect) {
             recursoSelect.value = salaActual.value;
         }
+        
+        // Actualizar horarios con filtros
+        await actualizarHorarios();
         
         new bootstrap.Modal(modal).show();
         console.log('✅ Modal abierto');

@@ -130,6 +130,24 @@ def crear_reserva(request):
                 messages.error(request, error_msg)
                 return redirect('calendario:calendario')
             
+            # Verificar restricciones específicas del recurso
+            horarios_restringidos = recurso.get_horarios_restringidos()
+            for restriccion in horarios_restringidos:
+                hora_inicio_reserva = fecha_inicio.time()
+                hora_fin_reserva = fecha_fin.time()
+                hora_inicio_restriccion = datetime.strptime(restriccion['inicio'], '%H:%M').time()
+                hora_fin_restriccion = datetime.strptime(restriccion['fin'], '%H:%M').time()
+                
+                # Verificar si hay solapamiento con horario restringido
+                if (hora_inicio_reserva < hora_fin_restriccion and 
+                    hora_fin_reserva > hora_inicio_restriccion):
+                    error_msg = (f'No se puede reservar en el horario de {restriccion["inicio"]} a '
+                               f'{restriccion["fin"]} para {recurso.nombre}: {restriccion["motivo"]}')
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'error': error_msg}, status=400)
+                    messages.error(request, error_msg)
+                    return redirect('calendario:calendario')
+            
             # Crear la reserva
             reserva = Reserva.objects.create(
                 recurso=recurso,
@@ -250,3 +268,57 @@ def api_reservas(request):
     ]
     
     return JsonResponse(eventos, safe=False)
+
+def api_horarios_ocupados(request):
+    """API para obtener horarios ocupados de una sala en una fecha específica"""
+    recurso_id = request.GET.get('recurso_id')
+    fecha = request.GET.get('fecha')
+    
+    if not recurso_id or not fecha:
+        return JsonResponse({'error': 'recurso_id y fecha son requeridos'}, status=400)
+    
+    try:
+        from datetime import datetime, time
+        from django.utils import timezone
+        
+        # Convertir fecha a datetime
+        fecha_dt = datetime.strptime(fecha, '%Y-%m-%d').date()
+        fecha_inicio = timezone.make_aware(datetime.combine(fecha_dt, time.min))
+        fecha_fin = timezone.make_aware(datetime.combine(fecha_dt, time.max))
+        
+        # Obtener reservas confirmadas para esa sala y fecha
+        reservas = Reserva.objects.filter(
+            recurso_id=recurso_id,
+            estado='confirmada',
+            fecha_inicio__date=fecha_dt
+        ).values('fecha_inicio', 'fecha_fin')
+        
+        # Convertir a formato de horas para el frontend
+        horarios_ocupados = []
+        for reserva in reservas:
+            inicio = reserva['fecha_inicio'].time()
+            fin = reserva['fecha_fin'].time()
+            horarios_ocupados.append({
+                'inicio': inicio.strftime('%H:%M'),
+                'fin': fin.strftime('%H:%M'),
+                'tipo': 'reserva'
+            })
+        
+        # Obtener restricciones específicas del recurso
+        try:
+            recurso = Recurso.objects.get(id=recurso_id)
+            horarios_restringidos = recurso.get_horarios_restringidos()
+            horarios_ocupados.extend(horarios_restringidos)
+        except Recurso.DoesNotExist:
+            pass
+        
+        return JsonResponse({
+            'horarios_ocupados': horarios_ocupados,
+            'fecha': fecha,
+            'recurso_id': recurso_id
+        })
+        
+    except ValueError as e:
+        return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
