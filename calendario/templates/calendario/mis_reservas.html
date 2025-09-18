@@ -58,13 +58,20 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Acciones de reserva">
-                                            <a href="{% url 'calendario:editar_reserva' reserva.id %}" 
-                                               class="btn-modern btn-secondary-modern btn-glass" 
-                                               title="Editar reserva: {{ reserva.titulo }}"
-                                               aria-label="Editar reserva: {{ reserva.titulo }}">
+                                            <button type="button" 
+                                                    class="btn-modern btn-secondary-modern btn-glass edit-reserva-btn" 
+                                                    title="Editar reserva: {{ reserva.titulo }}"
+                                                    aria-label="Editar reserva: {{ reserva.titulo }}"
+                                                    data-reserva-id="{{ reserva.id }}"
+                                                    data-titulo="{{ reserva.titulo|escapejs }}"
+                                                    data-recurso-id="{{ reserva.recurso.id }}"
+                                                    data-fecha="{{ reserva.fecha_inicio|date:'Y-m-d' }}"
+                                                    data-hora-inicio="{{ reserva.fecha_inicio|date:'H:i' }}"
+                                                    data-hora-fin="{{ reserva.fecha_fin|date:'H:i' }}"
+                                                    data-descripcion="{{ reserva.descripcion|escapejs }}">
                                                 <i class="fas fa-edit" aria-hidden="true"></i>
                                                 <span class="sr-only">Editar</span>
-                                            </a>
+                                            </button>
                                             <a href="{% url 'calendario:eliminar_reserva' reserva.id %}" 
                                                class="btn-modern btn-danger-modern btn-glass" 
                                                title="Eliminar reserva: {{ reserva.titulo }}"
@@ -91,6 +98,63 @@
                         </a>
                     </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edición de Reserva -->
+<div class="modal fade" id="modalEditarReserva" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Reserva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarReserva" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="reservaId" name="reserva_id">
+                    <div class="mb-3">
+                        <label for="editRecurso" class="form-label">Sala *</label>
+                        <select name="recurso" id="editRecurso" class="form-select" required>
+                            <option value="">Selecciona una sala</option>
+                            {% for recurso in recursos %}
+                            <option value="{{ recurso.id }}">{{ recurso.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTitulo" class="form-label">Título *</label>
+                        <input type="text" name="titulo" id="editTitulo" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editFecha" class="form-label">Fecha *</label>
+                        <input type="date" name="fecha" id="editFecha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editHoraInicio" class="form-label">Hora inicio *</label>
+                        <select name="hora_inicio" id="editHoraInicio" class="form-select" required>
+                            <option value="">Seleccionar hora</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editHoraFin" class="form-label">Hora fin *</label>
+                        <select name="hora_fin" id="editHoraFin" class="form-select" required>
+                            <option value="">Seleccionar hora</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescripcion" class="form-label">Descripción</label>
+                        <textarea name="descripcion" id="editDescripcion" class="form-control" rows="3" placeholder="Descripción opcional de la reserva"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnEditarReserva">
+                    Guardar Cambios
+                </button>
             </div>
         </div>
     </div>

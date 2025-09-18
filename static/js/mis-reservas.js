@@ -1,9 +1,15 @@
 /**
  * Mis Reservas - Gestión de reservas del usuario
- * Maneja confirmaciones de eliminación, colores dinámicos y accesibilidad
+ * Maneja confirmaciones de eliminación, colores dinámicos, accesibilidad y edición modal
  */
 
+// Variables globales para el modal de edición
+let modalEditarReserva = null;
+let formEditarReserva = null;
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar modal de edición
+    initializeEditModal();
     // Función mejorada para confirmar eliminación
     const deleteButtons = document.querySelectorAll('a[data-confirm]');
     
@@ -60,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
         table.setAttribute('aria-label', 'Lista de reservas de salas');
     }
     
+    // Configurar botones de edición
+    setupEditButtons();
+    
     // Agregar navegación por teclado a las filas de la tabla
     const tableRows = document.querySelectorAll('.table-modern tbody tr');
     tableRows.forEach((row, index) => {
@@ -69,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         row.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                const editButton = this.querySelector('a[href*="editar"]');
+                const editButton = this.querySelector('.edit-reserva-btn');
                 if (editButton) {
                     editButton.click();
                 }
@@ -77,3 +86,272 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+/**
+ * Configurar botones de edición
+ */
+function setupEditButtons() {
+    const editButtons = document.querySelectorAll('.edit-reserva-btn');
+    editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const reservaId = this.getAttribute('data-reserva-id');
+            const titulo = this.getAttribute('data-titulo');
+            const recursoId = this.getAttribute('data-recurso-id');
+            const fecha = this.getAttribute('data-fecha');
+            const horaInicio = this.getAttribute('data-hora-inicio');
+            const horaFin = this.getAttribute('data-hora-fin');
+            const descripcion = this.getAttribute('data-descripcion');
+            
+            abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, horaFin, descripcion);
+        });
+    });
+}
+
+/**
+ * Inicializar el modal de edición
+ */
+function initializeEditModal() {
+    modalEditarReserva = new bootstrap.Modal(document.getElementById('modalEditarReserva'));
+    formEditarReserva = document.getElementById('formEditarReserva');
+    
+    // Configurar event listeners
+    setupEditModalListeners();
+    
+    // Configurar generación de horarios
+    setupTimeGeneration();
+}
+
+/**
+ * Configurar event listeners del modal de edición
+ */
+function setupEditModalListeners() {
+    // Botón de guardar cambios
+    document.getElementById('btnEditarReserva').addEventListener('click', function() {
+        guardarCambiosReserva();
+    });
+    
+    // Cambio de sala - regenerar horarios
+    document.getElementById('editRecurso').addEventListener('change', function() {
+        generarHorarios('editHoraInicio', 'editHoraFin');
+    });
+    
+    // Cambio de fecha - validar horarios
+    document.getElementById('editFecha').addEventListener('change', function() {
+        validarHorariosEdicion();
+    });
+    
+    // Cambio de hora inicio - validar hora fin
+    document.getElementById('editHoraInicio').addEventListener('change', function() {
+        validarHoraFinEdicion();
+    });
+}
+
+/**
+ * Abrir modal de edición con datos de la reserva
+ */
+function abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, horaFin, descripcion) {
+    // Llenar formulario con datos existentes
+    document.getElementById('reservaId').value = reservaId;
+    document.getElementById('editTitulo').value = titulo;
+    document.getElementById('editRecurso').value = recursoId;
+    document.getElementById('editFecha').value = fecha;
+    document.getElementById('editDescripcion').value = descripcion || '';
+    
+    // Generar horarios para la sala seleccionada
+    generarHorarios('editHoraInicio', 'editHoraFin');
+    
+    // Establecer horarios después de que se generen las opciones
+    setTimeout(() => {
+        document.getElementById('editHoraInicio').value = horaInicio;
+        document.getElementById('editHoraFin').value = horaFin;
+        validarHoraFinEdicion();
+    }, 100);
+    
+    // Mostrar modal
+    modalEditarReserva.show();
+}
+
+/**
+ * Guardar cambios de la reserva
+ */
+function guardarCambiosReserva() {
+    if (!validarFormularioEdicion()) {
+        return;
+    }
+    
+    // Mostrar indicador de carga
+    if (window.CalendarioApp && window.CalendarioApp.Loading) {
+        CalendarioApp.Loading.show('Guardando cambios...', {
+            spinner: 'pulse'
+        });
+    }
+    
+    // Preparar datos del formulario
+    const formData = new FormData(formEditarReserva);
+    const reservaId = formData.get('reserva_id');
+    
+    // Configurar URL de edición
+    const editUrl = `/calendario/editar_reserva/${reservaId}/`;
+    formEditarReserva.action = editUrl;
+    
+    // Enviar formulario
+    fetch(editUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Error al guardar cambios');
+    })
+    .then(data => {
+        if (window.CalendarioApp && window.CalendarioApp.Loading) {
+            CalendarioApp.Loading.hide();
+        }
+        
+        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
+            CalendarioApp.Notifications.success('Reserva actualizada exitosamente', {
+                title: 'Cambios guardados',
+                duration: 3000
+            });
+        }
+        
+        // Cerrar modal y recargar página
+        modalEditarReserva.hide();
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    })
+    .catch(error => {
+        if (window.CalendarioApp && window.CalendarioApp.Loading) {
+            CalendarioApp.Loading.hide();
+        }
+        
+        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
+            CalendarioApp.Notifications.error('Error al guardar cambios: ' + error.message, {
+                title: 'Error',
+                duration: 5000
+            });
+        }
+        
+        console.error('Error al guardar reserva:', error);
+    });
+}
+
+/**
+ * Validar formulario de edición
+ */
+function validarFormularioEdicion() {
+    const titulo = document.getElementById('editTitulo').value.trim();
+    const recurso = document.getElementById('editRecurso').value;
+    const fecha = document.getElementById('editFecha').value;
+    const horaInicio = document.getElementById('editHoraInicio').value;
+    const horaFin = document.getElementById('editHoraFin').value;
+    
+    if (!titulo) {
+        mostrarError('El título es obligatorio');
+        return false;
+    }
+    
+    if (!recurso) {
+        mostrarError('Debe seleccionar una sala');
+        return false;
+    }
+    
+    if (!fecha) {
+        mostrarError('La fecha es obligatoria');
+        return false;
+    }
+    
+    if (!horaInicio) {
+        mostrarError('La hora de inicio es obligatoria');
+        return false;
+    }
+    
+    if (!horaFin) {
+        mostrarError('La hora de fin es obligatoria');
+        return false;
+    }
+    
+    if (horaInicio >= horaFin) {
+        mostrarError('La hora de fin debe ser posterior a la hora de inicio');
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Mostrar error en el modal
+ */
+function mostrarError(mensaje) {
+    if (window.CalendarioApp && window.CalendarioApp.Notifications) {
+        CalendarioApp.Notifications.error(mensaje, {
+            title: 'Error de validación',
+            duration: 4000
+        });
+    } else {
+        alert('Error: ' + mensaje);
+    }
+}
+
+/**
+ * Configurar generación de horarios
+ */
+function setupTimeGeneration() {
+    // Generar horarios iniciales
+    generarHorarios('editHoraInicio', 'editHoraFin');
+}
+
+/**
+ * Generar opciones de horarios
+ */
+function generarHorarios(selectInicioId, selectFinId) {
+    const selectInicio = document.getElementById(selectInicioId);
+    const selectFin = document.getElementById(selectFinId);
+    
+    // Limpiar opciones existentes
+    selectInicio.innerHTML = '<option value="">Seleccionar hora</option>';
+    selectFin.innerHTML = '<option value="">Seleccionar hora</option>';
+    
+    // Generar horarios de 7:00 a 16:00 en intervalos de 30 minutos
+    for (let hora = 7; hora < 16; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 30) {
+            const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+            
+            const optionInicio = document.createElement('option');
+            optionInicio.value = tiempo;
+            optionInicio.textContent = tiempo;
+            selectInicio.appendChild(optionInicio);
+            
+            const optionFin = document.createElement('option');
+            optionFin.value = tiempo;
+            optionFin.textContent = tiempo;
+            selectFin.appendChild(optionFin);
+        }
+    }
+}
+
+/**
+ * Validar horarios en edición
+ */
+function validarHorariosEdicion() {
+    validarHoraFinEdicion();
+}
+
+/**
+ * Validar hora de fin en edición
+ */
+function validarHoraFinEdicion() {
+    const horaInicio = document.getElementById('editHoraInicio').value;
+    const horaFin = document.getElementById('editHoraFin').value;
+    
+    if (horaInicio && horaFin && horaInicio >= horaFin) {
+        // Resetear hora de fin si es inválida
+        document.getElementById('editHoraFin').value = '';
+    }
+}
