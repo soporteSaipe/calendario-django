@@ -218,9 +218,20 @@ def editar_reserva(request, reserva_id):
         # Verificar si es una petición AJAX
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
+        print(f"=== DEBUG EDICIÓN RESERVA ===")
+        print(f"Reserva ID: {reserva_id}")
+        print(f"Usuario: {request.user}")
+        print(f"Es AJAX: {is_ajax}")
+        print(f"Datos POST: {dict(request.POST)}")
+        
         form = ReservaForm(request.POST, instance=reserva)
+        print(f"Formulario válido: {form.is_valid()}")
+        if not form.is_valid():
+            print(f"Errores del formulario: {form.errors}")
+        
         if form.is_valid():
             form.save()
+            print("Reserva guardada exitosamente")
             
             if is_ajax:
                 return JsonResponse({

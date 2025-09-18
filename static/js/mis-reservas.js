@@ -218,12 +218,32 @@ function guardarCambiosReserva() {
     const formData = new FormData(formEditarReserva);
     const reservaId = formData.get('reserva_id');
     
+    // Combinar fecha y hora para crear fecha_inicio y fecha_fin
+    const fecha = formData.get('fecha');
+    const horaInicio = formData.get('hora_inicio');
+    const horaFin = formData.get('hora_fin');
+    
+    // Crear fechas completas
+    const fechaInicio = `${fecha}T${horaInicio}:00`;
+    const fechaFin = `${fecha}T${horaFin}:00`;
+    
+    // Agregar campos combinados al FormData
+    formData.set('fecha_inicio', fechaInicio);
+    formData.set('fecha_fin', fechaFin);
+    
+    // Remover campos separados que no necesita el formulario
+    formData.delete('fecha');
+    formData.delete('hora_inicio');
+    formData.delete('hora_fin');
+    
     // Configurar URL de edición usando la URL de Django
     const editUrl = `/calendario/editar/${reservaId}/`;
     formEditarReserva.action = editUrl;
     
     console.log('Enviando datos a URL:', editUrl);
     console.log('Datos del formulario:', Object.fromEntries(formData));
+    console.log('Fecha inicio combinada:', fechaInicio);
+    console.log('Fecha fin combinada:', fechaFin);
     
     // Enviar formulario
     fetch(editUrl, {
