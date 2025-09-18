@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from django.core.cache import cache
 
 class Recurso(models.Model):
     """Modelo para representar los recursos que se pueden reservar"""
@@ -72,3 +73,5 @@ class Reserva(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+        # Limpiar cache de recursos cuando se actualiza un recurso
+        cache.delete('recursos_activos')

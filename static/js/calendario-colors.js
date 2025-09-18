@@ -7,59 +7,67 @@
 window.CalendarioApp = window.CalendarioApp || {};
 
 /**
- * Paleta de colores primaverales con ALTO CONTRASTE para cada sala
- * Cumple con WCAG 2.1 AA (ratio de contraste mínimo 4.5:1)
+ * Sistema de colores dinámicos basado en la base de datos
+ * Los colores se obtienen dinámicamente desde CalendarioApp.salasData
  */
-CalendarioApp.salaColors = {
-    // Sala 1 - Rosa vibrante (Cerezos en flor) - WCAG AA
-    '1': {
-        primary: '#EC4899',    // Rosa vibrante (WCAG AA)
-        secondary: '#FCE7F3',  // Rosa muy claro
-        text: '#581C87',       // Texto púrpura oscuro (WCAG AA)
-        textOnPrimary: '#FFFFFF' // Texto blanco sobre rosa
-    },
-    // Sala 2 - Lavanda profundo (Flores de lavanda) - WCAG AA
-    '2': {
-        primary: '#A855F7',    // Lavanda profundo (WCAG AA)
-        secondary: '#E1BEE7',  // Lavanda muy claro
-        text: '#581C87',       // Texto púrpura oscuro (WCAG AA)
-        textOnPrimary: '#FFFFFF' // Texto blanco sobre lavanda
-    },
-    // Sala 3 - Verde menta profundo (Hojas frescas) - WCAG AA
-    '3': {
-        primary: '#059669',    // Verde menta profundo (WCAG AA)
-        secondary: '#C8E6C9',  // Verde muy claro
-        text: '#064E3B',       // Texto verde muy oscuro (WCAG AA)
-        textOnPrimary: '#FFFFFF' // Texto blanco sobre verde
-    },
-    // Sala 4 - Amarillo dorado (Polen dorado) - WCAG AA
-    '4': {
-        primary: '#EAB308',    // Amarillo dorado (WCAG AA)
-        secondary: '#FFFDE7',  // Amarillo muy claro
-        text: '#7C2D12',       // Texto marrón oscuro (WCAG AA)
-        textOnPrimary: '#FFFFFF' // Texto blanco sobre amarillo
-    },
-    // Sala 5 - Azul cielo profundo (Cielo primaveral) - WCAG AA
-    '5': {
-        primary: '#1D4ED8',    // Azul cielo profundo (WCAG AA)
-        secondary: '#DBEAFE',  // Azul muy claro
-        text: '#1E3A8A',       // Texto azul oscuro (WCAG AA)
-        textOnPrimary: '#FFFFFF' // Texto blanco sobre azul
-    },
-    // Sala 6 - Púrpura profundo (Flores de jacaranda) - WCAG AA
-    '6': {
-        primary: '#7C3AED',    // Púrpura profundo (WCAG AA)
-        secondary: '#E9D5FF',  // Púrpura muy claro
-        text: '#581C87',       // Texto púrpura oscuro (WCAG AA)
-        textOnPrimary: '#FFFFFF' // Texto blanco sobre púrpura
+CalendarioApp.salaColors = {};
+
+/**
+ * Obtener colores de una sala por ID desde datos dinámicos
+ */
+CalendarioApp.getSalaColors = function(salaId) {
+    // Obtener color de la base de datos desde salasData
+    const salaData = CalendarioApp.salasData[salaId];
+    if (salaData && salaData.color) {
+        const primaryColor = salaData.color;
+        return {
+            primary: primaryColor,
+            secondary: CalendarioApp.lightenColor(primaryColor, 0.8),
+            text: CalendarioApp.getContrastTextColor(primaryColor),
+            textOnPrimary: '#FFFFFF'
+        };
     }
+    
+    // Color por defecto si no se encuentra
+    return {
+        primary: '#64748B',
+        secondary: '#F1F5F9',
+        text: '#1E293B',
+        textOnPrimary: '#FFFFFF'
+    };
 };
 
 /**
- * Obtener colores de una sala por ID
+ * Aclarar un color hexadecimal
  */
-CalendarioApp.getSalaColors = function(salaId) {
-    return CalendarioApp.salaColors[salaId] || CalendarioApp.salaColors['1'];
+CalendarioApp.lightenColor = function(hexColor, factor = 0.8) {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Mezclar con blanco para aclarar
+    const lightR = Math.floor(r + (255 - r) * factor);
+    const lightG = Math.floor(g + (255 - g) * factor);
+    const lightB = Math.floor(b + (255 - b) * factor);
+    
+    return `#${lightR.toString(16).padStart(2, '0')}${lightG.toString(16).padStart(2, '0')}${lightB.toString(16).padStart(2, '0')}`;
+};
+
+/**
+ * Obtener color de texto que contraste con el fondo
+ */
+CalendarioApp.getContrastTextColor = function(hexColor) {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Calcular luminancia
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Retornar negro o blanco según el contraste
+    return luminance > 0.5 ? '#1E293B' : '#FFFFFF';
 };
 
 /**
@@ -86,28 +94,33 @@ CalendarioApp.getDarkContrastColor = function(hexColor) {
 };
 
 /**
- * Obtener información de colores disponibles con alto contraste
+ * Obtener información de colores disponibles dinámicamente
  */
 CalendarioApp.getAvailableColors = function() {
-    const colorNames = {
-        '1': 'Rosa Vibrante',
-        '2': 'Lavanda Profundo', 
-        '3': 'Verde Menta Profundo',
-        '4': 'Amarillo Dorado',
-        '5': 'Azul Cielo Profundo',
-        '6': 'Púrpura Profundo'
-    };
+    const colorNames = {};
+    
+    // Obtener nombres de colores desde los datos de salas
+    Object.keys(CalendarioApp.salasData).forEach(salaId => {
+        const sala = CalendarioApp.salasData[salaId];
+        if (sala && sala.nombre) {
+            colorNames[salaId] = sala.nombre;
+        }
+    });
     
     return colorNames;
 };
 
 /**
- * Mostrar información de colores en consola (para debugging)
+ * Mostrar información de colores dinámicos
  */
 CalendarioApp.logColorInfo = function() {
-    Object.keys(CalendarioApp.salaColors).forEach(salaId => {
-        const colors = CalendarioApp.salaColors[salaId];
-        const colorNames = CalendarioApp.getAvailableColors();
+    const colorNames = CalendarioApp.getAvailableColors();
+    Object.keys(CalendarioApp.salasData).forEach(salaId => {
+        const sala = CalendarioApp.salasData[salaId];
+        if (sala && sala.color) {
+            const colors = CalendarioApp.getSalaColors(salaId);
+            // Información disponible para debugging si es necesario
+        }
     });
 };
 
@@ -147,7 +160,6 @@ CalendarioApp.applyHeaderColors = function(salaId) {
         header.style.setProperty('--btn-header-border-hover', `rgba(${darkColor.r}, ${darkColor.g}, ${darkColor.b}, 1)`);
         header.style.setProperty('--btn-header-bg-active', `rgba(${Math.max(0, darkColor.r - 20)}, ${Math.max(0, darkColor.g - 20)}, ${Math.max(0, darkColor.b - 20)}, 1)`);
         
-        const colorNames = CalendarioApp.getAvailableColors();
     }
 };
 
@@ -229,7 +241,6 @@ CalendarioApp.applyDynamicColors = function(salaId) {
     // Aplicar colores al header de filtros
     CalendarioApp.applyFilterHeaderColors(salaId);
     
-    const colorNames = CalendarioApp.getAvailableColors();
 };
 
 /**

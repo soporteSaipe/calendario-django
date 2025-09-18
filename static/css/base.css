@@ -114,9 +114,6 @@ footer {
   cursor: not-allowed;
 }
 
-.btn-modern .fa-spinner {
-}
-
 /* Mejoras para mensajes de error */
 .alert-modern.alert-danger {
   border-left: 4px solid #dc3545;
@@ -137,9 +134,6 @@ footer {
 .form-control.is-invalid {
   border-color: #dc3545;
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
-
-.field-error {
 }
 
 /* Mejoras para el formulario de login */

@@ -41,6 +41,12 @@ CalendarioApp.updateSalaInfo = function() {
             salaInfo.textContent = 'Capacidad: ' + sala.capacidad + ' personas';
         }
         
+        // Actualizar indicador de color de la sala
+        const colorIndicator = document.getElementById('salaColorIndicator');
+        if (colorIndicator) {
+            colorIndicator.style.backgroundColor = sala.color;
+        }
+        
         // Aplicar colores dinámicos al header del calendario
         CalendarioApp.applyHeaderColors(CalendarioApp.currentSalaFilter);
         

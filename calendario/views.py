@@ -10,11 +10,12 @@ from .forms import ReservaForm
 
 def calendario_view(request):
     """Vista principal del calendario"""
+    # Reducir cache a 30 segundos para cambios más rápidos en admin
     cache_key = 'recursos_activos'
     recursos = cache.get(cache_key)
     if recursos is None:
         recursos = list(Recurso.objects.filter(activo=True))
-        cache.set(cache_key, recursos, 300)
+        cache.set(cache_key, recursos, 30)
     
     # Obtener sala seleccionada desde parámetro URL
     sala_seleccionada = request.GET.get('sala')
