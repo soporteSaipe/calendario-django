@@ -41,18 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
     CalendarioApp.initializeColorSystem();
     
     // Actualizar información de sala inicial
-    if (CalendarioApp.currentSalaFilter) {
-        CalendarioApp.updateSalaInfo();
-        CalendarioApp.updateMainCalendar();
-    } else {
-        // Si no hay sala seleccionada, usar la primera disponible
-        const salaSelect = document.getElementById('salaFilter');
-        if (salaSelect && salaSelect.options.length > 0) {
-            CalendarioApp.currentSalaFilter = salaSelect.options[0].value;
-            CalendarioApp.updateSalaInfo();
-            CalendarioApp.updateMainCalendar();
-        }
-    }
+    CalendarioApp.updateSalaInfo();
+    CalendarioApp.updateMainCalendar();
 });
 
 /**
@@ -83,6 +73,11 @@ CalendarioApp.initializeSalasData = function() {
 CalendarioApp.setInitialSala = function() {
     const salaSelect = document.getElementById('salaFilter');
     
+    if (!salaSelect) {
+        console.error('No se encontró el elemento #salaFilter');
+        return;
+    }
+    
     // Verificar si hay un parámetro 'sala' en la URL
     const urlParams = new URLSearchParams(window.location.search);
     const salaFromUrl = urlParams.get('sala');
@@ -97,9 +92,15 @@ CalendarioApp.setInitialSala = function() {
         }
     }
     
-    // Si no hay parámetro de URL o no es válido, usar la opción seleccionada
-    if (salaSelect && salaSelect.value) {
-        CalendarioApp.currentSalaFilter = salaSelect.value;
+    // Si no hay parámetro de URL o no es válido, usar la primera opción disponible
+    if (salaSelect.options.length > 0) {
+        const firstOption = salaSelect.options[0];
+        if (firstOption.value) {
+            salaSelect.value = firstOption.value;
+            CalendarioApp.currentSalaFilter = firstOption.value;
+        }
+    } else {
+        console.error('No hay opciones de sala disponibles');
     }
 };
 
@@ -139,12 +140,27 @@ CalendarioApp.initializeMainCalendar = function() {
         slotLabelInterval: '01:00:00',
         allDaySlot: false,
         events: function(info) {
-            const url = CalendarioApp.currentSalaFilter ? 
-                window.calendarioApiUrl + '?sala=' + CalendarioApp.currentSalaFilter : 
-                window.calendarioApiUrl;
+            // Verificar que tenemos una sala válida seleccionada
+            if (!CalendarioApp.currentSalaFilter || CalendarioApp.currentSalaFilter === 'undefined') {
+                console.warn('No hay sala seleccionada, usando la primera disponible');
+                const salaSelect = document.getElementById('salaFilter');
+                if (salaSelect && salaSelect.options.length > 0) {
+                    CalendarioApp.currentSalaFilter = salaSelect.options[0].value;
+                } else {
+                    console.error('No hay salas disponibles');
+                    return [];
+                }
+            }
+            
+            const url = window.calendarioApiUrl + '?sala=' + CalendarioApp.currentSalaFilter;
             
             return fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     return data;
                 })
@@ -177,8 +193,16 @@ CalendarioApp.initializeMainCalendar = function() {
  * Obtener URL de eventos
  */
 CalendarioApp.getEventsUrl = function() {
-    if (CalendarioApp.currentSalaFilter) {
-        return window.calendarioApiUrl + '?sala=' + CalendarioApp.currentSalaFilter;
+    // Verificar que tenemos una sala válida seleccionada
+    if (!CalendarioApp.currentSalaFilter || CalendarioApp.currentSalaFilter === 'undefined') {
+        const salaSelect = document.getElementById('salaFilter');
+        if (salaSelect && salaSelect.options.length > 0) {
+            CalendarioApp.currentSalaFilter = salaSelect.options[0].value;
+        } else {
+            console.error('No hay salas disponibles');
+            return window.calendarioApiUrl;
+        }
     }
-    return window.calendarioApiUrl;
+    
+    return window.calendarioApiUrl + '?sala=' + CalendarioApp.currentSalaFilter;
 };

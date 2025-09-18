@@ -23,6 +23,8 @@
     <link href="{% static 'css/loading-states.css' %}" rel="stylesheet">
     <link href="{% static 'css/ux-utils.css' %}" rel="stylesheet">
     <link href="{% static 'css/login-forms.css' %}" rel="stylesheet">
+    <!-- <link href="{% static 'css/falling-leaves.css' %}" rel="stylesheet"> -->
+    <link href="{% static 'css/falling-petals.css' %}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -141,6 +143,12 @@
     <script src="{% static 'js/loading-states.js' %}"></script>
     <script src="{% static 'js/ux-utils.js' %}"></script>
     <script src="{% static 'js/base-ux.js' %}"></script>
+    <!-- <script src="{% static 'js/falling-leaves.js' %}"></script> -->
+    <!-- <script src="{% static 'js/wind-effects.js' %}"></script> -->
+    
+    <!-- Nuevo sistema de Canvas -->
+    <script type="module" src="{% static 'js/fallingPetals.js' %}"></script>
+    <script src="{% static 'js/fallingPetals-integration.js' %}"></script>
     
     {% if debug %}
     <script src="{% static 'js/notification-demo.js' %}"></script>

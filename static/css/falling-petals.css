@@ -1,0 +1,38 @@
+/* ========================================
+   ESTILOS PARA EL SISTEMA DE HOJAS CAYENDO
+   ======================================== */
+
+/* Canvas de hojas cayendo */
+#falling-petals-canvas {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  display: block !important;
+}
+
+/* Asegurar que el canvas esté en frente de todo */
+#falling-petals-canvas {
+  z-index: 9999 !important;
+}
+
+/* Para páginas específicas donde queremos que esté más visible */
+.calendario-page #falling-petals-canvas {
+  z-index: 9999 !important;
+}
+
+/* Asegurar que no interfiera con el layout */
+body {
+  position: relative;
+}
+
+/* Debug: mostrar bordes del canvas (quitar en producción) */
+/*
+#falling-petals-canvas {
+  border: 2px solid red !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+*/

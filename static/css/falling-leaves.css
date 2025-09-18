@@ -1,0 +1,416 @@
+/* ========================================
+   EFECTO DE CAÍDA DE HOJAS Y FLORES
+   ======================================== */
+
+/* Contenedor principal para las hojas y flores */
+.falling-leaves-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Estilos base para hojas y flores */
+.falling-leaf,
+.falling-flower {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+}
+
+/* Hojas de diferentes tipos */
+.leaf-1 {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #8B4513, #A0522D);
+  border-radius: 0 100% 0 100%;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.leaf-2 {
+  width: 18px;
+  height: 25px;
+  background: linear-gradient(135deg, #228B22, #32CD32);
+  border-radius: 50% 0 50% 0;
+  transform: rotate(-30deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.leaf-3 {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(225deg, #CD853F, #DEB887);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(60deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.leaf-4 {
+  width: 16px;
+  height: 24px;
+  background: linear-gradient(315deg, #DAA520, #F4A460);
+  border-radius: 0 50% 50% 50%;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Flores de diferentes tipos */
+.flower-1 {
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(circle, #FF69B4, #FFB6C1);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(255, 105, 180, 0.3);
+}
+
+.flower-2 {
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, #FFD700, #FFA500);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+}
+
+.flower-3 {
+  width: 26px;
+  height: 26px;
+  background: radial-gradient(circle, #FF1493, #FF69B4);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(255, 20, 147, 0.3);
+}
+
+.flower-4 {
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle, #FF6347, #FFA07A);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(255, 99, 71, 0.3);
+}
+
+/* Pétalos adicionales para las flores */
+.flower-1::before,
+.flower-2::before,
+.flower-3::before,
+.flower-4::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  border-radius: inherit;
+  transform: rotate(45deg);
+  opacity: 0.7;
+}
+
+.flower-1::after,
+.flower-2::after,
+.flower-3::after,
+.flower-4::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  border-radius: inherit;
+  transform: rotate(90deg);
+  opacity: 0.5;
+}
+
+/* Animaciones de caída básicas */
+@keyframes fall-down {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fall-down-slow {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fall-down-fast {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Animaciones con movimiento horizontal (viento) */
+@keyframes fall-wind-left {
+  0% {
+    transform: translateY(-100px) translateX(0px) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(25vh) translateX(-50px) rotate(90deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(50vh) translateX(-100px) rotate(180deg);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(75vh) translateX(-150px) rotate(270deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(100vh) translateX(-200px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fall-wind-right {
+  0% {
+    transform: translateY(-100px) translateX(0px) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(25vh) translateX(50px) rotate(90deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(50vh) translateX(100px) rotate(180deg);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(75vh) translateX(150px) rotate(270deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(100vh) translateX(200px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Animaciones con movimiento en zigzag */
+@keyframes fall-zigzag {
+  0% {
+    transform: translateY(-100px) translateX(0px) rotate(0deg);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(20vh) translateX(-30px) rotate(72deg);
+    opacity: 0.9;
+  }
+  40% {
+    transform: translateY(40vh) translateX(30px) rotate(144deg);
+    opacity: 0.7;
+  }
+  60% {
+    transform: translateY(60vh) translateX(-20px) rotate(216deg);
+    opacity: 0.5;
+  }
+  80% {
+    transform: translateY(80vh) translateX(40px) rotate(288deg);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(100vh) translateX(0px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Animaciones con flotación suave */
+@keyframes fall-float {
+  0% {
+    transform: translateY(-100px) translateX(0px) rotate(0deg);
+    opacity: 1;
+  }
+  10% {
+    transform: translateY(-80px) translateX(10px) rotate(36deg);
+    opacity: 0.95;
+  }
+  20% {
+    transform: translateY(-60px) translateX(-5px) rotate(72deg);
+    opacity: 0.9;
+  }
+  30% {
+    transform: translateY(-40px) translateX(15px) rotate(108deg);
+    opacity: 0.85;
+  }
+  40% {
+    transform: translateY(-20px) translateX(-10px) rotate(144deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(0px) translateX(20px) rotate(180deg);
+    opacity: 0.7;
+  }
+  60% {
+    transform: translateY(20vh) translateX(-15px) rotate(216deg);
+    opacity: 0.6;
+  }
+  70% {
+    transform: translateY(40vh) translateX(25px) rotate(252deg);
+    opacity: 0.5;
+  }
+  80% {
+    transform: translateY(60vh) translateX(-20px) rotate(288deg);
+    opacity: 0.4;
+  }
+  90% {
+    transform: translateY(80vh) translateX(10px) rotate(324deg);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateY(100vh) translateX(0px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Clases de animación */
+.animate-fall-down {
+  animation: fall-down 8s linear infinite;
+}
+
+.animate-fall-down-slow {
+  animation: fall-down-slow 12s linear infinite;
+}
+
+.animate-fall-down-fast {
+  animation: fall-down-fast 6s linear infinite;
+}
+
+.animate-fall-wind-left {
+  animation: fall-wind-left 10s ease-in-out infinite;
+}
+
+.animate-fall-wind-right {
+  animation: fall-wind-right 10s ease-in-out infinite;
+}
+
+.animate-fall-zigzag {
+  animation: fall-zigzag 9s ease-in-out infinite;
+}
+
+.animate-fall-float {
+  animation: fall-float 11s ease-in-out infinite;
+}
+
+/* Variaciones de duración - Más rápidas */
+.duration-1 { animation-duration: 3s; }
+.duration-2 { animation-duration: 4s; }
+.duration-3 { animation-duration: 5s; }
+.duration-4 { animation-duration: 6s; }
+.duration-5 { animation-duration: 7s; }
+
+/* Variaciones de retraso - Más frecuentes */
+.delay-1 { animation-delay: 0s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.6s; }
+.delay-4 { animation-delay: 0.9s; }
+.delay-5 { animation-delay: 1.2s; }
+.delay-6 { animation-delay: 1.5s; }
+
+/* Efectos de viento dinámico */
+.wind-gentle {
+  animation-timing-function: ease-in-out;
+}
+
+.wind-strong {
+  animation-timing-function: ease-in-out;
+  animation-duration: 7s;
+}
+
+.wind-gusty {
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Responsive - reducir efectos en pantallas pequeñas */
+@media (max-width: 768px) {
+  .falling-leaves-container {
+    display: none; /* Ocultar en móviles para mejor rendimiento */
+  }
+}
+
+@media (max-width: 1024px) {
+  .falling-leaf,
+  .falling-flower {
+    transform: scale(0.8);
+  }
+}
+
+/* Preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .falling-leaves-container {
+    display: none;
+  }
+}
+
+/* Efectos de brillo y sombra para mayor realismo */
+.falling-leaf::before,
+.falling-flower::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: inherit;
+  border-radius: inherit;
+  filter: blur(1px);
+  opacity: 0.3;
+  z-index: -1;
+}
+
+/* Transición suave para el efecto fade */
+.falling-leaf,
+.falling-flower {
+  transition: opacity 0.3s ease-out;
+}
+
+/* Efecto de desvanecimiento al acercarse al borde */
+.falling-leaf.fade-out,
+.falling-flower.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+/* Efecto de desvanecimiento gradual */
+.falling-leaf.fade-gradual,
+.falling-flower.fade-gradual {
+  transition: opacity 0.2s ease-out;
+}
+
+/* Efectos de partículas adicionales */
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particle-float 4s ease-in-out infinite;
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 1;
+  }
+}
