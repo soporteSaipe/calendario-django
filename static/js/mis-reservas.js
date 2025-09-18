@@ -31,21 +31,14 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmModal.then(confirmed => {
                 if (confirmed) {
                     // Mostrar indicador de carga
-                    CalendarioApp.Loading.show('Eliminando reserva...', {
-                        spinner: 'pulse'
-                    });
-                    
-                    // Simular eliminación (en producción esto sería una petición real)
-                    setTimeout(() => {
-                        CalendarioApp.Loading.hide();
-                        CalendarioApp.Notifications.success('Reserva eliminada exitosamente', {
-                            title: 'Eliminación exitosa',
-                            duration: 3000
+                    if (window.CalendarioApp && window.CalendarioApp.Loading) {
+                        CalendarioApp.Loading.show('Eliminando reserva...', {
+                            spinner: 'pulse'
                         });
-                        setTimeout(() => {
-                            window.location.href = this.href;
-                        }, 1000);
-                    }, 1000);
+                    }
+                    
+                    // Realizar eliminación real
+                    eliminarReserva(this.href);
                 }
             });
         });
@@ -138,6 +131,9 @@ function setupEditModalListeners() {
         // Limpiar horarios seleccionados al cambiar sala
         document.getElementById('editHoraInicio').value = '';
         document.getElementById('editHoraFin').value = '';
+        
+        // Resetear filtro de horas fin
+        resetearFiltroHorasFin('editHoraFin');
     });
     
     // Cambio de fecha - validar horarios
@@ -172,6 +168,12 @@ function abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, hora
     setTimeout(() => {
         document.getElementById('editHoraInicio').value = horaInicio;
         document.getElementById('editHoraFin').value = horaFin;
+        
+        // Aplicar filtro de horas fin basado en la hora inicio
+        if (horaInicio) {
+            filtrarHorasFin('editHoraFin', horaInicio);
+        }
+        
         validarHoraFinEdicion();
     }, 200);
     
@@ -449,4 +451,97 @@ function validarHoraFinEdicion() {
         // Resetear hora de fin si es inválida
         document.getElementById('editHoraFin').value = '';
     }
+    
+    // Filtrar opciones de hora fin para mostrar solo las posteriores
+    if (horaInicio) {
+        filtrarHorasFin('editHoraFin', horaInicio);
+    }
+}
+
+/**
+ * Filtrar opciones de hora fin para mostrar solo las posteriores a hora inicio
+ */
+function filtrarHorasFin(selectFinId, horaInicio) {
+    const selectFin = document.getElementById(selectFinId);
+    const opciones = selectFin.querySelectorAll('option');
+    
+    opciones.forEach(opcion => {
+        if (opcion.value === '') {
+            // Mantener la opción vacía
+            opcion.style.display = 'block';
+            return;
+        }
+        
+        // Mostrar solo horas posteriores a la hora de inicio
+        if (opcion.value > horaInicio) {
+            opcion.style.display = 'block';
+        } else {
+            opcion.style.display = 'none';
+        }
+    });
+}
+
+/**
+ * Resetear filtro de horas fin para mostrar todas las opciones
+ */
+function resetearFiltroHorasFin(selectFinId) {
+    const selectFin = document.getElementById(selectFinId);
+    const opciones = selectFin.querySelectorAll('option');
+    
+    opciones.forEach(opcion => {
+        opcion.style.display = 'block';
+    });
+}
+
+/**
+ * Eliminar reserva mediante petición AJAX
+ */
+function eliminarReserva(deleteUrl) {
+    // Obtener token CSRF
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(deleteUrl, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Error al eliminar la reserva');
+    })
+    .then(data => {
+        if (window.CalendarioApp && window.CalendarioApp.Loading) {
+            CalendarioApp.Loading.hide();
+        }
+        
+        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
+            CalendarioApp.Notifications.success('Reserva eliminada exitosamente', {
+                title: 'Eliminación exitosa',
+                duration: 3000
+            });
+        }
+        
+        // Recargar la página para mostrar los cambios
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    })
+    .catch(error => {
+        if (window.CalendarioApp && window.CalendarioApp.Loading) {
+            CalendarioApp.Loading.hide();
+        }
+        
+        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
+            CalendarioApp.Notifications.error('Error al eliminar la reserva: ' + error.message, {
+                title: 'Error',
+                duration: 5000
+            });
+        }
+        
+        console.error('Error al eliminar reserva:', error);
+    });
 }

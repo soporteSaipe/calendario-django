@@ -261,9 +261,29 @@ def eliminar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     
     if request.method == 'POST':
-        reserva.delete()
-        messages.success(request, 'Reserva eliminada exitosamente.')
-        return redirect('calendario:mis_reservas')
+        # Verificar si es una petición AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        try:
+            reserva.delete()
+            
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Reserva eliminada exitosamente.'
+                })
+            else:
+                messages.success(request, 'Reserva eliminada exitosamente.')
+                return redirect('calendario:mis_reservas')
+        except Exception as e:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Error al eliminar la reserva.'
+                }, status=500)
+            else:
+                messages.error(request, 'Error al eliminar la reserva.')
+                return redirect('calendario:mis_reservas')
     
     return render(request, 'calendario/eliminar_reserva.html', {'reserva': reserva})
 

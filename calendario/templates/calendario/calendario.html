@@ -53,9 +53,16 @@
                     <span id="salaTitulo">Calendario de sala</span>
                 </h4>
                 {% if user.is_authenticated %}
-                <button type="button" class="btn btn-primary" id="abrirModalReserva">
-                    <i class="fas fa-plus-circle"></i>
-                    Reservar sala
+                <button type="button" class="btn-reserva-elegant" id="abrirModalReserva">
+                    <div class="btn-reserva-content">
+                        <div class="btn-reserva-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <div class="btn-reserva-text">
+                            <span class="btn-reserva-title">Reservar sala</span>
+                            <span class="btn-reserva-subtitle">Nueva reserva</span>
+                        </div>
+                    </div>
                 </button>
                 {% endif %}
             </div>
@@ -135,9 +142,13 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btnCrearReserva" onclick="crearReserva()">
-                    Crear Reserva
+                <button type="button" class="btn-modal btn-modal-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                    <span>Cancelar</span>
+                </button>
+                <button type="button" class="btn-modal btn-modal-primary" id="btnCrearReserva" onclick="crearReserva()">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Crear Reserva</span>
                 </button>
             </div>
         </div>
