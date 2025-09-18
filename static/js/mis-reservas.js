@@ -190,14 +190,22 @@ function cargarSalasDisponibles() {
     // Limpiar opciones existentes
     selectRecurso.innerHTML = '<option value="">Selecciona una sala</option>';
     
-    // Cargar salas desde window.salasDisponibles
-    if (window.salasDisponibles && window.salasDisponibles.length > 0) {
-        window.salasDisponibles.forEach(sala => {
-            const option = document.createElement('option');
-            option.value = sala.id;
-            option.textContent = sala.nombre;
-            selectRecurso.appendChild(option);
-        });
+    // Cargar salas desde el elemento JSON
+    const salasDataElement = document.getElementById('salas-data');
+    if (salasDataElement) {
+        try {
+            const salasDisponibles = JSON.parse(salasDataElement.textContent);
+            if (salasDisponibles && salasDisponibles.length > 0) {
+                salasDisponibles.forEach(sala => {
+                    const option = document.createElement('option');
+                    option.value = sala.id;
+                    option.textContent = sala.nombre;
+                    selectRecurso.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error al parsear datos de salas:', error);
+        }
     }
 }
 
@@ -381,9 +389,17 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
     
     // Determinar si es comedor
     let esComedor = false;
-    if (recursoId && window.salasDisponibles) {
-        const sala = window.salasDisponibles.find(s => s.id == recursoId);
-        esComedor = sala ? sala.esComedor : false;
+    if (recursoId) {
+        const salasDataElement = document.getElementById('salas-data');
+        if (salasDataElement) {
+            try {
+                const salasDisponibles = JSON.parse(salasDataElement.textContent);
+                const sala = salasDisponibles.find(s => s.id == recursoId);
+                esComedor = sala ? sala.esComedor : false;
+            } catch (error) {
+                console.error('Error al parsear datos de salas:', error);
+            }
+        }
     }
     
     // Horarios de inicio: 7:30-15:30 (excepto comedor que puede ser 7:00-15:30)

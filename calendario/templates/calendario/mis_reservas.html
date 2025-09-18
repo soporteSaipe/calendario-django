@@ -170,9 +170,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    // Pasar datos de salas al JavaScript
-    window.salasDisponibles = {{ salas_json|safe }};
-</script>
+<script type="application/json" id="salas-data">{{ salas_json|safe }}</script>
 <script src="{% static 'js/mis-reservas.js' %}"></script>
 {% endblock %}
