@@ -147,6 +147,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/calendario-config.js' %}"></script>
 <script>
     configurarUrlsCalendario({
         calendarioApiUrl: '{% url "calendario:api_reservas" %}',
@@ -155,8 +156,6 @@
         logoutUrl: '{% url "logout" %}'
     });
 </script>
-
-<script src="{% static 'js/calendario-config.js' %}"></script>
 <script src="{% static 'js/calendario-modal.js' %}"></script>
 <script src="{% static 'js/calendario-reserva.js' %}"></script>
 <script src="{% static 'js/calendario-init.js' %}"></script>

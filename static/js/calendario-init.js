@@ -140,6 +140,12 @@ CalendarioApp.initializeMainCalendar = function() {
         slotLabelInterval: '01:00:00',
         allDaySlot: false,
         events: function(info) {
+            // Verificar que las URLs estén configuradas
+            if (!window.calendarioApiUrl) {
+                console.error('calendarioApiUrl no está configurada');
+                return [];
+            }
+            
             // Verificar que tenemos una sala válida seleccionada
             if (!CalendarioApp.currentSalaFilter || CalendarioApp.currentSalaFilter === 'undefined') {
                 console.warn('No hay sala seleccionada, usando la primera disponible');
@@ -153,6 +159,7 @@ CalendarioApp.initializeMainCalendar = function() {
             }
             
             const url = window.calendarioApiUrl + '?sala=' + CalendarioApp.currentSalaFilter;
+            console.log('Cargando eventos desde URL:', url);
             
             return fetch(url)
                 .then(response => {
