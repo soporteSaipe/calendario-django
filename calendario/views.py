@@ -89,14 +89,26 @@ def crear_reserva(request):
             # Crear fechas
             from datetime import datetime
             from django.utils import timezone
+            from django.conf import settings
             
             try:
-                fecha_inicio = timezone.make_aware(
-                    datetime.strptime(f"{fecha} {hora_inicio}", "%Y-%m-%d %H:%M")
-                )
-                fecha_fin = timezone.make_aware(
-                    datetime.strptime(f"{fecha} {hora_fin}", "%Y-%m-%d %H:%M")
-                )
+                # Crear datetime naive primero
+                fecha_inicio_naive = datetime.strptime(f"{fecha} {hora_inicio}", "%Y-%m-%d %H:%M")
+                fecha_fin_naive = datetime.strptime(f"{fecha} {hora_fin}", "%Y-%m-%d %H:%M")
+                
+                # Debug: Imprimir fechas antes de la conversión
+                print(f"DEBUG - Fecha inicio naive: {fecha_inicio_naive}")
+                print(f"DEBUG - Fecha fin naive: {fecha_fin_naive}")
+                print(f"DEBUG - Zona horaria actual: {timezone.get_current_timezone()}")
+                
+                # Convertir a la zona horaria configurada en Django
+                # Esto asegura que las horas se interpreten correctamente
+                fecha_inicio = timezone.make_aware(fecha_inicio_naive, timezone.get_current_timezone())
+                fecha_fin = timezone.make_aware(fecha_fin_naive, timezone.get_current_timezone())
+                
+                # Debug: Imprimir fechas después de la conversión
+                print(f"DEBUG - Fecha inicio aware: {fecha_inicio}")
+                print(f"DEBUG - Fecha fin aware: {fecha_fin}")
             except ValueError as e:
                 error_msg = f'Error en el formato de fecha: {str(e)}'
                 if is_ajax:
