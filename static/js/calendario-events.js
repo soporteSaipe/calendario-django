@@ -182,3 +182,113 @@ CalendarioApp.getEstadoColor = function(estado) {
         default: return 'secondary';
     }
 };
+
+/**
+ * Manejar respuesta de creación de reserva
+ */
+CalendarioApp.handleReservaResponse = function(response) {
+    if (response.success) {
+        // Mostrar mensaje de éxito
+        CalendarioApp.showSuccessMessage(response.message);
+        
+        // Si la reserva se creó en una sala diferente, cambiar a esa sala
+        if (response.recurso_id && response.recurso_id != CalendarioApp.currentSalaFilter) {
+            CalendarioApp.switchToSala(response.recurso_id, response.recurso_nombre);
+        } else {
+            // Solo recargar el calendario si es la misma sala
+            CalendarioApp.updateMainCalendar();
+        }
+        
+        // Cerrar modal si está abierto
+        const modal = document.getElementById('reservaModal');
+        if (modal) {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+    } else {
+        // Mostrar mensaje de error
+        CalendarioApp.showErrorMessage(response.error || 'Error al crear la reserva');
+    }
+};
+
+/**
+ * Cambiar a una sala específica
+ */
+CalendarioApp.switchToSala = function(salaId, salaNombre) {
+    // Actualizar el selector de sala
+    const salaFilter = document.getElementById('salaFilter');
+    if (salaFilter) {
+        salaFilter.value = salaId;
+        CalendarioApp.currentSalaFilter = salaId;
+    }
+    
+    // Actualizar información de la sala
+    CalendarioApp.updateSalaInfo();
+    
+    // Recargar calendario
+    CalendarioApp.updateMainCalendar();
+    
+    // Mostrar mensaje informativo
+    CalendarioApp.showInfoMessage(`Mostrando calendario de ${salaNombre}`);
+    
+    // Actualizar URL sin recargar la página
+    const url = new URL(window.location);
+    url.searchParams.set('sala', salaId);
+    window.history.pushState({}, '', url);
+};
+
+/**
+ * Mostrar mensaje de éxito
+ */
+CalendarioApp.showSuccessMessage = function(message) {
+    CalendarioApp.showMessage(message, 'success');
+};
+
+/**
+ * Mostrar mensaje de error
+ */
+CalendarioApp.showErrorMessage = function(message) {
+    CalendarioApp.showMessage(message, 'danger');
+};
+
+/**
+ * Mostrar mensaje informativo
+ */
+CalendarioApp.showInfoMessage = function(message) {
+    CalendarioApp.showMessage(message, 'info');
+};
+
+/**
+ * Mostrar mensaje genérico
+ */
+CalendarioApp.showMessage = function(message, type) {
+    // Crear elemento de mensaje
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show animate-fade-in`;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insertar al inicio del contenido principal
+    const mainContainer = document.querySelector('.main-container');
+    if (mainContainer) {
+        mainContainer.insertBefore(alertDiv, mainContainer.firstChild);
+        
+        // Auto-ocultar después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.style.transition = 'opacity 0.5s ease-out';
+                alertDiv.style.opacity = '0';
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 500);
+            }
+        }, 5000);
+    }
+};

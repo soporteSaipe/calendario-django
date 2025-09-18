@@ -16,10 +16,25 @@
                 </div>
                 <div class="card-body-modern">
                     {% if form.errors %}
-                        <div class="alert-modern alert-danger">
+                        <div class="alert-modern alert-danger animate-fade-in">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            Usuario o contraseña incorrectos. Inténtalo de nuevo.
+                            {% if form.non_field_errors %}
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            {% else %}
+                                Usuario o contraseña incorrectos. Inténtalo de nuevo.
+                            {% endif %}
                         </div>
+                    {% endif %}
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert-modern alert-{{ message.tags }} animate-fade-in">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
                     {% endif %}
 
                     <form method="post">
@@ -58,8 +73,8 @@
                     <div class="text-center mt-4">
                         <small class="text-muted">
                             <i class="fas fa-info-circle me-1"></i>
-                            Usuario de prueba: <strong>usuario_ejemplo</strong><br>
-                            Contraseña: <strong>password123</strong>
+                            Usuario de prueba: <strong>usuario_prueba</strong><br>
+                            Contraseña: <strong>prueba123</strong>
                         </small>
                     </div>
                 </div>

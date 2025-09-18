@@ -27,6 +27,21 @@ if __name__ == '__main__':
     else:
         print("Superusuario ya existe")
     
+    # Crear usuario de prueba normal
+    print("Verificando usuario de prueba...")
+    if not User.objects.filter(username='usuario_prueba').exists():
+        print("Creando usuario de prueba...")
+        User.objects.create_user(
+            username='usuario_prueba',
+            email='usuario@prueba.com',
+            password='prueba123',
+            first_name='Usuario',
+            last_name='Prueba'
+        )
+        print("Usuario de prueba creado: usuario_prueba/prueba123")
+    else:
+        print("Usuario de prueba ya existe")
+    
     # Crear recursos de ejemplo si no existen
     print("Verificando recursos...")
     from calendario.models import Recurso

@@ -25,6 +25,10 @@ CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.ge
     'https://healthcheck.railway.app'
 ]
 
+# Filtrar valores vacíos y asegurar que todos tengan https://
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS if origin.strip()]
+CSRF_TRUSTED_ORIGINS = [origin if origin.startswith('https://') else f'https://{origin}' for origin in CSRF_TRUSTED_ORIGINS]
+
 # Configuración de seguridad
 X_FRAME_OPTIONS = 'DENY'
 

@@ -23,7 +23,8 @@
                         <label for="salaFilter" class="form-label">Sala de reunión:</label>
                         <select id="salaFilter" class="form-select form-select-modern">
                             {% for recurso in recursos %}
-                            <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" {% if forloop.first %}selected{% endif %}>
+                            <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" 
+                                    {% if sala_activa and recurso.id == sala_activa.id %}selected{% elif not sala_activa and forloop.first %}selected{% endif %}>
                                 {{ recurso.nombre }} (capacidad: {{ recurso.capacidad }})
                             </option>
                             {% endfor %}
@@ -357,6 +358,66 @@ function crearReserva() {
         alert('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
     });
 }
+
+// Manejar envío del formulario de crear reserva con AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const formCrearReserva = document.getElementById('formCrearReserva');
+    if (formCrearReserva) {
+        formCrearReserva.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            // Mostrar estado de carga
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+            }
+            
+            // Enviar petición AJAX
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Restaurar botón
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Crear Reserva';
+                }
+                
+                // Manejar respuesta
+                if (window.CalendarioApp && window.CalendarioApp.handleReservaResponse) {
+                    window.CalendarioApp.handleReservaResponse(data);
+                } else {
+                    // Fallback si no está disponible la función
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.error || 'Error al crear la reserva');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Restaurar botón
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Crear Reserva';
+                }
+                
+                alert('Error de conexión. Intenta nuevamente.');
+            });
+        });
+    }
+});
 </script>
 
 <!-- Módulos del calendario -->

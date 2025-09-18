@@ -82,6 +82,22 @@ CalendarioApp.initializeSalasData = function() {
  */
 CalendarioApp.setInitialSala = function() {
     const salaSelect = document.getElementById('salaFilter');
+    
+    // Verificar si hay un parámetro 'sala' en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const salaFromUrl = urlParams.get('sala');
+    
+    if (salaFromUrl && salaSelect) {
+        // Verificar que la sala existe en las opciones
+        const option = salaSelect.querySelector(`option[value="${salaFromUrl}"]`);
+        if (option) {
+            salaSelect.value = salaFromUrl;
+            CalendarioApp.currentSalaFilter = salaFromUrl;
+            return;
+        }
+    }
+    
+    // Si no hay parámetro de URL o no es válido, usar la opción seleccionada
     if (salaSelect && salaSelect.value) {
         CalendarioApp.currentSalaFilter = salaSelect.value;
     }

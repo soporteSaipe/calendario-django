@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.cache import cache
+from django.urls import reverse
 
 from .models import Recurso, Reserva
 from .forms import ReservaForm
@@ -15,7 +16,26 @@ def calendario_view(request):
         recursos = list(Recurso.objects.filter(activo=True))
         cache.set(cache_key, recursos, 300)
     
-    return render(request, 'calendario/calendario.html', {'recursos': recursos})
+    # Obtener sala seleccionada desde parámetro URL
+    sala_seleccionada = request.GET.get('sala')
+    sala_activa = None
+    
+    if sala_seleccionada:
+        try:
+            sala_activa = Recurso.objects.get(id=sala_seleccionada, activo=True)
+        except Recurso.DoesNotExist:
+            sala_activa = None
+    
+    # Si no hay sala seleccionada, usar la primera disponible
+    if not sala_activa and recursos:
+        sala_activa = recursos[0]
+    
+    context = {
+        'recursos': recursos,
+        'sala_activa': sala_activa
+    }
+    
+    return render(request, 'calendario/calendario.html', context)
 
 @login_required
 def crear_reserva(request):
@@ -121,15 +141,18 @@ def crear_reserva(request):
                 estado='confirmada'
             )
             
-            success_msg = 'Reserva creada exitosamente.'
+            success_msg = f'Reserva creada exitosamente en {recurso.nombre}.'
             if is_ajax:
                 return JsonResponse({
                     'success': True, 
                     'message': success_msg,
-                    'reserva_id': reserva.id
+                    'reserva_id': reserva.id,
+                    'recurso_id': recurso.id,
+                    'recurso_nombre': recurso.nombre
                 })
             messages.success(request, success_msg)
-            return redirect('calendario:calendario')
+            # Redirigir con parámetro de sala para mostrar la sala donde se creó la reserva
+            return redirect(f"{reverse('calendario:calendario')}?sala={recurso.id}")
             
         except Exception as e:
             error_msg = f'Error inesperado al crear la reserva: {str(e)}'

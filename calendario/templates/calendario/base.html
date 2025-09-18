@@ -77,9 +77,10 @@
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                <form method="post" action="{% url 'logout' %}" class="d-inline logout-form">
                                     {% csrf_token %}
-                                    <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start">
+                                    <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start logout-btn" 
+                                            onclick="return confirmLogout()">
                                         <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
                                     </button>
                                 </form>
@@ -147,6 +148,45 @@
     
     <!-- Animaciones avanzadas -->
     <script src="{% static 'js/animations.js' %}"></script>
+    
+    <!-- UX Improvements -->
+    <script>
+        // Confirmación de logout
+        function confirmLogout() {
+            return confirm('¿Estás seguro de que quieres cerrar sesión?');
+        }
+        
+        // Mejorar feedback visual del login
+        document.addEventListener('DOMContentLoaded', function() {
+            // Agregar animación de carga al botón de login
+            const loginForm = document.querySelector('form[method="post"]');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Iniciando sesión...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+            
+            // Auto-ocultar mensajes después de 5 segundos
+            const alerts = document.querySelectorAll('.alert-modern');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    if (alert && alert.parentNode) {
+                        alert.style.transition = 'opacity 0.5s ease-out';
+                        alert.style.opacity = '0';
+                        setTimeout(function() {
+                            if (alert.parentNode) {
+                                alert.parentNode.removeChild(alert);
+                            }
+                        }, 500);
+                    }
+                }, 5000);
+            });
+        });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>
