@@ -215,11 +215,30 @@ def editar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     
     if request.method == 'POST':
+        # Verificar si es una petición AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         form = ReservaForm(request.POST, instance=reserva)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Reserva actualizada exitosamente.')
-            return redirect('calendario:mis_reservas')
+            
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Reserva actualizada exitosamente.'
+                })
+            else:
+                messages.success(request, 'Reserva actualizada exitosamente.')
+                return redirect('calendario:mis_reservas')
+        else:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Error en el formulario.',
+                    'errors': form.errors
+                }, status=400)
+            else:
+                messages.error(request, 'Error en el formulario.')
     else:
         form = ReservaForm(instance=reserva)
     

@@ -218,41 +218,52 @@ function guardarCambiosReserva() {
     const formData = new FormData(formEditarReserva);
     const reservaId = formData.get('reserva_id');
     
-    // Configurar URL de edición
-    const editUrl = `/calendario/editar_reserva/${reservaId}/`;
+    // Configurar URL de edición usando la URL de Django
+    const editUrl = `/calendario/editar/${reservaId}/`;
     formEditarReserva.action = editUrl;
+    
+    console.log('Enviando datos a URL:', editUrl);
+    console.log('Datos del formulario:', Object.fromEntries(formData));
     
     // Enviar formulario
     fetch(editUrl, {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            'X-Requested-With': 'XMLHttpRequest'
         }
     })
     .then(response => {
+        console.log('Respuesta del servidor:', response.status, response.statusText);
         if (response.ok) {
             return response.json();
         }
-        throw new Error('Error al guardar cambios');
+        throw new Error(`Error al guardar cambios: ${response.status} ${response.statusText}`);
     })
     .then(data => {
+        console.log('Datos recibidos del servidor:', data);
+        
         if (window.CalendarioApp && window.CalendarioApp.Loading) {
             CalendarioApp.Loading.hide();
         }
         
-        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
-            CalendarioApp.Notifications.success('Reserva actualizada exitosamente', {
-                title: 'Cambios guardados',
-                duration: 3000
-            });
+        if (data.success) {
+            if (window.CalendarioApp && window.CalendarioApp.Notifications) {
+                CalendarioApp.Notifications.success(data.message || 'Reserva actualizada exitosamente', {
+                    title: 'Cambios guardados',
+                    duration: 3000
+                });
+            }
+            
+            // Cerrar modal y recargar página
+            modalEditarReserva.hide();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.message || 'Error desconocido');
         }
-        
-        // Cerrar modal y recargar página
-        modalEditarReserva.hide();
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
     })
     .catch(error => {
         if (window.CalendarioApp && window.CalendarioApp.Loading) {
