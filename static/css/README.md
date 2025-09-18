@@ -4,10 +4,9 @@ Este directorio contiene los archivos CSS organizados por funcionalidad para fac
 
 ## Archivos CSS
 
-### 1. `variables.css`
-- Variables CSS globales
-- Paleta de colores
-- Espaciados, sombras, transiciones
+### 1. `spring-theme/spring-theme.css` (Tema Principal)
+- Archivo principal que importa todos los módulos del tema primaveral
+- Variables CSS globales, componentes y efectos
 - **Cargar primero**
 
 ### 2. `base.css`
@@ -23,30 +22,45 @@ Este directorio contiene los archivos CSS organizados por funcionalidad para fac
 - Dropdowns
 - **Incluye estilos para navbar activa con máximo contraste**
 
-### 4. `header.css`
+### 4. `header.css` y `header-override.css`
 - Estilos del header principal del calendario
 - Título y párrafo descriptivo
 - **Incluye estilos específicos para contraste del título**
 
-### 5. `components.css`
-- Componentes reutilizables
-- Cards, botones, formularios
-- Alertas, modales
-- Estadísticas
-
-### 6. `calendar.css`
+### 5. `calendar.css`
 - Estilos específicos de FullCalendar
 - Eventos, celdas, toolbars
 - Personalización del calendario
 
-### 7. `responsive.css`
+### 6. `responsive.css`
 - Media queries
 - Diseño responsive
 - Adaptaciones para móviles y tablets
 
-### 8. `main.css`
-- Archivo principal que importa todos los demás
-- Alternativa para cargar todo de una vez
+### 7. `glassmorphism.css`
+- Efectos de cristal y transparencias
+- Backdrop filters y blur effects
+
+### 8. `animations.css`
+- Animaciones avanzadas y efectos visuales
+- Keyframes y transiciones complejas
+- **Consolidado (eliminado animation-fixes.css duplicado)**
+
+### 9. `notifications.css`
+- Estilos para sistema de notificaciones
+- Alertas y mensajes del sistema
+
+### 10. `loading-states.css`
+- Estados de carga y spinners
+- Indicadores de progreso
+
+### 11. `ux-utils.css`
+- Utilidades de UX
+- Mejoras de accesibilidad
+
+### 12. `login-forms.css`
+- Estilos específicos para formularios de login
+- Validaciones y estados de error
 
 ## Orden de Carga
 
@@ -56,13 +70,19 @@ El orden de carga en el HTML es importante:
 2. FullCalendar CSS (CDN)
 3. Font Awesome (CDN)
 4. **Nuestros archivos CSS en orden:**
-   - variables.css
+   - spring-theme/spring-theme.css
    - base.css
    - navbar.css
    - header.css
-   - components.css
+   - header-override.css
    - calendar.css
    - responsive.css
+   - glassmorphism.css
+   - animations.css
+   - notifications.css
+   - loading-states.css
+   - ux-utils.css
+   - login-forms.css
 
 ## Debugging
 

@@ -190,15 +190,15 @@ CalendarioApp.Accessibility = {
             });
         });
 
-        // Validación de formularios al enviar
+        // Validación de formularios al enviar - EXCLUIR FORMULARIO DE LOGIN
         console.log('Configurando validación de formularios...');
-        const forms = document.querySelectorAll('form');
-        console.log('Formularios encontrados:', forms.length);
+        const forms = document.querySelectorAll('form:not([action*="login"])');
+        console.log('Formularios encontrados (excluyendo login):', forms.length);
         
         forms.forEach((form, index) => {
             console.log(`Configurando formulario ${index}:`, form.id || 'sin id');
             form.addEventListener('submit', function(e) {
-                console.log('=== FORMULARIO ENVIADO ===');
+                console.log('=== FORMULARIO ENVIADO (NO LOGIN) ===');
                 console.log('Formulario:', this.id || 'sin id');
                 console.log('Datos del formulario:', new FormData(this));
                 

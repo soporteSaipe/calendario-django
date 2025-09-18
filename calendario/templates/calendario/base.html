@@ -15,7 +15,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- CSS Personalizado - Archivos separados -->
     {% load static %}
-    <link href="{% static 'css/spring-theme.css' %}" rel="stylesheet">
+    <link href="{% static 'css/spring-theme/spring-theme.css' %}" rel="stylesheet">
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
     <link href="{% static 'css/navbar.css' %}" rel="stylesheet">
     <link href="{% static 'css/calendar.css' %}" rel="stylesheet">
@@ -24,12 +24,17 @@
     <link href="{% static 'css/header-override.css' %}" rel="stylesheet">
     <link href="{% static 'css/glassmorphism.css' %}" rel="stylesheet">
     <link href="{% static 'css/animations.css' %}" rel="stylesheet">
+    <!-- Nuevos sistemas de UX -->
+    <link href="{% static 'css/notifications.css' %}" rel="stylesheet">
+    <link href="{% static 'css/loading-states.css' %}" rel="stylesheet">
+    <link href="{% static 'css/ux-utils.css' %}" rel="stylesheet">
+    <link href="{% static 'css/login-forms.css' %}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Navbar Moderno -->
-    <nav class="navbar navbar-expand-lg navbar-modern">
+    <nav class="navbar navbar-expand-lg navbar-modern animate-on-load">
         <div class="container">
             <a class="navbar-brand" href="{% url 'calendario:calendario' %}">
                 <i class="fas fa-calendar-alt accounting-icon"></i>
@@ -69,6 +74,7 @@
                             <span>{{ user.username }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            {% if user.is_staff %}
                             <li><a class="dropdown-item" href="/admin/">
                                 <i class="fas fa-cogs me-2"></i>Panel de control
                             </a></li>
@@ -76,14 +82,12 @@
                                 <i class="fas fa-door-open me-2"></i>Gestionar salas
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            {% endif %}
                             <li>
-                                <form method="post" action="{% url 'logout' %}" class="d-inline logout-form">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start logout-btn" 
-                                            onclick="return confirmLogout()">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-                                    </button>
-                                </form>
+                                <button type="button" class="dropdown-item border-0 bg-transparent w-100 text-start logout-btn" 
+                                        onclick="handleLogout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                                </button>
                             </li>
                         </ul>
                     </li>
@@ -105,7 +109,7 @@
         <!-- Messages -->
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}-modern alert-dismissible fade show animate-fade-in" role="alert" aria-live="polite">
+                <div class="alert alert-{{ message.tags }}-modern alert-dismissible fade show" role="alert" aria-live="polite">
                     <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2" aria-hidden="true"></i>
                     <span class="alert-message">{{ message }}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar mensaje"></button>
@@ -149,34 +153,74 @@
     <!-- Animaciones avanzadas -->
     <script src="{% static 'js/animations.js' %}"></script>
     
+    <!-- Nuevos sistemas de UX -->
+    <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/loading-states.js' %}"></script>
+    <script src="{% static 'js/ux-utils.js' %}"></script>
+    
+    
     <!-- UX Improvements -->
     <script>
-        // Confirmación de logout
-        function confirmLogout() {
-            return confirm('¿Estás seguro de que quieres cerrar sesión?');
+        // Función mejorada para manejar logout con notificaciones personalizadas
+        function handleLogout() {
+            // Usar el sistema de notificaciones personalizado para confirmación
+            CalendarioApp.Notifications.confirm(
+                '¿Estás seguro de que quieres cerrar sesión?',
+                {
+                    title: 'Confirmar cierre de sesión',
+                    icon: 'fas fa-sign-out-alt'
+                }
+            ).then(function(confirmed) {
+                if (confirmed) {
+                    // Mostrar notificación de procesamiento
+                    CalendarioApp.Notifications.loading('Cerrando sesión...', {
+                        title: 'Procesando',
+                        icon: 'fas fa-spinner fa-spin'
+                    });
+                    
+                    // Crear y enviar formulario de logout
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = '{% url "logout" %}';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = 'csrfmiddlewaretoken';
+                    csrfToken.value = '{{ csrf_token }}';
+                    
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         }
         
-        // Mejorar feedback visual del login
+        // Controlar animaciones de página
         document.addEventListener('DOMContentLoaded', function() {
+            // Marcar body como cargado
+            document.body.classList.add('loaded');
+            
+            // Las animaciones se configuran automáticamente en PageAnimations.init()
+            // No necesitamos llamar setupSpecificAnimations manualmente
             // Agregar animación de carga al botón de login
             const loginForm = document.querySelector('form[method="post"]');
             if (loginForm) {
                 loginForm.addEventListener('submit', function() {
                     const submitBtn = this.querySelector('button[type="submit"]');
                     if (submitBtn) {
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Iniciando sesión...';
-                        submitBtn.disabled = true;
+                        CalendarioApp.Loading.setButtonLoading(submitBtn, true, 'Iniciando sesión...');
                     }
                 });
             }
             
-            // Auto-ocultar mensajes después de 5 segundos
+            // Auto-ocultar mensajes después de 5 segundos (mejorado)
             const alerts = document.querySelectorAll('.alert-modern');
             alerts.forEach(function(alert) {
                 setTimeout(function() {
                     if (alert && alert.parentNode) {
-                        alert.style.transition = 'opacity 0.5s ease-out';
+                        alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
                         alert.style.opacity = '0';
+                        alert.style.transform = 'translateX(100%)';
                         setTimeout(function() {
                             if (alert.parentNode) {
                                 alert.parentNode.removeChild(alert);
@@ -184,6 +228,11 @@
                         }, 500);
                     }
                 }, 5000);
+            });
+            
+            // Configurar tooltips para elementos con data-tooltip
+            document.querySelectorAll('[data-tooltip]').forEach(element => {
+                element.setAttribute('title', element.getAttribute('data-tooltip'));
             });
         });
     </script>

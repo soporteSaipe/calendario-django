@@ -203,7 +203,9 @@ def api_reservas(request):
     fecha_fin = request.GET.get('end')
     sala_id = request.GET.get('sala')
     
-    reservas = Reserva.objects.select_related('recurso', 'usuario').only(
+    reservas = Reserva.objects.select_related('recurso', 'usuario').filter(
+        estado='confirmada'
+    ).only(
         'id', 'titulo', 'fecha_inicio', 'fecha_fin', 'descripcion', 'estado',
         'recurso__id', 'recurso__nombre', 'recurso__color', 'recurso__capacidad',
         'usuario__username'

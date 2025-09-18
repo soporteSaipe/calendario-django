@@ -266,7 +266,7 @@ CalendarioApp.showInfoMessage = function(message) {
 CalendarioApp.showMessage = function(message, type) {
     // Crear elemento de mensaje
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show animate-fade-in`;
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
     alertDiv.innerHTML = `
         <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
         ${message}

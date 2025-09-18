@@ -46,11 +46,6 @@ CalendarioApp.setupMicroInteractions = function() {
         });
     });
     
-    // Efecto de aparición escalonada en elementos
-    const animatedElements = document.querySelectorAll('.animate-fade-in, .animate-slide-left, .animate-slide-right, .animate-scale-in');
-    animatedElements.forEach((element, index) => {
-        element.style.animationDelay = `${index * 0.1}s`;
-    });
 };
 
 // Función de ripple eliminada para mejor rendimiento

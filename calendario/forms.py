@@ -65,7 +65,7 @@ class ReservaForm(forms.ModelForm):
         """Verificar conflictos de horarios para un recurso"""
         reservas_existentes = Reserva.objects.filter(
             recurso=recurso,
-            estado__in=['confirmada']  # Solo verificar reservas confirmadas
+            estado__in=['confirmada'] 
         ).exclude(pk=self.instance.pk if self.instance else None)
         
         for reserva in reservas_existentes:

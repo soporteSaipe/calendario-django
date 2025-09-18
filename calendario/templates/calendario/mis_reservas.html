@@ -95,45 +95,6 @@
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card-modern">
-            <div class="card-header-modern">
-                <h5 class="mb-0">
-                    <i class="fas fa-info-circle me-2 spring-icon"></i>Estados de Reservas
-                </h5>
-            </div>
-            <div class="card-body-modern">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="badge-modern badge-pendiente fs-6 mb-2">Pendiente</div>
-                            <p class="small text-muted mb-0">Reservas esperando confirmación</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="badge-modern badge-confirmada fs-6 mb-2">Confirmada</div>
-                            <p class="small text-muted mb-0">Reservas confirmadas y listas</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="badge-modern badge-cancelada fs-6 mb-2">Cancelada</div>
-                            <p class="small text-muted mb-0">Reservas canceladas</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <div class="badge-modern badge-completada fs-6 mb-2">Completada</div>
-                            <p class="small text-muted mb-0">Reservas finalizadas</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -160,13 +121,20 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmModal.then(confirmed => {
                 if (confirmed) {
                     // Mostrar indicador de carga
-                    CalendarioApp.Accessibility.showGlobalLoading('Eliminando reserva...');
+                    CalendarioApp.Loading.show('Eliminando reserva...', {
+                        spinner: 'pulse'
+                    });
                     
                     // Simular eliminación (en producción esto sería una petición real)
                     setTimeout(() => {
-                        CalendarioApp.Accessibility.hideGlobalLoading();
-                        CalendarioApp.Accessibility.announceToScreenReader('Reserva eliminada exitosamente');
-                        window.location.href = this.href;
+                        CalendarioApp.Loading.hide();
+                        CalendarioApp.Notifications.success('Reserva eliminada exitosamente', {
+                            title: 'Eliminación exitosa',
+                            duration: 3000
+                        });
+                        setTimeout(() => {
+                            window.location.href = this.href;
+                        }, 1000);
                     }, 1000);
                 }
             });
