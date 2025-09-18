@@ -210,5 +210,4 @@ CalendarioApp.Notifications = {
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔔 Sistema de notificaciones inicializado');
 });

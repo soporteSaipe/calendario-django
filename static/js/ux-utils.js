@@ -361,7 +361,6 @@ CalendarioApp.UX = {
      * Inicializar todas las utilidades de UX
      */
     init: function() {
-        console.log('🎨 Inicializando utilidades de UX...');
         
         this.setupTooltips();
         this.setupRealTimeValidation();
@@ -371,7 +370,6 @@ CalendarioApp.UX = {
         this.setupKeyboardShortcuts();
         this.setupProgressIndicators();
         
-        console.log('✅ Utilidades de UX inicializadas');
     }
 };
 

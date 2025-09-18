@@ -96,11 +96,9 @@ CalendarioApp.Loading = {
         if (!button) return;
         
         if (loading) {
-            
             // Guardar estado original
             button.setAttribute('data-original-text', button.innerHTML);
             button.setAttribute('data-original-disabled', button.disabled);
-            
             
             // Aplicar estado de carga
             button.disabled = true;
@@ -116,15 +114,9 @@ CalendarioApp.Loading = {
             `;
             
         } else {
-            
             // Restaurar estado original
             const originalText = button.getAttribute('data-original-text');
             const originalDisabled = button.getAttribute('data-original-disabled') === 'true';
-            
-            console.log('📋 Estado original a restaurar:', {
-                originalText: originalText,
-                originalDisabled: originalDisabled
-            });
             
             if (originalText) {
                 button.innerHTML = originalText;
@@ -136,7 +128,6 @@ CalendarioApp.Loading = {
             button.removeAttribute('aria-disabled');
             button.removeAttribute('data-original-disabled');
             
-            console.log('✅ Estado original restaurado');
         }
     },
 

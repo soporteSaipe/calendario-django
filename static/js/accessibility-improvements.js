@@ -191,42 +191,29 @@ CalendarioApp.Accessibility = {
         });
 
         // Validación de formularios al enviar - EXCLUIR FORMULARIO DE LOGIN
-        console.log('Configurando validación de formularios...');
         const forms = document.querySelectorAll('form:not([action*="login"])');
-        console.log('Formularios encontrados (excluyendo login):', forms.length);
         
         forms.forEach((form, index) => {
-            console.log(`Configurando formulario ${index}:`, form.id || 'sin id');
             form.addEventListener('submit', function(e) {
-                console.log('=== FORMULARIO ENVIADO (NO LOGIN) ===');
-                console.log('Formulario:', this.id || 'sin id');
-                console.log('Datos del formulario:', new FormData(this));
                 
                 // Validación básica - solo verificar campos requeridos
                 const requiredFields = this.querySelectorAll('input[required], select[required], textarea[required]');
-                console.log('Campos requeridos encontrados:', requiredFields.length);
                 
                 let isValid = true;
                 
                 requiredFields.forEach(field => {
-                    console.log(`Campo ${field.id}: "${field.value}"`);
                     if (!field.value.trim()) {
-                        console.log('❌ Campo requerido vacío:', field.id);
                         field.classList.add('is-invalid');
                         isValid = false;
                     } else {
-                        console.log('✅ Campo válido:', field.id);
                         field.classList.remove('is-invalid');
                         field.classList.add('is-valid');
                     }
                 });
                 
-                console.log('Validación resultado:', isValid);
                 if (!isValid) {
-                    console.log('❌ Validación falló, previniendo envío');
                     e.preventDefault();
                 } else {
-                    console.log('✅ Validación exitosa, permitiendo envío');
                 }
             });
         });
@@ -264,16 +251,12 @@ CalendarioApp.Accessibility = {
      * Validar formulario completo
      */
     validateForm: function(form) {
-        console.log('Iniciando validación del formulario...');
         let isValid = true;
         const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
         
-        console.log('Campos requeridos encontrados:', requiredFields.length);
         
         requiredFields.forEach(field => {
-            console.log('Validando campo:', field.id, 'Valor:', field.value);
             if (!CalendarioApp.Accessibility.validateField(field)) {
-                console.log('Campo falló validación:', field.id);
                 isValid = false;
             }
         });
@@ -283,7 +266,6 @@ CalendarioApp.Accessibility = {
         const horaInicio = form.querySelector('#id_hora_inicio');
         const horaFin = form.querySelector('#id_hora_fin');
         
-        console.log('Validación de fechas - Fecha:', fechaInicio?.value, 'Hora inicio:', horaInicio?.value, 'Hora fin:', horaFin?.value);
         
         if (fechaInicio && horaInicio && horaFin) {
             if (fechaInicio.value && horaInicio.value && horaFin.value) {
@@ -291,29 +273,23 @@ CalendarioApp.Accessibility = {
                 const hoy = new Date();
                 hoy.setHours(0, 0, 0, 0);
                 
-                console.log('Comparando fechas - Fecha seleccionada:', fecha, 'Hoy:', hoy);
                 
                 if (fecha < hoy) {
-                    console.log('Error: Fecha anterior a hoy');
                     CalendarioApp.Accessibility.showValidationMessage('id_fecha', 'La fecha no puede ser anterior a hoy', 'error');
                     fechaInicio.classList.add('is-invalid');
                     isValid = false;
                 }
                 
                 if (horaInicio.value >= horaFin.value) {
-                    console.log('Error: Hora fin debe ser posterior a hora inicio');
                     CalendarioApp.Accessibility.showValidationMessage('id_hora_fin', 'La hora de fin debe ser posterior a la hora de inicio', 'error');
                     horaFin.classList.add('is-invalid');
                     isValid = false;
                 }
             } else {
-                console.log('Faltan valores en campos de fecha/hora');
             }
         } else {
-            console.log('No se encontraron campos de fecha/hora');
         }
         
-        console.log('Validación final:', isValid);
         return isValid;
     },
 
@@ -339,7 +315,6 @@ CalendarioApp.Accessibility = {
      * Inicializar todas las mejoras de accesibilidad
      */
     init: function() {
-        console.log('🚀 Inicializando módulo de accesibilidad...');
         
         this.setupKeyboardNavigation();
         this.setupButtonLoadingStates();
@@ -348,7 +323,6 @@ CalendarioApp.Accessibility = {
         // Configurar anuncios automáticos para cambios de estado
         this.setupAutoAnnouncements();
         
-        console.log('✅ Mejoras de accesibilidad inicializadas');
     },
 
     /**
@@ -441,14 +415,11 @@ CalendarioApp.Accessibility = {
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM cargado, iniciando accesibilidad...');
     CalendarioApp.Accessibility.init();
 });
 
 // También intentar inicializar inmediatamente si el DOM ya está listo
 if (document.readyState === 'loading') {
-    console.log('⏳ DOM aún cargando...');
 } else {
-    console.log('✅ DOM ya está listo, iniciando inmediatamente...');
     CalendarioApp.Accessibility.init();
 }

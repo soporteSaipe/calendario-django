@@ -77,41 +77,35 @@ class PageAnimations {
      * Configurar animaciones específicas para elementos de la página
      */
     setupSpecificAnimations() {
-        console.log('🎬 Configurando animaciones específicas...');
         
         // Navbar - fade in desde arriba
         const navbar = document.querySelector('.navbar-modern');
         if (navbar) {
             navbar.classList.add('animate-fade-in-down', 'animate-delay-100');
-            console.log('✅ Animación aplicada a navbar');
         }
 
         // Header principal - fade in desde arriba con delay
         const header = document.querySelector('.accounting-header');
         if (header) {
             header.classList.add('animate-fade-in-down', 'animate-delay-200');
-            console.log('✅ Animación aplicada a header');
         }
 
         // Tarjeta de filtro - fade in desde la izquierda
         const filterCard = document.querySelector('.card-modern:first-of-type');
         if (filterCard) {
             filterCard.classList.add('animate-fade-in-left', 'animate-delay-300');
-            console.log('✅ Animación aplicada a tarjeta de filtro');
         }
 
         // Tarjeta del calendario - fade in desde abajo
         const calendarCard = document.querySelector('.card-modern:last-of-type');
         if (calendarCard) {
             calendarCard.classList.add('animate-fade-in-up', 'animate-delay-400');
-            console.log('✅ Animación aplicada a tarjeta del calendario');
         }
 
         // Footer - fade in simple
         const footer = document.querySelector('.footer-modern');
         if (footer) {
             footer.classList.add('animate-fade-in', 'animate-delay-500');
-            console.log('✅ Animación aplicada a footer');
         }
 
         // Mensajes de alerta - scale in con bounce
@@ -122,7 +116,6 @@ class PageAnimations {
         });
 
         if (alerts.length > 0) {
-            console.log(`✅ Animación aplicada a ${alerts.length} mensajes de alerta`);
         }
 
         // Botones principales - fade in desde la derecha
@@ -133,10 +126,8 @@ class PageAnimations {
         });
 
         if (primaryButtons.length > 0) {
-            console.log(`✅ Animación aplicada a ${primaryButtons.length} botones principales`);
         }
 
-        console.log('🎉 Todas las animaciones configuradas correctamente');
     }
 
     /**

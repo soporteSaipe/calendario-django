@@ -26,7 +26,7 @@ class Recurso(models.Model):
         # Restricción especial para la sala Comedor
         if self.nombre.lower() == 'comedor':
             horarios_restringidos.append({
-                'inicio': '11:30',
+                'inicio': '12:00',
                 'fin': '14:30',
                 'motivo': 'Horario de almuerzo'
             })

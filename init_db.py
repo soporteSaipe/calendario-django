@@ -11,26 +11,13 @@ if __name__ == '__main__':
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'calendario_reservas.settings_production')
     django.setup()
     
-    print("Inicializando base de datos...")
-    
-    # Ejecutar migraciones
-    print("Ejecutando migraciones...")
     execute_from_command_line(['manage.py', 'migrate', '--noinput'])
     
-    # Crear superusuario si no existe
-    print("Verificando superusuario...")
     from django.contrib.auth.models import User
     if not User.objects.filter(username='admin').exists():
-        print("Creando superusuario...")
         User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
-        print("Superusuario creado: admin/admin123")
-    else:
-        print("Superusuario ya existe")
     
-    # Crear usuario de prueba normal
-    print("Verificando usuario de prueba...")
     if not User.objects.filter(username='usuario_prueba').exists():
-        print("Creando usuario de prueba...")
         User.objects.create_user(
             username='usuario_prueba',
             email='usuario@prueba.com',
@@ -38,15 +25,9 @@ if __name__ == '__main__':
             first_name='Usuario',
             last_name='Prueba'
         )
-        print("Usuario de prueba creado: usuario_prueba/prueba123")
-    else:
-        print("Usuario de prueba ya existe")
     
-    # Crear recursos de ejemplo si no existen
-    print("Verificando recursos...")
     from calendario.models import Recurso
     if not Recurso.objects.exists():
-        print("Creando recursos de ejemplo...")
         recursos = [
             {'nombre': 'Sala de Juntas A', 'descripcion': 'Sala principal para reuniones', 'capacidad': 10, 'color': '#007bff'},
             {'nombre': 'Sala de Juntas B', 'descripcion': 'Sala secundaria para reuniones', 'capacidad': 8, 'color': '#28a745'},
@@ -56,8 +37,3 @@ if __name__ == '__main__':
         
         for recurso_data in recursos:
             Recurso.objects.create(**recurso_data)
-        print(f"Se crearon {len(recursos)} recursos de ejemplo")
-    else:
-        print("Los recursos ya existen")
-    
-    print("Inicialización completada exitosamente!")

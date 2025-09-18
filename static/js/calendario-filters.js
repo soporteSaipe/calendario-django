@@ -47,7 +47,6 @@ CalendarioApp.updateSalaInfo = function() {
         // Aplicar colores dinámicos a elementos adicionales
         CalendarioApp.applyDynamicColors(CalendarioApp.currentSalaFilter);
         
-        console.log('Sala actualizada:', sala.nombre, '- Colores dinámicos aplicados');
     }
 };
 
@@ -61,6 +60,5 @@ CalendarioApp.updateMainCalendar = function() {
         CalendarioApp.calendar.refetchEvents();
         
         // Los colores dinámicos se mantienen aplicados
-        console.log('Calendario actualizado - Colores dinámicos mantenidos');
     }
 };

@@ -105,11 +105,9 @@ CalendarioApp.getAvailableColors = function() {
  * Mostrar información de colores en consola (para debugging)
  */
 CalendarioApp.logColorInfo = function() {
-    console.log('🎨 Paleta de colores disponibles:');
     Object.keys(CalendarioApp.salaColors).forEach(salaId => {
         const colors = CalendarioApp.salaColors[salaId];
         const colorNames = CalendarioApp.getAvailableColors();
-        console.log(`Sala ${salaId} - ${colorNames[salaId]}: ${colors.primary} → ${colors.secondary}`);
     });
 };
 
@@ -150,7 +148,6 @@ CalendarioApp.applyHeaderColors = function(salaId) {
         header.style.setProperty('--btn-header-bg-active', `rgba(${Math.max(0, darkColor.r - 20)}, ${Math.max(0, darkColor.g - 20)}, ${Math.max(0, darkColor.b - 20)}, 1)`);
         
         const colorNames = CalendarioApp.getAvailableColors();
-        console.log(`🎨 Colores de alto contraste aplicados para sala ${salaId} (${colorNames[salaId]}):`, colors);
     }
 };
 
@@ -178,7 +175,6 @@ CalendarioApp.applyFilterHeaderColors = function(salaId) {
             element.style.color = colors.text;
         });
         
-        console.log(`🎨 Colores aplicados al header de filtros para sala ${salaId}`);
     }
 };
 
@@ -207,7 +203,6 @@ CalendarioApp.resetHeaderColors = function() {
             button.style.borderColor = '';
         });
         
-        console.log('Colores del header restablecidos');
     }
 };
 
@@ -235,13 +230,11 @@ CalendarioApp.applyDynamicColors = function(salaId) {
     CalendarioApp.applyFilterHeaderColors(salaId);
     
     const colorNames = CalendarioApp.getAvailableColors();
-    console.log(`✨ Colores dinámicos aplicados para sala ${salaId} (${colorNames[salaId]})`);
 };
 
 /**
  * Inicializar sistema de colores dinámicos
  */
 CalendarioApp.initializeColorSystem = function() {
-    console.log('🎨 Sistema de colores dinámicos inicializado');
     CalendarioApp.logColorInfo();
 };
