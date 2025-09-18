@@ -41,10 +41,13 @@ CalendarioApp.updateSalaInfo = function() {
             salaInfo.textContent = 'Capacidad: ' + sala.capacidad + ' personas';
         }
         
-        // Actualizar indicador de color de la sala
+        // Actualizar indicador de color de la sala con gradiente
         const colorIndicator = document.getElementById('salaColorIndicator');
         if (colorIndicator) {
-            colorIndicator.style.backgroundColor = sala.color;
+            const colors = CalendarioApp.getSalaColors(CalendarioApp.currentSalaFilter);
+            colorIndicator.style.background = `linear-gradient(135deg, ${colors.darker} 0%, ${colors.primary} 100%)`;
+            colorIndicator.style.borderColor = colors.darker;
+            colorIndicator.style.boxShadow = `0 4px 12px ${colors.primary}40`;
         }
         
         // Aplicar colores dinámicos al header del calendario

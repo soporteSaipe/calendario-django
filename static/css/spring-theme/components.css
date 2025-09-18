@@ -33,6 +33,36 @@
   overflow: hidden;
 }
 
+/* Estilos para gradientes dinámicos */
+.calendar-header-modern.dynamic-colors {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-header-modern.dynamic-colors {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Indicador de color de sala */
+.sala-color-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+/* Tarjetas con bordes dinámicos */
+.card-modern.dynamic-border {
+  transition: all 0.3s ease;
+}
+
+.card-modern.dynamic-border:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
 .card-header-modern h4,
 .card-header-modern h5 {
   color: white;

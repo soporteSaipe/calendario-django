@@ -19,37 +19,72 @@ CalendarioApp.getSalaColors = function(salaId) {
     // Obtener color de la base de datos desde salasData
     const salaData = CalendarioApp.salasData[salaId];
     if (salaData && salaData.color) {
-        const primaryColor = salaData.color;
+        const gradientColors = CalendarioApp.createRichGradient(salaData.color);
         return {
-            primary: primaryColor,
-            secondary: CalendarioApp.lightenColor(primaryColor, 0.8),
-            text: CalendarioApp.getContrastTextColor(primaryColor),
-            textOnPrimary: '#FFFFFF'
+            primary: gradientColors.primary,
+            secondary: gradientColors.secondary,
+            darker: gradientColors.darker,
+            text: CalendarioApp.getContrastTextColor(gradientColors.primary),
+            textOnPrimary: '#FFFFFF',
+            textOnSecondary: CalendarioApp.getContrastTextColor(gradientColors.secondary)
         };
     }
     
     // Color por defecto si no se encuentra
+    const defaultGradient = CalendarioApp.createRichGradient('#64748B');
     return {
-        primary: '#64748B',
-        secondary: '#F1F5F9',
+        primary: defaultGradient.primary,
+        secondary: defaultGradient.secondary,
+        darker: defaultGradient.darker,
         text: '#1E293B',
-        textOnPrimary: '#FFFFFF'
+        textOnPrimary: '#FFFFFF',
+        textOnSecondary: '#1E293B'
     };
 };
 
 /**
- * Aclarar un color hexadecimal
+ * Crear gradiente rico y contrastante basado en el color primario
  */
-CalendarioApp.lightenColor = function(hexColor, factor = 0.8) {
+CalendarioApp.createRichGradient = function(hexColor) {
     const hex = hexColor.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
     
-    // Mezclar con blanco para aclarar
-    const lightR = Math.floor(r + (255 - r) * factor);
-    const lightG = Math.floor(g + (255 - g) * factor);
-    const lightB = Math.floor(b + (255 - b) * factor);
+    // Crear versión más saturada y oscura para el gradiente
+    const darkerR = Math.max(0, Math.floor(r * 0.7));
+    const darkerG = Math.max(0, Math.floor(g * 0.7));
+    const darkerB = Math.max(0, Math.floor(b * 0.7));
+    
+    // Crear versión más clara pero saturada (no blanca)
+    const lighterR = Math.min(255, Math.floor(r * 1.3));
+    const lighterG = Math.min(255, Math.floor(g * 1.3));
+    const lighterB = Math.min(255, Math.floor(b * 1.3));
+    
+    return {
+        primary: hexColor,
+        secondary: `#${lighterR.toString(16).padStart(2, '0')}${lighterG.toString(16).padStart(2, '0')}${lighterB.toString(16).padStart(2, '0')}`,
+        darker: `#${darkerR.toString(16).padStart(2, '0')}${darkerG.toString(16).padStart(2, '0')}${darkerB.toString(16).padStart(2, '0')}`
+    };
+};
+
+/**
+ * Aclarar un color hexadecimal (función auxiliar mantenida para compatibilidad)
+ */
+CalendarioApp.lightenColor = function(hexColor, factor = 0.6) {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Mezclar con un tono más neutro en lugar de blanco puro
+    const neutralR = 240; // Tonos neutros cálidos
+    const neutralG = 240;
+    const neutralB = 250;
+    
+    const lightR = Math.floor(r + (neutralR - r) * factor);
+    const lightG = Math.floor(g + (neutralG - g) * factor);
+    const lightB = Math.floor(b + (neutralB - b) * factor);
     
     return `#${lightR.toString(16).padStart(2, '0')}${lightG.toString(16).padStart(2, '0')}${lightB.toString(16).padStart(2, '0')}`;
 };
@@ -135,9 +170,9 @@ CalendarioApp.applyHeaderColors = function(salaId) {
         // Agregar clase para transiciones suaves
         header.classList.add('dynamic-colors');
         
-        // Aplicar gradiente de fondo con alto contraste
-        header.style.background = `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`;
-        header.style.borderBottomColor = colors.primary;
+        // Aplicar gradiente rico y contrastante
+        header.style.background = `linear-gradient(135deg, ${colors.darker} 0%, ${colors.primary} 50%, ${colors.secondary} 100%)`;
+        header.style.borderBottomColor = colors.darker;
         
         // Usar texto blanco sobre colores primarios para máximo contraste
         header.style.color = colors.textOnPrimary;
@@ -174,9 +209,9 @@ CalendarioApp.applyFilterHeaderColors = function(salaId) {
         // Agregar clase para transiciones suaves
         filterHeader.classList.add('dynamic-colors');
         
-        // Aplicar gradiente de fondo
-        filterHeader.style.background = `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`;
-        filterHeader.style.borderBottomColor = colors.primary;
+        // Aplicar gradiente rico y contrastante
+        filterHeader.style.background = `linear-gradient(135deg, ${colors.darker} 0%, ${colors.primary} 50%, ${colors.secondary} 100%)`;
+        filterHeader.style.borderBottomColor = colors.darker;
         
         // Asegurar que el texto sea blanco
         filterHeader.style.color = colors.text;
@@ -224,18 +259,20 @@ CalendarioApp.resetHeaderColors = function() {
 CalendarioApp.applyDynamicColors = function(salaId) {
     const colors = CalendarioApp.getSalaColors(salaId);
     
-    // Aplicar color al indicador de sala
+    // Aplicar gradiente rico al indicador de sala
     const colorIndicator = document.getElementById('salaColorIndicator');
     if (colorIndicator) {
-        colorIndicator.style.backgroundColor = colors.primary;
-        colorIndicator.style.borderColor = colors.primary;
+        colorIndicator.style.background = `linear-gradient(135deg, ${colors.darker} 0%, ${colors.primary} 100%)`;
+        colorIndicator.style.borderColor = colors.darker;
+        colorIndicator.style.boxShadow = `0 4px 12px ${colors.primary}40`;
     }
     
     // Aplicar color sutil a la tarjeta del calendario
     const calendarCard = document.querySelector('.card-modern');
     if (calendarCard) {
         calendarCard.classList.add('dynamic-border');
-        calendarCard.style.borderLeft = `4px solid ${colors.primary}`;
+        calendarCard.style.borderLeft = `4px solid ${colors.darker}`;
+        calendarCard.style.boxShadow = `0 4px 20px ${colors.primary}20`;
     }
     
     // Aplicar colores al header de filtros
