@@ -132,7 +132,12 @@ function setupEditModalListeners() {
     
     // Cambio de sala - regenerar horarios
     document.getElementById('editRecurso').addEventListener('change', function() {
-        generarHorarios('editHoraInicio', 'editHoraFin');
+        const recursoId = this.value;
+        generarHorarios('editHoraInicio', 'editHoraFin', recursoId);
+        
+        // Limpiar horarios seleccionados al cambiar sala
+        document.getElementById('editHoraInicio').value = '';
+        document.getElementById('editHoraFin').value = '';
     });
     
     // Cambio de fecha - validar horarios
@@ -150,6 +155,9 @@ function setupEditModalListeners() {
  * Abrir modal de edición con datos de la reserva
  */
 function abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, horaFin, descripcion) {
+    // Cargar salas disponibles en el select
+    cargarSalasDisponibles();
+    
     // Llenar formulario con datos existentes
     document.getElementById('reservaId').value = reservaId;
     document.getElementById('editTitulo').value = titulo;
@@ -158,17 +166,37 @@ function abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, hora
     document.getElementById('editDescripcion').value = descripcion || '';
     
     // Generar horarios para la sala seleccionada
-    generarHorarios('editHoraInicio', 'editHoraFin');
+    generarHorarios('editHoraInicio', 'editHoraFin', recursoId);
     
     // Establecer horarios después de que se generen las opciones
     setTimeout(() => {
         document.getElementById('editHoraInicio').value = horaInicio;
         document.getElementById('editHoraFin').value = horaFin;
         validarHoraFinEdicion();
-    }, 100);
+    }, 200);
     
     // Mostrar modal
     modalEditarReserva.show();
+}
+
+/**
+ * Cargar salas disponibles en el select
+ */
+function cargarSalasDisponibles() {
+    const selectRecurso = document.getElementById('editRecurso');
+    
+    // Limpiar opciones existentes
+    selectRecurso.innerHTML = '<option value="">Selecciona una sala</option>';
+    
+    // Cargar salas desde window.salasDisponibles
+    if (window.salasDisponibles && window.salasDisponibles.length > 0) {
+        window.salasDisponibles.forEach(sala => {
+            const option = document.createElement('option');
+            option.value = sala.id;
+            option.textContent = sala.nombre;
+            selectRecurso.appendChild(option);
+        });
+    }
 }
 
 /**
@@ -308,9 +336,9 @@ function setupTimeGeneration() {
 }
 
 /**
- * Generar opciones de horarios
+ * Generar opciones de horarios con restricciones
  */
-function generarHorarios(selectInicioId, selectFinId) {
+function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
     const selectInicio = document.getElementById(selectInicioId);
     const selectFin = document.getElementById(selectFinId);
     
@@ -318,15 +346,51 @@ function generarHorarios(selectInicioId, selectFinId) {
     selectInicio.innerHTML = '<option value="">Seleccionar hora</option>';
     selectFin.innerHTML = '<option value="">Seleccionar hora</option>';
     
-    // Generar horarios de 7:00 a 16:00 en intervalos de 30 minutos
-    for (let hora = 7; hora < 16; hora++) {
+    // Determinar si es comedor
+    let esComedor = false;
+    if (recursoId && window.salasDisponibles) {
+        const sala = window.salasDisponibles.find(s => s.id == recursoId);
+        esComedor = sala ? sala.esComedor : false;
+    }
+    
+    // Horarios de inicio: 7:30-15:30 (excepto comedor que puede ser 7:00-15:30)
+    const horaInicioMin = esComedor ? 7 : 7.5; // 7:00 para comedor, 7:30 para otros
+    const horaInicioMax = 15.5; // 15:30
+    
+    // Horarios de fin: 8:00-16:00
+    const horaFinMin = 8; // 8:00
+    const horaFinMax = 16; // 16:00
+    
+    // Generar horarios de inicio
+    for (let hora = Math.floor(horaInicioMin); hora <= Math.floor(horaInicioMax); hora++) {
         for (let minuto = 0; minuto < 60; minuto += 30) {
+            const horaDecimal = hora + (minuto / 60);
+            
+            // Aplicar restricciones de hora de inicio
+            if (horaDecimal < horaInicioMin || horaDecimal > horaInicioMax) {
+                continue;
+            }
+            
             const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
             
             const optionInicio = document.createElement('option');
             optionInicio.value = tiempo;
             optionInicio.textContent = tiempo;
             selectInicio.appendChild(optionInicio);
+        }
+    }
+    
+    // Generar horarios de fin
+    for (let hora = Math.floor(horaFinMin); hora <= Math.floor(horaFinMax); hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 30) {
+            const horaDecimal = hora + (minuto / 60);
+            
+            // Aplicar restricciones de hora de fin
+            if (horaDecimal < horaFinMin || horaDecimal > horaFinMax) {
+                continue;
+            }
+            
+            const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
             
             const optionFin = document.createElement('option');
             optionFin.value = tiempo;

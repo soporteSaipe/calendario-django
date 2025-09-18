@@ -185,8 +185,29 @@ def crear_reserva(request):
 @login_required
 def mis_reservas(request):
     """Vista para mostrar las reservas del usuario"""
+    import json
+    
     reservas = Reserva.objects.filter(usuario=request.user).order_by('-fecha_inicio')
-    return render(request, 'calendario/mis_reservas.html', {'reservas': reservas})
+    recursos = Recurso.objects.filter(activo=True)
+    
+    # Crear JSON de salas para JavaScript
+    salas_data = []
+    for recurso in recursos:
+        salas_data.append({
+            'id': recurso.id,
+            'nombre': recurso.nombre,
+            'esComedor': 'comedor' in recurso.nombre.lower()
+        })
+    
+    salas_json = json.dumps(salas_data, ensure_ascii=False)
+    
+    context = {
+        'reservas': reservas,
+        'recursos': recursos,
+        'salas_json': salas_json
+    }
+    
+    return render(request, 'calendario/mis_reservas.html', context)
 
 @login_required
 def editar_reserva(request, reserva_id):
