@@ -1,14 +1,34 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from django.utils.html import format_html
 from .models import Recurso, Reserva
 
 @admin.register(Recurso)
 class RecursoAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'capacidad', 'activo', 'color']
+    list_display = ['nombre', 'capacidad', 'activo', 'color_preview', 'color']
     list_filter = ['activo']
     search_fields = ['nombre', 'descripcion']
     list_editable = ['activo', 'color']
+    
+    def color_preview(self, obj):
+        """Mostrar una vista previa del color"""
+        return format_html(
+            '<div style="width: 20px; height: 20px; background-color: {}; border: 1px solid #ccc; border-radius: 3px; display: inline-block;"></div>',
+            obj.color
+        )
+    color_preview.short_description = 'Color'
+    color_preview.allow_tags = True
+    
+    def get_form(self, request, obj=None, **kwargs):
+        """Personalizar el formulario para usar input de tipo color"""
+        form = super().get_form(request, obj, **kwargs)
+        if form.base_fields.get('color'):
+            form.base_fields['color'].widget.attrs.update({
+                'type': 'color',
+                'style': 'width: 60px; height: 30px;'
+            })
+        return form
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
