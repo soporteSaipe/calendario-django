@@ -11,4 +11,6 @@ urlpatterns = [
     path('eliminar/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
     path('api/reservas/', views.api_reservas, name='api_reservas'),
     path('api/horarios-ocupados/', views.api_horarios_ocupados, name='api_horarios_ocupados'),
+    path('api/validar-conflicto/', views.api_validar_conflicto, name='api_validar_conflicto'),
+    path('export/', views.export_calendar, name='export_calendar'),
 ]

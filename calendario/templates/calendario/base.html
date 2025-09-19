@@ -17,8 +17,18 @@
     <link href="{% static 'css/pages.css' %}" rel="stylesheet">
     <link href="{% static 'css/utilities.css' %}" rel="stylesheet">
     <link href="{% static 'css/optimization.css' %}" rel="stylesheet">
-    <!-- Efectos especiales -->
-    <link href="{% static 'css/falling-petals.css' %}" rel="stylesheet">
+    <!-- Componentes mejorados -->
+    <link href="{% static 'css/sala-selector-enhanced.css' %}" rel="stylesheet">
+    <link href="{% static 'css/modal-unified.css' %}" rel="stylesheet">
+           <link href="{% static 'css/breadcrumbs.css' %}" rel="stylesheet">
+           <link href="{% static 'css/loading-states.css' %}" rel="stylesheet">
+           <link href="{% static 'css/modal-details.css' %}" rel="stylesheet">
+           <link href="{% static 'css/phase2-buttons.css' %}" rel="stylesheet">
+           <link href="{% static 'css/calendar-views.css' %}" rel="stylesheet">
+           <link href="{% static 'css/realtime-notifications.css' %}" rel="stylesheet">
+           <link href="{% static 'css/calendar-export.css' %}" rel="stylesheet">
+           <!-- Efectos especiales -->
+           <link href="{% static 'css/falling-petals.css' %}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -104,6 +114,18 @@
             {% endfor %}
         {% endif %}
 
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="breadcrumb-container">
+            <ol class="breadcrumb breadcrumb-modern" id="breadcrumbList">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'calendario:calendario' %}" class="breadcrumb-link">
+                        <i class="fas fa-home me-1"></i>Inicio
+                    </a>
+                </li>
+                {% block breadcrumbs %}{% endblock %}
+            </ol>
+        </nav>
+
         {% block content %}{% endblock %}
     </main>
 
@@ -131,12 +153,17 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
     
-    <!-- JavaScript consolidado -->
-    <script src="{% static 'js/app-consolidated.js' %}"></script>
-    
-    <!-- Efectos especiales -->
-    <script type="module" src="{% static 'js/fallingPetals.js' %}"></script>
-    <script src="{% static 'js/fallingPetals-integration.js' %}"></script>
+           <!-- JavaScript consolidado -->
+           <script src="{% static 'js/app-consolidated.js' %}"></script>
+           <script src="{% static 'js/calendar-views.js' %}"></script>
+           <!-- <script src="{% static 'js/calendar-views-debug.js' %}"></script> -->
+           <!-- <script src="{% static 'js/realtime-notifications.js' %}"></script> -->
+           <!-- <script src="{% static 'js/realtime-validation.js' %}"></script> -->
+           <script src="{% static 'js/calendar-export.js' %}"></script>
+           
+           <!-- Efectos especiales -->
+           <!-- <script type="module" src="{% static 'js/fallingPetals.js' %}"></script> -->
+           <!-- <script src="{% static 'js/fallingPetals-integration.js' %}"></script> -->
     
     {% if debug %}
     <script src="{% static 'js/notification-demo.js' %}"></script>

@@ -3,6 +3,22 @@
 
 {% block title %}Editar Reserva{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item">
+    <a href="{% url 'calendario:calendario' %}" class="breadcrumb-link">
+        <i class="fas fa-calendar-alt me-1"></i>Calendario
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'calendario:mis_reservas' %}" class="breadcrumb-link">
+        <i class="fas fa-clipboard-list me-1"></i>Mis Reservas
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-edit me-1"></i>Editar Reserva
+</li>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">

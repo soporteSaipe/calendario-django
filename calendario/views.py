@@ -415,3 +415,407 @@ def api_horarios_ocupados(request):
         return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
     except Exception as e:
         return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
+
+
+def api_validar_conflicto(request):
+    """
+    API para validar conflictos de reservas en tiempo real
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+    try:
+        # Obtener parámetros
+        sala_id = request.GET.get('sala')
+        fecha = request.GET.get('fecha')
+        hora_inicio = request.GET.get('hora_inicio')
+        hora_fin = request.GET.get('hora_fin')
+        
+        if not all([sala_id, fecha, hora_inicio, hora_fin]):
+            return JsonResponse({'error': 'Parámetros faltantes'}, status=400)
+        
+        # Convertir fecha
+        fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
+        
+        # Validar formato de horas
+        try:
+            hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
+            hora_fin_obj = datetime.strptime(hora_fin, '%H:%M').time()
+        except ValueError:
+            return JsonResponse({'error': 'Formato de hora inválido'}, status=400)
+        
+        # Validar que la hora de inicio sea anterior a la de fin
+        if hora_inicio_obj >= hora_fin_obj:
+            return JsonResponse({
+                'conflicts': [{
+                    'type': 'time_validation',
+                    'message': 'La hora de inicio debe ser anterior a la hora de fin'
+                }]
+            })
+        
+        # Buscar conflictos de reservas existentes
+        conflictos = []
+        
+        # Verificar reservas existentes en el mismo horario
+        reservas_existentes = Reserva.objects.filter(
+            recurso_id=sala_id,
+            fecha=fecha_obj
+        ).exclude(
+            Q(hora_fin__lte=hora_inicio_obj) | Q(hora_inicio__gte=hora_fin_obj)
+        )
+        
+        for reserva in reservas_existentes:
+            conflictos.append({
+                'type': 'reserva_conflict',
+                'message': f'Conflicto con reserva existente: "{reserva.titulo}" ({reserva.hora_inicio} - {reserva.hora_fin})',
+                'reserva_id': reserva.id,
+                'reserva_titulo': reserva.titulo,
+                'reserva_hora_inicio': reserva.hora_inicio.strftime('%H:%M'),
+                'reserva_hora_fin': reserva.hora_fin.strftime('%H:%M')
+            })
+        
+        # Verificar restricciones del recurso
+        try:
+            recurso = Recurso.objects.get(id=sala_id)
+            horarios_restringidos = recurso.get_horarios_restringidos()
+            
+            for restriccion in horarios_restringidos:
+                if (restriccion['hora_inicio'] < hora_fin_obj and 
+                    restriccion['hora_fin'] > hora_inicio_obj):
+                    conflictos.append({
+                        'type': 'restriction_conflict',
+                        'message': f'El horario solicitado está restringido: {restriccion["motivo"]}',
+                        'restriccion': restriccion
+                    })
+        except Recurso.DoesNotExist:
+            conflictos.append({
+                'type': 'resource_not_found',
+                'message': 'La sala seleccionada no existe'
+            })
+        
+        # Verificar horarios de trabajo (7:00 - 18:00)
+        if hora_inicio_obj < datetime.strptime('07:00', '%H:%M').time():
+            conflictos.append({
+                'type': 'working_hours',
+                'message': 'Las reservas solo pueden realizarse entre las 07:00 y 18:00'
+            })
+        
+        if hora_fin_obj > datetime.strptime('18:00', '%H:%M').time():
+            conflictos.append({
+                'type': 'working_hours',
+                'message': 'Las reservas solo pueden realizarse entre las 07:00 y 18:00'
+            })
+        
+        # Verificar que la fecha no sea en el pasado
+        hoy = datetime.now().date()
+        if fecha_obj < hoy:
+            conflictos.append({
+                'type': 'past_date',
+                'message': 'No se pueden realizar reservas en fechas pasadas'
+            })
+        
+        # Verificar que la fecha no sea más de 6 meses en el futuro
+        max_fecha = hoy + timedelta(days=180)
+        if fecha_obj > max_fecha:
+            conflictos.append({
+                'type': 'future_date',
+                'message': 'Las reservas solo pueden realizarse hasta 6 meses en el futuro'
+            })
+        
+        return JsonResponse({
+            'conflicts': conflictos,
+            'valid': len(conflictos) == 0,
+            'fecha': fecha,
+            'hora_inicio': hora_inicio,
+            'hora_fin': hora_fin,
+            'sala_id': sala_id
+        })
+        
+    except ValueError as e:
+        return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
+
+
+def export_calendar(request):
+    """
+    Exportar calendario en formato PDF o iCal
+    """
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Acceso denegado'}, status=403)
+    
+    try:
+        # Obtener parámetros
+        format_type = request.GET.get('format', 'pdf')
+        date_from = request.GET.get('date_from')
+        date_to = request.GET.get('date_to')
+        salas = request.GET.get('salas', '').split(',')
+        include_descriptions = request.GET.get('include_descriptions', 'false').lower() == 'true'
+        include_attendees = request.GET.get('include_attendees', 'false').lower() == 'true'
+        include_location = request.GET.get('include_location', 'false').lower() == 'true'
+        
+        # Validar parámetros
+        if not all([date_from, date_to]):
+            return JsonResponse({'error': 'Fechas requeridas'}, status=400)
+        
+        if format_type not in ['pdf', 'ical']:
+            return JsonResponse({'error': 'Formato no soportado'}, status=400)
+        
+        # Convertir fechas
+        fecha_inicio = datetime.strptime(date_from, '%Y-%m-%d').date()
+        fecha_fin = datetime.strptime(date_to, '%Y-%m-%d').date()
+        
+        if fecha_inicio > fecha_fin:
+            return JsonResponse({'error': 'Fecha de inicio debe ser anterior a fecha de fin'}, status=400)
+        
+        # Filtrar salas
+        if salas and salas[0]:  # Si se especificaron salas
+            salas_ids = [int(sala) for sala in salas if sala.isdigit()]
+        else:
+            salas_ids = list(Recurso.objects.values_list('id', flat=True))
+        
+        # Obtener reservas
+        reservas = Reserva.objects.filter(
+            recurso_id__in=salas_ids,
+            fecha__range=[fecha_inicio, fecha_fin]
+        ).select_related('recurso', 'usuario').order_by('fecha', 'hora_inicio')
+        
+        if not reservas.exists():
+            return JsonResponse({'error': 'No hay reservas en el rango de fechas especificado'}, status=404)
+        
+        # Generar exportación según el formato
+        if format_type == 'pdf':
+            return generate_pdf_export(reservas, fecha_inicio, fecha_fin, {
+                'include_descriptions': include_descriptions,
+                'include_attendees': include_attendees,
+                'include_location': include_location
+            })
+        elif format_type == 'ical':
+            return generate_ical_export(reservas, fecha_inicio, fecha_fin, {
+                'include_descriptions': include_descriptions,
+                'include_attendees': include_attendees,
+                'include_location': include_location
+            })
+            
+    except ValueError as e:
+        return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
+
+
+def generate_pdf_export(reservas, fecha_inicio, fecha_fin, options):
+    """
+    Generar exportación PDF del calendario
+    """
+    try:
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT
+        from io import BytesIO
+        
+        # Crear buffer para el PDF
+        buffer = BytesIO()
+        
+        # Crear documento PDF
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+        
+        # Estilos
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=18,
+            spaceAfter=30,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor('#2c3e50')
+        )
+        
+        header_style = ParagraphStyle(
+            'CustomHeader',
+            parent=styles['Heading2'],
+            fontSize=14,
+            spaceAfter=12,
+            textColor=colors.HexColor('#34495e')
+        )
+        
+        # Contenido del PDF
+        story = []
+        
+        # Título
+        title = Paragraph("Sistema de Reservas de Salas SAIPE", title_style)
+        story.append(title)
+        
+        # Información del reporte
+        info_text = f"""
+        <b>Período:</b> {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}<br/>
+        <b>Total de reservas:</b> {reservas.count()}<br/>
+        <b>Generado el:</b> {datetime.now().strftime('%d/%m/%Y %H:%M')}
+        """
+        info = Paragraph(info_text, styles['Normal'])
+        story.append(info)
+        story.append(Spacer(1, 20))
+        
+        # Agrupar reservas por fecha
+        reservas_por_fecha = {}
+        for reserva in reservas:
+            fecha_str = reserva.fecha.strftime('%d/%m/%Y')
+            if fecha_str not in reservas_por_fecha:
+                reservas_por_fecha[fecha_str] = []
+            reservas_por_fecha[fecha_str].append(reserva)
+        
+        # Crear tabla para cada fecha
+        for fecha_str, reservas_fecha in reservas_por_fecha.items():
+            # Encabezado de fecha
+            fecha_header = Paragraph(f"<b>{fecha_str}</b>", header_style)
+            story.append(fecha_header)
+            
+            # Crear tabla de reservas
+            table_data = [['Hora', 'Sala', 'Título', 'Usuario']]
+            
+            if options['include_descriptions']:
+                table_data[0].append('Descripción')
+            if options['include_location']:
+                table_data[0].append('Ubicación')
+            
+            for reserva in reservas_fecha:
+                row = [
+                    f"{reserva.hora_inicio.strftime('%H:%M')} - {reserva.hora_fin.strftime('%H:%M')}",
+                    reserva.recurso.nombre,
+                    reserva.titulo,
+                    reserva.usuario.username
+                ]
+                
+                if options['include_descriptions']:
+                    descripcion = reserva.descripcion or 'Sin descripción'
+                    row.append(descripcion[:50] + '...' if len(descripcion) > 50 else descripcion)
+                
+                if options['include_location']:
+                    ubicacion = f"Sala {reserva.recurso.nombre} - Capacidad: {reserva.recurso.capacidad}"
+                    row.append(ubicacion)
+                
+                table_data.append(row)
+            
+            # Crear tabla
+            table = Table(table_data, colWidths=[1.5*inch, 1.2*inch, 2*inch, 1*inch])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498db')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')])
+            ]))
+            
+            story.append(table)
+            story.append(Spacer(1, 20))
+        
+        # Construir PDF
+        doc.build(story)
+        
+        # Obtener contenido del buffer
+        buffer.seek(0)
+        pdf_content = buffer.getvalue()
+        buffer.close()
+        
+        # Crear respuesta
+        response = HttpResponse(pdf_content, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="calendario_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.pdf"'
+        
+        return response
+        
+    except ImportError:
+        return JsonResponse({'error': 'ReportLab no está instalado. Instala con: pip install reportlab'}, status=500)
+    except Exception as e:
+        return JsonResponse({'error': f'Error al generar PDF: {str(e)}'}, status=500)
+
+
+def generate_ical_export(reservas, fecha_inicio, fecha_fin, options):
+    """
+    Generar exportación iCal del calendario
+    """
+    try:
+        from icalendar import Calendar, Event
+        from datetime import datetime, timedelta
+        import pytz
+        
+        # Crear calendario iCal
+        cal = Calendar()
+        cal.add('prodid', '-//SAIPE//Sistema de Reservas//ES')
+        cal.add('version', '2.0')
+        cal.add('calscale', 'GREGORIAN')
+        cal.add('method', 'PUBLISH')
+        cal.add('X-WR-CALNAME', 'Reservas de Salas SAIPE')
+        cal.add('X-WR-CALDESC', f'Reservas de salas del {fecha_inicio} al {fecha_fin}')
+        cal.add('X-WR-TIMEZONE', 'America/Argentina/Buenos_Aires')
+        
+        # Zona horaria
+        tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        
+        # Crear evento para cada reserva
+        for reserva in reservas:
+            event = Event()
+            
+            # ID único del evento
+            event.add('uid', f'reserva-{reserva.id}@saipe.com')
+            
+            # Fecha y hora de inicio
+            dtstart = datetime.combine(reserva.fecha, reserva.hora_inicio)
+            dtstart = tz.localize(dtstart)
+            event.add('dtstart', dtstart)
+            
+            # Fecha y hora de fin
+            dtend = datetime.combine(reserva.fecha, reserva.hora_fin)
+            dtend = tz.localize(dtend)
+            event.add('dtend', dtend)
+            
+            # Título
+            event.add('summary', reserva.titulo)
+            
+            # Descripción
+            descripcion_parts = [f"Sala: {reserva.recurso.nombre}"]
+            if options['include_descriptions'] and reserva.descripcion:
+                descripcion_parts.append(f"Descripción: {reserva.descripcion}")
+            if options['include_location']:
+                descripcion_parts.append(f"Capacidad: {reserva.recurso.capacidad} personas")
+            if options['include_attendees']:
+                descripcion_parts.append(f"Reservado por: {reserva.usuario.get_full_name() or reserva.usuario.username}")
+            
+            event.add('description', '\n'.join(descripcion_parts))
+            
+            # Ubicación
+            if options['include_location']:
+                event.add('location', f"Sala {reserva.recurso.nombre}")
+            
+            # Organizador
+            event.add('organizer', f"MAILTO:{reserva.usuario.email or 'noreply@saipe.com'}")
+            
+            # Estado
+            event.add('status', 'CONFIRMED')
+            
+            # Creado y modificado
+            event.add('created', reserva.fecha_creacion)
+            event.add('last-modified', reserva.fecha_modificacion or reserva.fecha_creacion)
+            
+            # Agregar evento al calendario
+            cal.add_component(event)
+        
+        # Generar contenido iCal
+        ical_content = cal.to_ical().decode('utf-8')
+        
+        # Crear respuesta
+        response = HttpResponse(ical_content, content_type='text/calendar; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="calendario_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.ics"'
+        
+        return response
+        
+    except ImportError:
+        return JsonResponse({'error': 'icalendar no está instalado. Instala con: pip install icalendar'}, status=500)
+    except Exception as e:
+        return JsonResponse({'error': f'Error al generar iCal: {str(e)}'}, status=500)

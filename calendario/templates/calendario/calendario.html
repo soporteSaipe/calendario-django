@@ -3,6 +3,12 @@
 
 {% block title %}Calendario de salas - Equipos internos SAIPE{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-calendar-alt me-1"></i>Calendario
+</li>
+{% endblock %}
+
 {% block content %}
 <div class="accounting-header animate-on-load">
     <h1><i class="fas fa-calendar-alt me-3"></i>Sistema de reservas de salas</h1>
@@ -11,33 +17,55 @@
 
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card-modern animate-on-load">
+        <div class="card-modern sala-selector-enhanced animate-on-load">
             <div class="card-header-modern">
                 <h5 class="mb-0">
-                    <i class="fas fa-door-open me-2"></i>Seleccionar sala
+                    <i class="fas fa-door-open me-2"></i>Seleccionar Sala de Reunión
                 </h5>
             </div>
             <div class="card-body-modern">
-                <div class="row">
-                    <div class="col-md-6">
-                        <label for="salaFilter" class="form-label">Sala de reunión:</label>
-                        <select id="salaFilter" class="form-select form-select-modern">
-                            {% for recurso in recursos %}
-                            <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" 
-                                    {% if sala_activa and recurso.id == sala_activa.id %}selected{% elif not sala_activa and forloop.first %}selected{% endif %}>
-                                {{ recurso.nombre }} (capacidad: {{ recurso.capacidad }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-6 d-flex align-items-end">
-                        <div class="sala-info">
-                            <div class="sala-color-indicator" id="salaColorIndicator"></div>
-                            <small class="text-muted" id="salaInfo">
-                                Selecciona una sala para ver su calendario de reservas
-                            </small>
+                <div class="sala-selector-container">
+                    <div class="sala-selector-main">
+                        <div class="sala-selector-dropdown">
+                            <label for="salaFilter" class="form-label-modern">
+                                <i class="fas fa-building me-2"></i>Sala de reunión
+                            </label>
+                            <select id="salaFilter" class="form-select form-select-modern sala-selector-select">
+                                {% for recurso in recursos %}
+                                <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" 
+                                        {% if sala_activa and recurso.id == sala_activa.id %}selected{% elif not sala_activa and forloop.first %}selected{% endif %}>
+                                    {{ recurso.nombre }} (capacidad: {{ recurso.capacidad }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="sala-info-card" id="salaInfoCard">
+                            <div class="sala-info-header">
+                                <div class="sala-color-preview" id="salaColorPreview"></div>
+                                <div class="sala-details">
+                                    <h6 class="sala-name" id="salaName">Selecciona una sala</h6>
+                                    <div class="sala-meta">
+                                        <span class="sala-capacity" id="salaCapacity">
+                                            <i class="fas fa-users me-1"></i>
+                                            <span id="salaCapacityValue">-</span> personas
+                                        </span>
+                                        <span class="sala-status" id="salaStatus">
+                                            <i class="fas fa-circle me-1"></i>
+                                            <span>Disponible</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sala-actions">
+                                   <button type="button" class="btn-sala-details" id="salaDetailsBtn">
+                                       <i class="fas fa-info-circle me-2"></i>
+                                       <span>Detalles</span>
+                                   </button>
+                            </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -52,19 +80,19 @@
                     <i class="fas fa-calendar-alt me-2"></i>
                     <span id="salaTitulo">Calendario de sala</span>
                 </h4>
-                {% if user.is_authenticated %}
-                <button type="button" class="btn-reserva-elegant" id="abrirModalReserva">
-                    <div class="btn-reserva-content">
-                        <div class="btn-reserva-icon">
-                            <i class="fas fa-calendar-plus"></i>
-                        </div>
-                        <div class="btn-reserva-text">
-                            <span class="btn-reserva-title">Reservar sala</span>
-                            <span class="btn-reserva-subtitle">Nueva reserva</span>
-                        </div>
-                    </div>
-                </button>
-                {% endif %}
+                           {% if user.is_authenticated %}
+                           <button type="button" class="btn-reserva-elegant" id="abrirModalCrearReserva" data-bs-toggle="modal" data-bs-target="#reservaModalCrear">
+                               <div class="btn-reserva-content">
+                                   <div class="btn-reserva-icon">
+                                       <i class="fas fa-calendar-plus"></i>
+                                   </div>
+                                   <div class="btn-reserva-text">
+                                       <span class="btn-reserva-title">Crear Reserva</span>
+                                       <span class="btn-reserva-subtitle">Nueva reserva de sala</span>
+                                   </div>
+                               </div>
+                           </button>
+                           {% endif %}
             </div>
             <div class="card-body-modern">
                 <div class="calendar-container">
@@ -75,80 +103,157 @@
     </div>
 </div>
 
-<div class="modal fade" id="reservaModal" tabindex="-1">
+<!-- Modal de Crear Reserva -->
+<div class="modal fade" id="reservaModalCrear" tabindex="-1" aria-labelledby="reservaModalCrearLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content modal-content-modern">
             <div class="modal-header modal-header-modern">
-                <h5 class="modal-title modal-title-modern" id="reservaModalTitle">
-                    <i class="fas fa-calendar-check me-2"></i>Detalles de la reserva
+                <h5 class="modal-title modal-title-modern" id="reservaModalCrearLabel">
+                    <i class="fas fa-calendar-plus me-2"></i>Crear Nueva Reserva
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body" id="reservaModalBody">
+            <div class="modal-body">
+                <form id="formCrearReserva" method="post" action="{% url 'calendario:crear_reserva' %}">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label for="recurso" class="form-label-modern">
+                                    <i class="fas fa-door-open me-2"></i>Sala *
+                                </label>
+                                <select name="recurso" id="recurso" class="form-select-modern" required>
+                                    <option value="">Selecciona una sala</option>
+                                    {% for recurso in recursos %}
+                                    <option value="{{ recurso.id }}" data-color="{{ recurso.color }}">
+                                        {{ recurso.nombre }} ({{ recurso.capacidad }} personas)
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label for="titulo" class="form-label-modern">
+                                    <i class="fas fa-heading me-2"></i>Título *
+                                </label>
+                                <input type="text" name="titulo" id="titulo" class="form-control-modern" 
+                                       placeholder="Ej: Reunión de equipo" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group-modern">
+                                <label for="fecha" class="form-label-modern">
+                                    <i class="fas fa-calendar me-2"></i>Fecha *
+                                </label>
+                                <input type="date" name="fecha" id="fecha" class="form-control-modern" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group-modern">
+                                <label for="hora_inicio" class="form-label-modern">
+                                    <i class="fas fa-clock me-2"></i>Hora inicio *
+                                </label>
+                                <select name="hora_inicio" id="hora_inicio" class="form-select-modern" required>
+                                    <option value="">Seleccionar hora</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group-modern">
+                                <label for="hora_fin" class="form-label-modern">
+                                    <i class="fas fa-clock me-2"></i>Hora fin *
+                                </label>
+                                <select name="hora_fin" id="hora_fin" class="form-select-modern" required>
+                                    <option value="">Seleccionar hora</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-modern">
+                        <label for="descripcion" class="form-label-modern">
+                            <i class="fas fa-align-left me-2"></i>Descripción
+                        </label>
+                        <textarea name="descripcion" id="descripcion" class="form-control-modern" rows="3" 
+                                  placeholder="Descripción opcional de la reserva..."></textarea>
+                    </div>
+                    
+                    <!-- Información de la sala seleccionada -->
+                    <div class="sala-selected-info" id="salaSelectedInfo" style="display: none;">
+                        <div class="alert alert-info-modern">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Sala seleccionada:</strong> <span id="salaSelectedName"></span> 
+                            - Capacidad: <span id="salaSelectedCapacity"></span> personas
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-modern btn-secondary-modern " data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i>
-                    <span>Cerrar</span>
+                <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cerrar
+                </button>
+                <button type="button" class="btn-crear-reserva" id="btnCrearReserva">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    <span>Crear Reserva</span>
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modalCrearReserva" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Crear Nueva Reserva</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modal de Detalles de Reserva -->
+<div class="modal fade" id="reservaModalDetalles" tabindex="-1" aria-labelledby="reservaModalDetallesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title modal-title-modern" id="reservaModalDetallesLabel">
+                    <i class="fas fa-calendar-check me-2"></i>Detalles de la Reserva
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <form id="formCrearReserva" method="post" action="{% url 'calendario:crear_reserva' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="recurso" class="form-label">Sala *</label>
-                        <select name="recurso" id="recurso" class="form-select" required>
-                            <option value="">Selecciona una sala</option>
-                            {% for recurso in recursos %}
-                            <option value="{{ recurso.id }}">{{ recurso.nombre }}</option>
-                            {% endfor %}
-                        </select>
+                <div id="reservaDetailsContent">
+                    <div class="text-center py-4">
+                        <div class="loading-spinner"></div>
+                        <p class="mt-3 text-muted">Cargando detalles de la reserva...</p>
                     </div>
-                    <div class="mb-3">
-                        <label for="titulo" class="form-label">Título *</label>
-                        <input type="text" name="titulo" id="titulo" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="fecha" class="form-label">Fecha *</label>
-                        <input type="date" name="fecha" id="fecha" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="hora_inicio" class="form-label">Hora inicio *</label>
-                        <select name="hora_inicio" id="hora_inicio" class="form-select" required>
-                            <option value="">Seleccionar hora</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="hora_fin" class="form-label">Hora fin *</label>
-                        <select name="hora_fin" id="hora_fin" class="form-select" required>
-                            <option value="">Seleccionar hora</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="descripcion" class="form-label">Descripción</label>
-                        <textarea name="descripcion" id="descripcion" class="form-control" rows="3" placeholder="Descripción opcional de la reserva"></textarea>
-                    </div>
-                </form>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-modal btn-modal-cancel" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i>
-                    <span>Cancelar</span>
+                <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cerrar
                 </button>
-                <button type="button" class="btn-modal btn-modal-primary" id="btnCrearReserva" onclick="crearReserva()">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Crear Reserva</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalles de Sala -->
+<div class="modal fade" id="salaDetailsModal" tabindex="-1" aria-labelledby="salaDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title modal-title-modern" id="salaDetailsModalLabel">
+                    <i class="fas fa-door-open me-2"></i>
+                    <span id="salaDetailsTitle">Detalles de la Sala</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div id="salaDetailsContent">
+                    <div class="text-center py-4">
+                        <div class="loading-spinner"></div>
+                        <p class="mt-3 text-muted">Cargando detalles de la sala...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cerrar
                 </button>
             </div>
         </div>
@@ -167,11 +272,4 @@
         logoutUrl: '{% url "logout" %}'
     });
 </script>
-<script src="{% static 'js/calendario-modal.js' %}"></script>
-<script src="{% static 'js/calendario-reserva.js' %}"></script>
-<script src="{% static 'js/calendario-init.js' %}"></script>
-<script src="{% static 'js/calendario-events.js' %}"></script>
-<script src="{% static 'js/calendario-colors.js' %}"></script>
-<script src="{% static 'js/calendario-filters.js' %}"></script>
-<script src="{% static 'js/calendario-utils.js' %}"></script>
 {% endblock %}

@@ -150,6 +150,52 @@ CalendarioApp.Notifications = {
   
   info: function(message, options = {}) {
     return this.show(message, 'info', 4000, options);
+  },
+  
+  confirm: function(message, options = {}) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal fade';
+      modal.innerHTML = `
+        <div class="modal-dialog">
+          <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+              <h5 class="modal-title modal-title-modern">
+                <i class="fas fa-question-circle me-2"></i>
+                ${options.title || 'Confirmar acción'}
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p>${message}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
+                <i class="fas fa-times me-2"></i>${options.cancelText || 'Cancelar'}
+              </button>
+              <button type="button" class="btn-modern btn-danger-modern" id="confirmBtn">
+                <i class="fas fa-check me-2"></i>${options.confirmText || 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      const bsModal = new bootstrap.Modal(modal);
+      
+      modal.querySelector('#confirmBtn').addEventListener('click', () => {
+        bsModal.hide();
+        resolve(true);
+      });
+      
+      modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+        resolve(false);
+      });
+      
+      bsModal.show();
+    });
   }
 };
 
@@ -355,6 +401,50 @@ CalendarioApp.Accessibility = {
         document.body.removeChild(announcement);
       }
     }, 1000);
+  },
+  
+  showGlobalLoading: function(message = 'Procesando solicitud...', subtext = '') {
+    // Crear overlay de carga global
+    let loadingOverlay = document.getElementById('globalLoadingOverlay');
+    
+    if (!loadingOverlay) {
+      loadingOverlay = document.createElement('div');
+      loadingOverlay.id = 'globalLoadingOverlay';
+      loadingOverlay.className = 'loading-overlay';
+      document.body.appendChild(loadingOverlay);
+    }
+    
+    loadingOverlay.innerHTML = `
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">${message}</div>
+        ${subtext ? `<div class="loading-subtext">${subtext}</div>` : ''}
+        <div class="loading-progress">
+          <div class="loading-progress-bar"></div>
+        </div>
+      </div>
+    `;
+    
+    loadingOverlay.classList.add('show');
+    loadingOverlay.setAttribute('aria-hidden', 'false');
+    
+    // Animar la barra de progreso
+    setTimeout(() => {
+      const progressBar = loadingOverlay.querySelector('.loading-progress-bar');
+      if (progressBar) {
+        progressBar.style.width = '100%';
+      }
+    }, 100);
+  },
+  
+  hideGlobalLoading: function() {
+    const loadingOverlay = document.getElementById('globalLoadingOverlay');
+    if (loadingOverlay) {
+      loadingOverlay.classList.remove('show');
+      setTimeout(() => {
+        loadingOverlay.setAttribute('aria-hidden', 'true');
+      }, 300);
+    }
   }
 };
 
@@ -380,6 +470,11 @@ CalendarioApp.Calendar = {
     this.initializeColorSystem();
     this.updateSalaInfo();
     this.updateMainCalendar();
+    
+    // Integrar vistas de calendario si están disponibles
+    if (window.CalendarioApp && CalendarioApp.CalendarViews) {
+      CalendarioApp.CalendarViews.integrateWithCalendar(this.calendar);
+    }
   },
   
   initializeSalasData: function() {
@@ -442,12 +537,23 @@ CalendarioApp.Calendar = {
     
     this.calendar = new FullCalendar.Calendar(calendarEl, {
       locale: 'es',
-      initialView: 'timeGridWeek',
+      initialView: 'dayGridMonth',
       lazyFetching: false,
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'timeGridWeek,dayGridMonth,timeGridDay'
+      headerToolbar: false, // Deshabilitamos el header del calendario para usar nuestros controles
+      views: {
+        timeGridDay: {
+          slotMinTime: '07:00:00',
+          slotMaxTime: '18:00:00',
+          slotDuration: '00:30:00'
+        },
+        timeGridWeek: {
+          slotMinTime: '07:00:00',
+          slotMaxTime: '18:00:00',
+          slotDuration: '00:30:00'
+        },
+        dayGridMonth: {
+          dayMaxEvents: 3
+        },
       },
       buttonText: {
         today: 'Hoy',
@@ -492,11 +598,20 @@ CalendarioApp.Calendar = {
         this.currentSalaFilter = salaSelect.options[0].value;
       } else {
         console.error('No hay salas disponibles');
-        return CalendarioApp.config.apiEndpoints.reservas;
+        return [];
       }
     }
     
-    const url = CalendarioApp.config.apiEndpoints.reservas + '?sala=' + this.currentSalaFilter;
+    // Usar la URL global si está disponible, sino usar la del config
+    const apiUrl = window.calendarioApiUrl || CalendarioApp.config.apiEndpoints.reservas;
+    
+    if (!apiUrl) {
+      console.error('URL de API no configurada');
+      CalendarioApp.Notifications.error('Error de configuración: URL de API no encontrada');
+      return [];
+    }
+    
+    const url = apiUrl + '?sala=' + this.currentSalaFilter;
     console.log('Cargando eventos desde URL:', url);
     
     return fetch(url)
@@ -518,48 +633,157 @@ CalendarioApp.Calendar = {
   
   handleEventClick: function(info) {
     const event = info.event;
-    const modal = new bootstrap.Modal(document.getElementById('reservaModal'));
+    const modal = new bootstrap.Modal(document.getElementById('reservaModalDetalles'));
     
     if (!modal) {
       console.error('Modal no encontrado');
       return;
     }
     
-    document.getElementById('reservaModalTitle').textContent = event.title || 'Reserva';
-    document.getElementById('reservaModalBody').innerHTML = `
-      <div class="row">
-        <div class="col-6">
-          <strong>Inicio:</strong><br>
-          ${event.start ? new Date(event.start).toLocaleString('es-ES') : 'No disponible'}
+    // Actualizar título del modal
+    document.getElementById('reservaModalDetallesLabel').innerHTML = 
+      `<i class="fas fa-calendar-check me-2"></i>${event.title || 'Detalles de Reserva'}`;
+    
+    // Mostrar detalles de la reserva
+    this.showReservaDetails(event);
+    
+    
+    modal.show();
+  },
+  
+  
+  showReservaDetails: function(event) {
+    const detailsContent = document.getElementById('reservaDetailsContent');
+    if (!detailsContent) return;
+    
+    const startDate = event.start ? new Date(event.start) : null;
+    const endDate = event.end ? new Date(event.end) : null;
+    const usuario = event.extendedProps && event.extendedProps.usuario ? event.extendedProps.usuario : 'No disponible';
+    const estado = event.extendedProps && event.extendedProps.estado ? event.extendedProps.estado : 'Desconocido';
+    const descripcion = event.extendedProps && event.extendedProps.descripcion ? event.extendedProps.descripcion : 'Sin descripción';
+    const sala = event.extendedProps && event.extendedProps.sala ? event.extendedProps.sala : 'Sala no especificada';
+    
+    detailsContent.innerHTML = `
+      <div class="reserva-details-container">
+        <!-- Header de la reserva -->
+        <div class="reserva-details-header mb-4">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h4 class="reserva-details-title mb-0">
+              <i class="fas fa-calendar-check me-2 text-primary"></i>
+              ${event.title || 'Reserva'}
+            </h4>
+            <span class="badge-modern badge-${this.getEstadoColor(estado)} fs-6">${estado}</span>
+          </div>
         </div>
-        <div class="col-6">
-          <strong>Fin:</strong><br>
-          ${event.end ? new Date(event.end).toLocaleString('es-ES') : 'No disponible'}
-        </div>
-      </div>
-      <hr>
-      <div class="row">
-        <div class="col-12">
-          <strong>Descripción:</strong><br>
-          ${event.extendedProps && event.extendedProps.descripcion ? event.extendedProps.descripcion : 'Sin descripción'}
-        </div>
-      </div>
-      <hr>
-      <div class="row">
-        <div class="col-6">
-          <strong>Usuario:</strong><br>
-          ${event.extendedProps && event.extendedProps.usuario ? event.extendedProps.usuario : 'No disponible'}
-        </div>
-        <div class="col-6">
-          <strong>Estado:</strong><br>
-          <span class="badge bg-${this.getEstadoColor(event.extendedProps && event.extendedProps.estado ? event.extendedProps.estado : 'desconocido')}">
-            ${event.extendedProps && event.extendedProps.estado ? event.extendedProps.estado : 'Desconocido'}
-          </span>
+        
+        <!-- Información principal -->
+        <div class="reserva-details-main mb-4">
+          <div class="row g-3">
+            <!-- Fecha y hora -->
+            <div class="col-12">
+              <div class="reserva-info-section">
+                <h6 class="section-title mb-3">
+                  <i class="fas fa-calendar-alt me-2 text-primary"></i>Fecha y Hora
+                </h6>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <div class="info-label">
+                        <i class="fas fa-calendar me-2"></i>Fecha
+                      </div>
+                      <div class="info-value">
+                        ${startDate ? startDate.toLocaleDateString('es-ES', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        }) : 'No disponible'}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <div class="info-label">
+                        <i class="fas fa-clock me-2"></i>Horario
+                      </div>
+                      <div class="info-value">
+                        ${startDate && endDate ? 
+                          `${startDate.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})} - ${endDate.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}` : 
+                          'No disponible'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Duración -->
+            <div class="col-12">
+              <div class="reserva-duration-card">
+                <div class="duration-content">
+                  <i class="fas fa-stopwatch me-2 text-info"></i>
+                  <span class="duration-label">Duración total:</span>
+                  <span class="duration-value">
+                    ${startDate && endDate ? this.calculateDuration(startDate, endDate) : 'No disponible'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Información adicional -->
+            <div class="col-12">
+              <div class="reserva-info-section">
+                <h6 class="section-title mb-3">
+                  <i class="fas fa-info-circle me-2 text-primary"></i>Información Adicional
+                </h6>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <div class="info-label">
+                        <i class="fas fa-user me-2"></i>Usuario
+                      </div>
+                      <div class="info-value">${usuario}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-item">
+                      <div class="info-label">
+                        <i class="fas fa-door-open me-2"></i>Sala
+                      </div>
+                      <div class="info-value">${sala}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Descripción -->
+            <div class="col-12">
+              <div class="reserva-description-section">
+                <h6 class="section-title mb-3">
+                  <i class="fas fa-align-left me-2 text-primary"></i>Descripción
+                </h6>
+                <div class="description-content">
+                  <p class="mb-0">${descripcion}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;
+  },
+  
+  calculateDuration: function(start, end) {
+    const diffMs = end - start;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     
-    modal.show();
+    if (diffHours > 0) {
+      return `${diffHours}h ${diffMinutes}m`;
+    } else {
+      return `${diffMinutes}m`;
+    }
   },
   
   handleEventDidMount: function(info) {
@@ -582,11 +806,14 @@ CalendarioApp.Calendar = {
       return false;
     }
     
-    const reservarBtn = document.querySelector('a[href*="crear_reserva"]');
-    if (reservarBtn) {
-      const fecha = info.dateStr;
-      const url = CalendarioApp.config.apiEndpoints.crearReserva + '?fecha=' + fecha;
+    const fecha = info.dateStr;
+    const crearReservaUrl = window.crearReservaUrl || CalendarioApp.config.apiEndpoints.crearReserva;
+    
+    if (crearReservaUrl) {
+      const url = crearReservaUrl + '?fecha=' + fecha;
       window.location.href = url;
+    } else {
+      CalendarioApp.Notifications.warning('URL de creación de reserva no configurada');
     }
   },
   
@@ -613,14 +840,210 @@ CalendarioApp.Calendar = {
   },
   
   setupCrearReservaModal: function() {
-    const horaInicioSelect = document.getElementById('id_hora_inicio');
-    const horaFinSelect = document.getElementById('id_hora_fin');
+    const horaInicioSelect = document.getElementById('hora_inicio');
+    const horaFinSelect = document.getElementById('hora_fin');
     
     if (horaInicioSelect && horaFinSelect) {
       this.generateTimeOptions(horaInicioSelect, horaFinSelect);
       this.setupTimeValidation(horaInicioSelect, horaFinSelect);
     }
+    
+    // Configurar modal de crear
+    this.setupCrearModal();
   },
+  
+  setupCrearModal: function() {
+    // Configurar botón de crear reserva
+    const btnCrearReserva = document.getElementById('btnCrearReserva');
+    if (btnCrearReserva) {
+      btnCrearReserva.addEventListener('click', () => {
+        this.crearReserva();
+      });
+    }
+    
+    
+    // Configurar selector de sala en el modal
+    const recursoSelect = document.getElementById('recurso');
+    if (recursoSelect) {
+      recursoSelect.addEventListener('change', () => {
+        this.updateSalaSelectedInfo();
+      });
+    }
+    
+    // Configurar fecha mínima
+    const fechaInput = document.getElementById('fecha');
+    if (fechaInput) {
+      const today = new Date();
+      fechaInput.min = today.toISOString().split('T')[0];
+      
+      // Configurar fecha máxima (6 meses en el futuro)
+      const maxDate = new Date();
+      maxDate.setMonth(maxDate.getMonth() + 6);
+      fechaInput.max = maxDate.toISOString().split('T')[0];
+    }
+    
+    // Resetear modal cuando se cierre
+    const modal = document.getElementById('reservaModalCrear');
+    if (modal) {
+      modal.addEventListener('hidden.bs.modal', () => {
+        this.resetCrearModal();
+      });
+    }
+  },
+  
+  updateSalaSelectedInfo: function() {
+    const recursoSelect = document.getElementById('recurso');
+    const salaSelectedInfo = document.getElementById('salaSelectedInfo');
+    const salaSelectedName = document.getElementById('salaSelectedName');
+    const salaSelectedCapacity = document.getElementById('salaSelectedCapacity');
+    
+    if (recursoSelect && recursoSelect.value) {
+      const selectedOption = recursoSelect.options[recursoSelect.selectedIndex];
+      const salaData = this.salasData[recursoSelect.value];
+      
+      if (salaData && salaSelectedName && salaSelectedCapacity) {
+        salaSelectedName.textContent = salaData.nombre;
+        salaSelectedCapacity.textContent = salaData.capacidad;
+        salaSelectedInfo.style.display = 'block';
+      }
+    } else {
+      salaSelectedInfo.style.display = 'none';
+    }
+  },
+  
+  resetCrearModal: function() {
+    // Resetear formulario
+    const form = document.getElementById('formCrearReserva');
+    if (form) {
+      form.reset();
+    }
+    
+    // Ocultar información de sala seleccionada
+    const salaSelectedInfo = document.getElementById('salaSelectedInfo');
+    if (salaSelectedInfo) {
+      salaSelectedInfo.style.display = 'none';
+    }
+    
+    
+    // Resetear título
+    const modalTitle = document.getElementById('reservaModalCrearLabel');
+    if (modalTitle) {
+      modalTitle.textContent = 'Crear Nueva Reserva';
+    }
+  },
+  
+  crearReserva: function() {
+    const form = document.getElementById('formCrearReserva');
+    if (!form) return;
+    
+    // Validar formulario
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    
+    // Validación adicional de campos específicos
+    const recurso = form.querySelector('#recurso').value;
+    const titulo = form.querySelector('#titulo').value.trim();
+    const fecha = form.querySelector('#fecha').value;
+    const horaInicio = form.querySelector('#hora_inicio').value;
+    const horaFin = form.querySelector('#hora_fin').value;
+    
+    if (!recurso || !titulo || !fecha || !horaInicio || !horaFin) {
+      CalendarioApp.Notifications.error('Por favor, completa todos los campos obligatorios');
+      return;
+    }
+    
+    // Validar que la hora de fin sea posterior a la de inicio
+    if (horaInicio >= horaFin) {
+      CalendarioApp.Notifications.error('La hora de fin debe ser posterior a la hora de inicio');
+      return;
+    }
+    
+    // Validar conflictos de horarios
+    this.validarConflictos(recurso, fecha, horaInicio, horaFin)
+      .then(conflictos => {
+        if (conflictos.length > 0) {
+          const mensaje = conflictos.map(c => c.message).join('\n');
+          CalendarioApp.Notifications.error(`Conflictos encontrados:\n${mensaje}`);
+          return;
+        }
+        
+        // Si no hay conflictos, proceder con el envío
+        this.enviarReserva(form);
+      })
+      .catch(error => {
+        console.error('Error al validar conflictos:', error);
+        // Si hay error en la validación, proceder de todas formas
+        this.enviarReserva(form);
+      });
+  },
+  
+  validarConflictos: function(recurso, fecha, horaInicio, horaFin) {
+    const url = `${window.horariosOcupadosUrl}?recurso_id=${recurso}&fecha=${fecha}&hora_inicio=${horaInicio}&hora_fin=${horaFin}`;
+    
+    return fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data.conflicts) {
+          return data.conflicts;
+        }
+        return [];
+      });
+  },
+  
+  enviarReserva: function(form) {
+    // Mostrar loading global
+    CalendarioApp.Accessibility.showGlobalLoading(
+      'Creando reserva...', 
+      'Esto puede tomar unos segundos'
+    );
+    
+    // Mostrar loading en botón
+    const btnCrear = document.getElementById('btnCrearReserva');
+    CalendarioApp.Accessibility.setButtonLoading(btnCrear, true);
+    
+    // Obtener datos del formulario
+    const formData = new FormData(form);
+    
+    // Enviar petición AJAX
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      CalendarioApp.Accessibility.setButtonLoading(btnCrear, false);
+      CalendarioApp.Accessibility.hideGlobalLoading();
+      
+      if (data.success) {
+        CalendarioApp.Notifications.success(data.message);
+        
+        // Cerrar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('reservaModalCrear'));
+        if (modal) {
+          modal.hide();
+        }
+        
+        // Actualizar calendario
+        this.updateMainCalendar();
+      } else {
+        CalendarioApp.Notifications.error(data.error || 'Error al crear la reserva');
+      }
+    })
+    .catch(error => {
+      console.error('Error al crear reserva:', error);
+      CalendarioApp.Accessibility.setButtonLoading(btnCrear, false);
+      CalendarioApp.Accessibility.hideGlobalLoading();
+      CalendarioApp.Notifications.error('Error de conexión al crear la reserva');
+    });
+  },
+  
+  
   
   generateTimeOptions: function(horaInicioSelect, horaFinSelect) {
     horaInicioSelect.innerHTML = '<option value="">Seleccionar hora</option>';
@@ -689,6 +1112,97 @@ CalendarioApp.Calendar = {
         this.style.transform = 'translateY(0)';
       });
     });
+    
+    // Configurar acciones rápidas del selector de sala
+    this.setupQuickActions();
+  },
+  
+  setupQuickActions: function() {
+    // Botón de detalles de sala
+    const detailsBtn = document.getElementById('salaDetailsBtn');
+    if (detailsBtn) {
+      detailsBtn.addEventListener('click', () => {
+        this.showRoomDetailsModal();
+      });
+    }
+  },
+  
+  
+  showRoomDetailsModal: function() {
+    if (this.currentSalaFilter && this.salasData[this.currentSalaFilter]) {
+      const salaData = this.salasData[this.currentSalaFilter];
+      const modal = new bootstrap.Modal(document.getElementById('salaDetailsModal'));
+      
+      // Actualizar título
+      document.getElementById('salaDetailsTitle').textContent = `Detalles de ${salaData.nombre}`;
+      
+      // Mostrar contenido de detalles
+      this.loadSalaDetails(salaData);
+      
+      modal.show();
+    } else {
+      CalendarioApp.Notifications.warning('Selecciona una sala para ver sus detalles');
+    }
+  },
+  
+  loadSalaDetails: function(salaData) {
+    const content = document.getElementById('salaDetailsContent');
+    
+    // Simular carga de datos de la base de datos
+    // En una implementación real, aquí harías una llamada AJAX
+    setTimeout(() => {
+      content.innerHTML = `
+        <div class="sala-details-card">
+          <div class="sala-details-header">
+            <div class="sala-color-preview" style="background-color: ${salaData.color};">
+              <i class="fas fa-door-open"></i>
+            </div>
+            <div class="sala-details-info">
+              <h4 class="sala-name">${salaData.nombre}</h4>
+              <p class="sala-capacity">
+                <i class="fas fa-users me-2"></i>
+                Capacidad: ${salaData.capacidad} personas
+              </p>
+            </div>
+          </div>
+          
+          <div class="sala-description">
+            <h6><i class="fas fa-info-circle me-2"></i>Descripción</h6>
+            <p>${salaData.descripcion || 'Sala de reunión equipada con proyector, pizarra y sistema de videoconferencia. Ideal para reuniones de equipo y presentaciones.'}</p>
+          </div>
+          
+          <div class="sala-features">
+            <h6><i class="fas fa-cogs me-2"></i>Características</h6>
+            <div class="row">
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>Proyector HD</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Pizarra blanca</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Sistema de audio</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><i class="fas fa-check text-success me-2"></i>Videoconferencia</li>
+                  <li><i class="fas fa-check text-success me-2"></i>WiFi de alta velocidad</li>
+                  <li><i class="fas fa-check text-success me-2"></i>Climatización</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div class="sala-availability">
+            <h6><i class="fas fa-clock me-2"></i>Disponibilidad</h6>
+            <p class="text-muted">Horario de uso: Lunes a Viernes de 7:00 AM a 4:00 PM</p>
+            <div class="availability-status">
+              <span class="badge-modern badge-success">
+                <i class="fas fa-circle me-1"></i>Disponible
+              </span>
+            </div>
+          </div>
+        </div>
+      `;
+    }, 500);
   },
   
   initializeColorSystem: function() {
@@ -701,18 +1215,43 @@ CalendarioApp.Calendar = {
   
   updateSalaInfo: function() {
     const salaFilter = document.getElementById('salaFilter');
-    const salaColorIndicator = document.getElementById('salaColorIndicator');
-    const salaInfo = document.getElementById('salaInfo');
+    const salaColorPreview = document.getElementById('salaColorPreview');
+    const salaName = document.getElementById('salaName');
+    const salaCapacityValue = document.getElementById('salaCapacityValue');
+    const salaStatus = document.getElementById('salaStatus');
     
     if (salaFilter && this.currentSalaFilter) {
       const salaData = this.salasData[this.currentSalaFilter];
       if (salaData) {
-        if (salaColorIndicator) {
-          salaColorIndicator.style.backgroundColor = salaData.color;
+        // Actualizar preview de color
+        if (salaColorPreview) {
+          salaColorPreview.style.backgroundColor = salaData.color;
+          salaColorPreview.innerHTML = '<i class="fas fa-door-open"></i>';
         }
         
-        if (salaInfo) {
-          salaInfo.textContent = `${salaData.nombre} - Capacidad: ${salaData.capacidad} personas`;
+        // Actualizar nombre de la sala
+        if (salaName) {
+          salaName.textContent = salaData.nombre;
+        }
+        
+        // Actualizar capacidad
+        if (salaCapacityValue) {
+          salaCapacityValue.textContent = salaData.capacidad;
+        }
+        
+        // Actualizar estado (simulado por ahora)
+        if (salaStatus) {
+          const statusElement = salaStatus.querySelector('span');
+          if (statusElement) {
+            statusElement.textContent = 'Disponible';
+            salaStatus.className = 'sala-status';
+          }
+        }
+        
+        // Actualizar título del calendario
+        const salaTitulo = document.getElementById('salaTitulo');
+        if (salaTitulo) {
+          salaTitulo.textContent = `Calendario de ${salaData.nombre}`;
         }
       }
     }
@@ -766,30 +1305,48 @@ CalendarioApp.Utils = {
 
 // ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', function() {
-  // Inicializar sistemas
+  // Inicializar sistemas básicos
   CalendarioApp.Notifications.init();
   CalendarioApp.Accessibility.init();
   
-  // Inicializar calendario si existe
-  if (document.getElementById('calendar')) {
-    CalendarioApp.Calendar.init();
-  }
+  // Esperar a que se configuren las URLs antes de inicializar el calendario
+  const initCalendar = () => {
+    // Configurar URLs de API si están disponibles
+    if (window.calendarioApiUrl) {
+      CalendarioApp.config.apiEndpoints.reservas = window.calendarioApiUrl;
+    }
+    if (window.crearReservaUrl) {
+      CalendarioApp.config.apiEndpoints.crearReserva = window.crearReservaUrl;
+    }
+    if (window.horariosOcupadosUrl) {
+      CalendarioApp.config.apiEndpoints.horariosOcupados = window.horariosOcupadosUrl;
+    }
+    if (window.logoutUrl) {
+      CalendarioApp.config.apiEndpoints.logout = window.logoutUrl;
+    }
+    
+    // Inicializar calendario si existe
+    if (document.getElementById('calendar')) {
+      CalendarioApp.Calendar.init();
+    }
+    
+    console.log('CalendarioApp inicializado correctamente');
+  };
   
-  // Configurar URLs de API si están disponibles
+  // Si las URLs ya están configuradas, inicializar inmediatamente
   if (window.calendarioApiUrl) {
-    CalendarioApp.config.apiEndpoints.reservas = window.calendarioApiUrl;
+    initCalendar();
+  } else {
+    // Si no, esperar un poco y verificar de nuevo
+    setTimeout(() => {
+      if (window.calendarioApiUrl) {
+        initCalendar();
+      } else {
+        console.warn('URLs de API no configuradas, inicializando sin calendario');
+        initCalendar();
+      }
+    }, 100);
   }
-  if (window.crearReservaUrl) {
-    CalendarioApp.config.apiEndpoints.crearReserva = window.crearReservaUrl;
-  }
-  if (window.horariosOcupadosUrl) {
-    CalendarioApp.config.apiEndpoints.horariosOcupados = window.horariosOcupadosUrl;
-  }
-  if (window.logoutUrl) {
-    CalendarioApp.config.apiEndpoints.logout = window.logoutUrl;
-  }
-  
-  console.log('CalendarioApp inicializado correctamente');
 });
 
 // ===== FUNCIONES GLOBALES PARA COMPATIBILIDAD =====
