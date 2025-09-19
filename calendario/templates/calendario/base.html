@@ -153,6 +153,11 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
     
+    <!-- Configuración global de URLs -->
+    <script>
+        window.logoutUrl = '{% url "logout" %}';
+    </script>
+    
            <!-- JavaScript consolidado -->
            <script src="{% static 'js/app-consolidated.js' %}"></script>
            <script src="{% static 'js/calendar-views.js' %}"></script>

@@ -355,6 +355,44 @@
   padding: var(--space-lg);
 }
 
+/* Botón de cerrar del modal */
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-on-dark);
+  opacity: 0.8;
+  transition: all var(--transition-fast);
+  padding: 0.5rem;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+}
+
+.btn-close:hover {
+  color: var(--text-on-dark);
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.btn-close:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.btn-close::before {
+  content: '×';
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
 /* ===== BADGES ===== */
 .badge-modern {
   display: inline-flex;

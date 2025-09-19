@@ -475,6 +475,9 @@ CalendarioApp.Calendar = {
     if (window.CalendarioApp && CalendarioApp.CalendarViews) {
       CalendarioApp.CalendarViews.integrateWithCalendar(this.calendar);
     }
+    
+    // Establecer vista semanal por defecto
+    this.calendar.changeView('timeGridWeek');
   },
   
   initializeSalasData: function() {
@@ -537,7 +540,7 @@ CalendarioApp.Calendar = {
     
     this.calendar = new FullCalendar.Calendar(calendarEl, {
       locale: 'es',
-      initialView: 'dayGridMonth',
+      initialView: 'timeGridWeek',
       lazyFetching: false,
       headerToolbar: false, // Deshabilitamos el header del calendario para usar nuestros controles
       views: {
@@ -867,6 +870,7 @@ CalendarioApp.Calendar = {
     if (recursoSelect) {
       recursoSelect.addEventListener('change', () => {
         this.updateSalaSelectedInfo();
+        this.updateTimeOptionsForSala();
       });
     }
     
@@ -1049,6 +1053,7 @@ CalendarioApp.Calendar = {
     horaInicioSelect.innerHTML = '<option value="">Seleccionar hora</option>';
     horaFinSelect.innerHTML = '<option value="">Seleccionar hora</option>';
     
+    // Generar opciones de hora de inicio (7:00 a 15:30)
     for (let hora = 7; hora <= 15; hora++) {
       for (let minuto = 0; minuto < 60; minuto += 30) {
         if (hora === 15 && minuto > 30) break;
@@ -1058,14 +1063,26 @@ CalendarioApp.Calendar = {
         const horaCompleta = `${horaStr}:${minutoStr}`;
         
         const optionInicio = new Option(horaCompleta, horaCompleta);
-        const optionFin = new Option(horaCompleta, horaCompleta);
-        
         horaInicioSelect.add(optionInicio);
+      }
+    }
+    
+    // Generar opciones de hora de fin (7:30 a 16:00)
+    for (let hora = 7; hora <= 16; hora++) {
+      for (let minuto = 0; minuto < 60; minuto += 30) {
+        if (hora === 7 && minuto < 30) continue; // Empezar desde 7:30
+        if (hora === 16 && minuto > 0) break; // Terminar en 16:00
+        
+        const horaStr = hora.toString().padStart(2, '0');
+        const minutoStr = minuto.toString().padStart(2, '0');
+        const horaCompleta = `${horaStr}:${minutoStr}`;
+        
+        const optionFin = new Option(horaCompleta, horaCompleta);
         horaFinSelect.add(optionFin);
       }
     }
     
-    const fechaInput = document.getElementById('id_fecha');
+    const fechaInput = document.getElementById('fecha');
     if (fechaInput) {
       const today = new Date();
       fechaInput.min = today.toISOString().split('T')[0];
@@ -1073,6 +1090,8 @@ CalendarioApp.Calendar = {
   },
   
   setupTimeValidation: function(horaInicioSelect, horaFinSelect) {
+    const self = this; // Guardar referencia al contexto
+    
     horaInicioSelect.addEventListener('change', function() {
       const horaInicio = this.value;
       
@@ -1082,12 +1101,34 @@ CalendarioApp.Calendar = {
         const [hora, minuto] = horaInicio.split(':').map(Number);
         const horaInicioMinutos = hora * 60 + minuto;
         
-        for (let h = 7; h <= 15; h++) {
+        // Obtener la sala seleccionada para aplicar restricciones
+        const recursoSelect = document.getElementById('recurso');
+        const salaSeleccionada = recursoSelect ? recursoSelect.value : null;
+        const esComedor = salaSeleccionada && self.isComedor(salaSeleccionada);
+        
+        // Generar opciones de hora de fin (7:30 a 16:00)
+        for (let h = 7; h <= 16; h++) {
           for (let m = 0; m < 60; m += 30) {
-            if (h === 15 && m > 30) break;
+            if (h === 7 && m < 30) continue; // Empezar desde 7:30
+            if (h === 16 && m > 0) break; // Terminar en 16:00
             
             const horaActualMinutos = h * 60 + m;
+            
+            // Solo agregar si es posterior a la hora de inicio
             if (horaActualMinutos > horaInicioMinutos) {
+              // Aplicar restricciones del comedor
+              if (esComedor) {
+                // No permitir reservas que se extiendan durante el horario de comida (12:00-14:30)
+                const horaFinMinutos = horaActualMinutos;
+                const inicioComida = 12 * 60; // 12:00
+                const finComida = 14 * 60 + 30; // 14:30
+                
+                // Si la reserva se extiende durante el horario de comida, no permitir
+                if (horaInicioMinutos < finComida && horaFinMinutos > inicioComida) {
+                  continue;
+                }
+              }
+              
               const horaStr = h.toString().padStart(2, '0');
               const minutoStr = m.toString().padStart(2, '0');
               const horaCompleta = `${horaStr}:${minutoStr}`;
@@ -1099,6 +1140,64 @@ CalendarioApp.Calendar = {
         }
       }
     });
+  },
+  
+  isComedor: function(salaId) {
+    // Verificar si la sala seleccionada es el comedor
+    const recursoSelect = document.getElementById('recurso');
+    if (!recursoSelect) return false;
+    
+    const option = recursoSelect.querySelector(`option[value="${salaId}"]`);
+    if (!option) return false;
+    
+    const nombreSala = option.textContent.toLowerCase();
+    return nombreSala.includes('comedor');
+  },
+  
+  updateTimeOptionsForSala: function() {
+    const recursoSelect = document.getElementById('recurso');
+    const horaInicioSelect = document.getElementById('hora_inicio');
+    const horaFinSelect = document.getElementById('hora_fin');
+    
+    if (!recursoSelect || !horaInicioSelect || !horaFinSelect) return;
+    
+    const salaSeleccionada = recursoSelect.value;
+    const esComedor = this.isComedor(salaSeleccionada);
+    
+    // Limpiar opciones actuales
+    horaInicioSelect.innerHTML = '<option value="">Seleccionar hora</option>';
+    horaFinSelect.innerHTML = '<option value="">Seleccionar hora</option>';
+    
+    // Generar opciones de hora de inicio según la sala
+    if (esComedor) {
+      // Comedor: 7:00 a 11:30
+      for (let hora = 7; hora <= 11; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 30) {
+          if (hora === 11 && minuto > 30) break;
+          
+          const horaStr = hora.toString().padStart(2, '0');
+          const minutoStr = minuto.toString().padStart(2, '0');
+          const horaCompleta = `${horaStr}:${minutoStr}`;
+          
+          const option = new Option(horaCompleta, horaCompleta);
+          horaInicioSelect.add(option);
+        }
+      }
+    } else {
+      // Otras salas: 7:00 a 15:30
+      for (let hora = 7; hora <= 15; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 30) {
+          if (hora === 15 && minuto > 30) break;
+          
+          const horaStr = hora.toString().padStart(2, '0');
+          const minutoStr = minuto.toString().padStart(2, '0');
+          const horaCompleta = `${horaStr}:${minutoStr}`;
+          
+          const option = new Option(horaCompleta, horaCompleta);
+          horaInicioSelect.add(option);
+        }
+      }
+    }
   },
   
   setupMicroInteractions: function() {
@@ -1351,9 +1450,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== FUNCIONES GLOBALES PARA COMPATIBILIDAD =====
 window.handleLogout = function() {
-  if (CalendarioApp.config.apiEndpoints.logout) {
-    window.location.href = CalendarioApp.config.apiEndpoints.logout;
-  }
+  // Mostrar confirmación
+  CalendarioApp.Notifications.confirm(
+    '¿Estás seguro de que quieres cerrar sesión?',
+    {
+      title: 'Confirmar cierre de sesión',
+      icon: 'fas fa-sign-out-alt',
+      confirmText: 'Sí, cerrar sesión',
+      cancelText: 'Cancelar'
+    }
+  ).then(function(confirmed) {
+    if (confirmed) {
+      // Mostrar notificación de procesamiento
+      CalendarioApp.Notifications.show('Cerrando sesión...', 'loading', 0, {
+        title: 'Procesando',
+        icon: 'fas fa-spinner fa-spin',
+        closable: false
+      });
+      
+      // Crear y enviar formulario de logout
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = window.logoutUrl || CalendarioApp.config.apiEndpoints.logout || '/logout/';
+      
+      const csrfToken = document.createElement('input');
+      csrfToken.type = 'hidden';
+      csrfToken.name = 'csrfmiddlewaretoken';
+      csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+      
+      form.appendChild(csrfToken);
+      document.body.appendChild(form);
+      form.submit();
+    }
+  });
 };
 
 window.crearReserva = function() {

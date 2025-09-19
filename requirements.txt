@@ -12,3 +12,7 @@ gunicorn>=20.1.0
 
 # Archivos estáticos
 whitenoise>=6.0.0
+
+# Exportación de calendarios
+reportlab>=4.0.0
+icalendar>=5.0.0
