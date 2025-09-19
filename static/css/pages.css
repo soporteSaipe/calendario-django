@@ -1,0 +1,612 @@
+/**
+ * ESTILOS ESPECÍFICOS DE PÁGINAS
+ * Calendario, login, reservas, etc.
+ */
+
+/* ===== NAVBAR ===== */
+.navbar-modern {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-bottom: 3px solid var(--primary);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-md) 0;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.navbar-brand:hover {
+  color: var(--primary);
+  transform: translateY(-1px);
+  transition: var(--transition-fast);
+  text-decoration: none;
+}
+
+.navbar-brand i {
+  color: var(--primary);
+  font-size: 1.3rem;
+}
+
+.professional-badge {
+  background: var(--primary);
+  color: var(--text-on-dark);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-xs);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+  position: relative;
+  text-decoration: none;
+}
+
+.nav-link:hover:not(.active) {
+  background: rgba(248, 187, 217, 0.1);
+  color: var(--primary);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.navbar-modern .navbar-nav .nav-item .nav-link.active {
+  background-color: var(--primary);
+  color: var(--text-on-dark);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+}
+
+.navbar-modern .navbar-nav .nav-item .nav-link.active:hover {
+  background-color: var(--primary-dark);
+  color: var(--text-on-dark);
+  transform: translateY(-1px);
+}
+
+.dropdown-menu {
+  border: none;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--border-radius-md);
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-accent);
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+.navbar-toggler i {
+  color: var(--primary);
+  font-size: 1.25rem;
+}
+
+/* ===== LOGIN ===== */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-accent) 100%);
+  padding: var(--space-xl) var(--space-md);
+}
+
+.login-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--bg-accent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.login-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-on-dark);
+  padding: var(--space-xl);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+}
+
+.login-header h4 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.login-header .spring-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-sm);
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.login-body {
+  padding: var(--space-xl);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: var(--text-on-dark);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+}
+
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+}
+
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
+}
+
+.login-help {
+  text-align: center;
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: rgba(248, 187, 217, 0.1);
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(248, 187, 217, 0.2);
+}
+
+.login-help small {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.login-help strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ===== CALENDARIO ===== */
+.calendar-container {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-header-modern {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-bottom: 1px solid var(--primary);
+  padding: var(--space-lg);
+  font-weight: 700;
+  color: var(--text-on-dark);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar-header-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent);
+  transition: left 0.6s ease;
+}
+
+.calendar-header-modern:hover::before {
+  left: 100%;
+}
+
+.calendar-header-modern h4,
+.calendar-header-modern h5,
+.calendar-header-modern i,
+.calendar-header-modern #salaTitulo {
+  color: var(--text-on-dark);
+  font-weight: 700;
+  transition: color var(--transition-normal);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* FullCalendar personalizado */
+.fc {
+  font-family: 'Inter', sans-serif;
+}
+
+.fc-toolbar {
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--bg-accent);
+  border-radius: var(--border-radius-md);
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fc-button {
+  background: var(--primary);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  color: var(--text-on-dark);
+  transition: var(--transition-fast);
+}
+
+.fc-button:hover {
+  background: var(--primary-dark);
+  color: var(--text-on-dark);
+}
+
+.fc-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(248, 187, 217, 0.25);
+}
+
+.fc-button-primary:not(:disabled):active {
+  background: var(--primary);
+  color: var(--text-on-dark);
+}
+
+.fc-button-primary:not(:disabled).fc-button-active {
+  background: var(--primary-dark);
+  color: var(--text-on-dark);
+}
+
+/* Eventos del calendario */
+.fc-event {
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.fc-event:hover {
+  opacity: 0.8;
+}
+
+.fc-event-title {
+  font-weight: 600;
+}
+
+.fc-event-time {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+/* Celdas del calendario */
+.fc-daygrid-day {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.fc-daygrid-day:hover {
+  background: rgba(248, 187, 217, 0.1);
+}
+
+.fc-daygrid-day-number {
+  padding: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.fc-day-today {
+  background: rgba(248, 187, 217, 0.1);
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  background: var(--primary);
+  color: var(--text-on-dark);
+  border-radius: var(--border-radius-full);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem;
+}
+
+.fc-col-header-cell {
+  background: var(--bg-accent);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.fc-daygrid-day-frame {
+  min-height: 6rem;
+  padding: 0.25rem;
+}
+
+.fc-daygrid-day-events {
+  margin-top: 0.25rem;
+}
+
+.fc-daygrid-event {
+  margin-bottom: 0.125rem;
+}
+
+/* Vista de semana */
+.fc-timegrid-slot {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  height: 2rem;
+}
+
+.fc-timegrid-slot-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.25rem;
+}
+
+.fc-timegrid-event {
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.25rem;
+  font-size: 0.875rem;
+}
+
+/* Popover del calendario */
+.fc-popover {
+  border: none;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.fc-popover-header {
+  background: var(--primary);
+  color: var(--text-on-dark);
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.fc-popover-body {
+  background: var(--bg-secondary);
+  padding: 1rem;
+}
+
+/* ===== SELECCIÓN DE SALA ===== */
+.sala-color-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--border-radius-full);
+  border: 2px solid #e5e7eb;
+  transition: all var(--transition-normal);
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.sala-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .navbar-modern {
+    padding: 0.75rem 0;
+  }
+  
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+  
+  .professional-badge {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .login-container {
+    padding: var(--space-md);
+  }
+  
+  .login-card {
+    max-width: none;
+    margin: 0;
+  }
+  
+  .login-header {
+    padding: var(--space-lg);
+  }
+  
+  .login-header h4 {
+    font-size: 1.25rem;
+  }
+  
+  .login-body {
+    padding: var(--space-lg);
+  }
+  
+  .fc-toolbar {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.25rem;
+  }
+  
+  .fc-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+  }
+  
+  .fc-daygrid-day-frame {
+    min-height: 4rem;
+  }
+  
+  .fc-event {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  .fc-daygrid-day-number {
+    font-size: 0.875rem;
+  }
+  
+  .fc-day-today .fc-daygrid-day-number {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-container {
+    padding: var(--space-md) 0.5rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .professional-badge {
+    font-size: 0.55rem;
+    padding: 0.15rem 0.3rem;
+  }
+  
+  .login-header {
+    padding: var(--space-md);
+  }
+  
+  .login-body {
+    padding: var(--space-md);
+  }
+  
+  .form-control-modern,
+  .form-select-modern {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .btn-login {
+    padding: 0.875rem;
+    font-size: 0.9rem;
+  }
+  
+  .calendar-container {
+    padding: 0.5rem;
+  }
+  
+  .fc-toolbar {
+    padding: 0.75rem;
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.1rem;
+  }
+  
+  .fc-button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .fc-daygrid-day-frame {
+    min-height: 3rem;
+  }
+  
+  .fc-event {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.2rem;
+  }
+  
+  .fc-col-header-cell {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* ===== MODO OSCURO ===== */
+@media (prefers-color-scheme: dark) {
+  .login-card {
+    background: rgba(30, 30, 30, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .form-control-modern {
+    background: rgba(40, 40, 40, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-on-dark);
+  }
+  
+  .form-control-modern:focus {
+    background: rgba(50, 50, 50, 0.9);
+  }
+  
+  .login-help {
+    background: rgba(248, 187, 217, 0.1);
+    border-color: rgba(248, 187, 217, 0.2);
+  }
+}

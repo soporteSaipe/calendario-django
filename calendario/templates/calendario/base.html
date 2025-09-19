@@ -10,20 +10,14 @@
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% load static %}
-    <link href="{% static 'css/spring-theme/spring-theme.css' %}" rel="stylesheet">
-    <link href="{% static 'css/base.css' %}" rel="stylesheet">
-    <link href="{% static 'css/navbar.css' %}" rel="stylesheet">
-    <link href="{% static 'css/calendar.css' %}" rel="stylesheet">
-    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
-    <link href="{% static 'css/header.css' %}" rel="stylesheet">
-    <link href="{% static 'css/header-override.css' %}" rel="stylesheet">
-    <link href="{% static 'css/glassmorphism.css' %}" rel="stylesheet">
-    <link href="{% static 'css/animations.css' %}" rel="stylesheet">
-    <link href="{% static 'css/notifications.css' %}" rel="stylesheet">
-    <link href="{% static 'css/loading-states.css' %}" rel="stylesheet">
-    <link href="{% static 'css/ux-utils.css' %}" rel="stylesheet">
-    <link href="{% static 'css/login-forms.css' %}" rel="stylesheet">
-    <!-- <link href="{% static 'css/falling-leaves.css' %}" rel="stylesheet"> -->
+    <!-- Archivos CSS consolidados y optimizados -->
+    <link href="{% static 'css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'css/color-system.css' %}" rel="stylesheet">
+    <link href="{% static 'css/components.css' %}" rel="stylesheet">
+    <link href="{% static 'css/pages.css' %}" rel="stylesheet">
+    <link href="{% static 'css/utilities.css' %}" rel="stylesheet">
+    <link href="{% static 'css/optimization.css' %}" rel="stylesheet">
+    <!-- Efectos especiales -->
     <link href="{% static 'css/falling-petals.css' %}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
@@ -132,21 +126,15 @@
         </div>
     </footer>
 
+    <!-- Librerías externas -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
     
-    <script src="{% static 'js/accessibility-improvements.js' %}"></script>
-    <script src="{% static 'js/animations.js' %}"></script>
-    <script src="{% static 'js/notifications.js' %}"></script>
-    <script src="{% static 'js/notifications-enhanced.js' %}"></script>
-    <script src="{% static 'js/loading-states.js' %}"></script>
-    <script src="{% static 'js/ux-utils.js' %}"></script>
-    <script src="{% static 'js/base-ux.js' %}"></script>
-    <!-- <script src="{% static 'js/falling-leaves.js' %}"></script> -->
-    <!-- <script src="{% static 'js/wind-effects.js' %}"></script> -->
+    <!-- JavaScript consolidado -->
+    <script src="{% static 'js/app-consolidated.js' %}"></script>
     
-    <!-- Nuevo sistema de Canvas -->
+    <!-- Efectos especiales -->
     <script type="module" src="{% static 'js/fallingPetals.js' %}"></script>
     <script src="{% static 'js/fallingPetals-integration.js' %}"></script>
     
