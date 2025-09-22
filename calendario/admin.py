@@ -2,14 +2,27 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
+from django.db.models import Count, Q
+from django.utils import timezone
 from .models import Recurso, Reserva
 
 @admin.register(Recurso)
 class RecursoAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'capacidad', 'activo', 'color_preview', 'color']
-    list_filter = ['activo']
+    list_display = ['nombre', 'capacidad', 'activo', 'reservas_count', 'reservas_hoy', 'color_preview', 'color']
+    list_filter = ['activo', 'capacidad']
     search_fields = ['nombre', 'descripcion']
     list_editable = ['activo', 'color']
+    list_per_page = 20  # Paginación para móviles
+    save_on_top = True  # Botones de guardar arriba
+    fieldsets = (
+        ('Información Básica', {
+            'fields': ('nombre', 'descripcion', 'capacidad')
+        }),
+        ('Configuración', {
+            'fields': ('activo', 'color'),
+            'classes': ('collapse',)
+        }),
+    )
     
     def color_preview(self, obj):
         """Mostrar una vista previa del color"""
@@ -19,6 +32,22 @@ class RecursoAdmin(admin.ModelAdmin):
         )
     color_preview.short_description = 'Color'
     color_preview.allow_tags = True
+    
+    def reservas_count(self, obj):
+        """Mostrar cantidad de reservas para este recurso"""
+        count = obj.reserva_set.filter(estado='confirmada').count()
+        return format_html('<span style="color: #007bff; font-weight: bold;">{}</span>', count)
+    reservas_count.short_description = 'Reservas'
+    
+    def reservas_hoy(self, obj):
+        """Mostrar reservas de hoy para este recurso"""
+        hoy = timezone.now().date()
+        count = obj.reserva_set.filter(
+            fecha_inicio__date=hoy,
+            estado='confirmada'
+        ).count()
+        return format_html('<span style="color: #28a745; font-weight: bold;">{}</span>', count)
+    reservas_hoy.short_description = 'Hoy'
     
     def get_form(self, request, obj=None, **kwargs):
         """Personalizar el formulario para usar input de tipo color"""
@@ -33,10 +62,25 @@ class RecursoAdmin(admin.ModelAdmin):
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
     list_display = ['titulo', 'recurso', 'usuario', 'fecha_inicio', 'fecha_fin', 'estado']
-    list_filter = ['estado', 'recurso', 'fecha_inicio']
-    search_fields = ['titulo', 'descripcion', 'usuario__username']
+    list_filter = ['estado', 'recurso', 'fecha_inicio', 'fecha_creacion']
+    search_fields = ['titulo', 'descripcion', 'usuario__username', 'usuario__first_name', 'usuario__last_name']
     date_hierarchy = 'fecha_inicio'
     list_editable = ['estado']
+    list_per_page = 25  # Paginación para móviles
+    save_on_top = True  # Botones de guardar arriba
+    readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
+    fieldsets = (
+        ('Información de la Reserva', {
+            'fields': ('titulo', 'descripcion', 'recurso', 'usuario')
+        }),
+        ('Horarios', {
+            'fields': ('fecha_inicio', 'fecha_fin', 'estado')
+        }),
+        ('Metadatos', {
+            'fields': ('fecha_creacion', 'fecha_actualizacion'),
+            'classes': ('collapse',)
+        }),
+    )
 
 # Configuración personalizada para el modelo User
 class UserAdmin(BaseUserAdmin):
@@ -75,3 +119,33 @@ class UserAdmin(BaseUserAdmin):
 # Desregistrar el UserAdmin por defecto y registrar el personalizado
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+# Configuración personalizada del sitio admin
+admin.site.site_header = "Sistema de Reservas SAIPE"
+admin.site.site_title = "Admin Reservas"
+admin.site.index_title = "Panel de Administración"
+
+# Vista personalizada para estadísticas
+class EstadisticasAdmin(admin.AdminSite):
+    def index(self, request, extra_context=None):
+        """Vista personalizada del índice con estadísticas"""
+        hoy = timezone.now().date()
+        semana_pasada = hoy - timezone.timedelta(days=7)
+        
+        # Estadísticas generales
+        stats = {
+            'total_recursos': Recurso.objects.filter(activo=True).count(),
+            'total_reservas': Reserva.objects.count(),
+            'reservas_hoy': Reserva.objects.filter(fecha_inicio__date=hoy).count(),
+            'reservas_semana': Reserva.objects.filter(fecha_inicio__date__gte=semana_pasada).count(),
+            'usuarios_activos': User.objects.filter(is_active=True).count(),
+            'recurso_mas_usado': Reserva.objects.values('recurso__nombre').annotate(
+                count=Count('id')
+            ).order_by('-count').first(),
+        }
+        
+        if extra_context is None:
+            extra_context = {}
+        extra_context['stats'] = stats
+        
+        return super().index(request, extra_context)

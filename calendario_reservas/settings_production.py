@@ -53,13 +53,55 @@ DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL)
 }
 
-# Configuración de cache
+# Configuración de cache mejorada para producción
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            },
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+            'PARSER_CLASS': 'redis.connection.DefaultParser',
+        },
+        'KEY_PREFIX': 'calendario_saipe',
+        'TIMEOUT': 300,  # 5 minutos por defecto
+        'VERSION': 1,
+    },
+    # Cache específico para recursos (más rápido)
+    'recursos': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/2'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'calendario_recursos',
+        'TIMEOUT': 600,  # 10 minutos para recursos
     }
 }
+
+# Si Redis no está disponible, usar cache en memoria como fallback
+try:
+    import redis
+    redis_client = redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379/1'))
+    redis_client.ping()
+    print("✅ Redis cache configurado correctamente")
+except Exception as e:
+    print(f"⚠️  Redis no disponible, usando cache en memoria: {e}")
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 300,
+    }
+    CACHES['recursos'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake-recursos',
+        'TIMEOUT': 600,
+    }
 
 # Configuración de logging para producción
 LOGGING = {
@@ -87,6 +129,12 @@ LOGGING = {
 # Configuración de archivos estáticos con WhiteNoise
 if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+# Agregar middleware personalizado si no está presente
+if 'calendario.middleware.RequestLoggingMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.append('calendario.middleware.RequestLoggingMiddleware')
+if 'calendario.middleware.CalendarioErrorMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.append('calendario.middleware.CalendarioErrorMiddleware')
 
 # Configuración adicional de WhiteNoise
 WHITENOISE_USE_FINDERS = True

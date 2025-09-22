@@ -11,24 +11,12 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% load static %}
     <!-- Archivos CSS consolidados y optimizados -->
-    <link href="{% static 'css/main.css' %}" rel="stylesheet">
-    <link href="{% static 'css/color-system.css' %}" rel="stylesheet">
+    <link href="{% static 'css/core.css' %}" rel="stylesheet">
     <link href="{% static 'css/components.css' %}" rel="stylesheet">
+    <link href="{% static 'css/features.css' %}" rel="stylesheet">
+    <link href="{% static 'css/effects.css' %}" rel="stylesheet">
     <link href="{% static 'css/pages.css' %}" rel="stylesheet">
-    <link href="{% static 'css/utilities.css' %}" rel="stylesheet">
     <link href="{% static 'css/optimization.css' %}" rel="stylesheet">
-    <!-- Componentes mejorados -->
-    <link href="{% static 'css/sala-selector-enhanced.css' %}" rel="stylesheet">
-    <link href="{% static 'css/modal-unified.css' %}" rel="stylesheet">
-           <link href="{% static 'css/breadcrumbs.css' %}" rel="stylesheet">
-           <link href="{% static 'css/loading-states.css' %}" rel="stylesheet">
-           <link href="{% static 'css/modal-details.css' %}" rel="stylesheet">
-           <link href="{% static 'css/phase2-buttons.css' %}" rel="stylesheet">
-           <link href="{% static 'css/calendar-views.css' %}" rel="stylesheet">
-           <link href="{% static 'css/realtime-notifications.css' %}" rel="stylesheet">
-           <link href="{% static 'css/calendar-export.css' %}" rel="stylesheet">
-           <!-- Efectos especiales -->
-           <link href="{% static 'css/falling-petals.css' %}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -55,6 +43,15 @@
                         </a>
                     </li>
                     {% if user.is_authenticated %}
+                    {% if user.is_staff or user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                           href="{% url 'calendario:dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'mis_reservas' %}active{% endif %}" 
                            href="{% url 'calendario:mis_reservas' %}">

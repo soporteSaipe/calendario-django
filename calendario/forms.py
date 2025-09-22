@@ -9,27 +9,33 @@ class ReservaForm(forms.ModelForm):
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'class': 'form-control-modern',
-                'placeholder': 'Título de la reserva'
+                'placeholder': 'Título de la reserva',
+                'autocomplete': 'off',
+                'data-autocomplete': 'titulo'
             }),
             'descripcion': forms.Textarea(attrs={
                 'class': 'form-control-modern',
                 'rows': 3,
-                'placeholder': 'Descripción de la reserva'
+                'placeholder': 'Descripción de la reserva',
+                'autocomplete': 'off'
             }),
             'fecha_inicio': forms.DateTimeInput(attrs={
                 'class': 'form-control-modern',
                 'type': 'datetime-local',
                 'min': '07:00',
-                'max': '16:00'
+                'max': '16:00',
+                'data-validation': 'datetime'
             }),
             'fecha_fin': forms.DateTimeInput(attrs={
                 'class': 'form-control-modern',
                 'type': 'datetime-local',
                 'min': '07:00',
-                'max': '16:00'
+                'max': '16:00',
+                'data-validation': 'datetime'
             }),
             'recurso': forms.Select(attrs={
-                'class': 'form-control-modern'
+                'class': 'form-control-modern',
+                'data-validation': 'required'
             })
         }
         labels = {

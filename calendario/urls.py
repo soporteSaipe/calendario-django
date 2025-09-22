@@ -5,6 +5,7 @@ app_name = 'calendario'
 
 urlpatterns = [
     path('', views.calendario_view, name='calendario'),
+    path('dashboard/', views.dashboard, name='dashboard'),
     path('crear/', views.crear_reserva, name='crear_reserva'),
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
     path('editar/<int:reserva_id>/', views.editar_reserva, name='editar_reserva'),

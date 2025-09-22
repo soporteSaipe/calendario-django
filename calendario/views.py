@@ -1,21 +1,25 @@
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.core.cache import cache
 from django.urls import reverse
+from django.core.exceptions import ValidationError
+from django.db.models import Q, Count
+from django.core.paginator import Paginator
 
 from .models import Recurso, Reserva
 from .forms import ReservaForm
+from .utils import ReservaService, CacheService, DateTimeService
+
+logger = logging.getLogger('calendario')
 
 def calendario_view(request):
     """Vista principal del calendario"""
-    # Reducir cache a 30 segundos para cambios más rápidos en admin
-    cache_key = 'recursos_activos'
-    recursos = cache.get(cache_key)
-    if recursos is None:
-        recursos = list(Recurso.objects.filter(activo=True))
-        cache.set(cache_key, recursos, 30)
+    logger.info(f'Acceso al calendario por usuario: {request.user.username if request.user.is_authenticated else "Anónimo"}')
+    
+    # Obtener recursos activos usando el servicio de cache
+    recursos = CacheService.get_recursos_activos()
     
     # Obtener sala seleccionada desde parámetro URL
     sala_seleccionada = request.GET.get('sala')
@@ -24,12 +28,15 @@ def calendario_view(request):
     if sala_seleccionada:
         try:
             sala_activa = Recurso.objects.get(id=sala_seleccionada, activo=True)
+            logger.debug(f'Sala seleccionada: {sala_activa.nombre}')
         except Recurso.DoesNotExist:
+            logger.warning(f'Intento de acceso a sala inexistente: {sala_seleccionada}')
             sala_activa = None
     
     # Si no hay sala seleccionada, usar la primera disponible
     if not sala_activa and recursos:
         sala_activa = recursos[0]
+        logger.debug(f'Usando sala por defecto: {sala_activa.nombre if sala_activa else "Ninguna"}')
     
     context = {
         'recursos': recursos,
@@ -42,6 +49,7 @@ def calendario_view(request):
 def crear_reserva(request):
     """Vista para crear una nueva reserva"""
     if not request.user.is_authenticated:
+        logger.warning('Intento de crear reserva sin autenticación')
         messages.error(request, 'Debes iniciar sesión para crear reservas.')
         return redirect('login')
     
@@ -50,12 +58,15 @@ def crear_reserva(request):
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         try:
+            # Extraer datos del POST
             recurso_id = request.POST.get('recurso')
             titulo = request.POST.get('titulo')
             descripcion = request.POST.get('descripcion', '')
             fecha = request.POST.get('fecha')
             hora_inicio = request.POST.get('hora_inicio')
             hora_fin = request.POST.get('hora_fin')
+            
+            logger.info(f'Creando reserva: usuario={request.user.username}, recurso={recurso_id}, fecha={fecha}')
             
             # Validar campos obligatorios
             campos_requeridos = {
@@ -71,6 +82,7 @@ def crear_reserva(request):
             
             if campos_faltantes:
                 error_msg = f'Campos obligatorios faltantes: {", ".join(campos_faltantes)}'
+                logger.warning(f'Campos faltantes en creación de reserva: {campos_faltantes}')
                 if is_ajax:
                     return JsonResponse({'success': False, 'error': error_msg}, status=400)
                 messages.error(request, error_msg)
@@ -81,107 +93,35 @@ def crear_reserva(request):
                 recurso = Recurso.objects.get(id=recurso_id, activo=True)
             except Recurso.DoesNotExist:
                 error_msg = 'El recurso seleccionado no existe o no está activo'
+                logger.warning(f'Intento de reservar recurso inexistente: {recurso_id}')
                 if is_ajax:
                     return JsonResponse({'success': False, 'error': error_msg}, status=400)
                 messages.error(request, error_msg)
                 return redirect('calendario:calendario')
             
-            # Crear fechas
-            from datetime import datetime
-            from django.utils import timezone
-            from django.conf import settings
-            
+            # Crear fechas usando el servicio
             try:
-                # Crear datetime naive primero
-                fecha_inicio_naive = datetime.strptime(f"{fecha} {hora_inicio}", "%Y-%m-%d %H:%M")
-                fecha_fin_naive = datetime.strptime(f"{fecha} {hora_fin}", "%Y-%m-%d %H:%M")
-                
-                # Debug: Imprimir fechas antes de la conversión
-                print(f"DEBUG - Fecha inicio naive: {fecha_inicio_naive}")
-                print(f"DEBUG - Fecha fin naive: {fecha_fin_naive}")
-                print(f"DEBUG - Zona horaria actual: {timezone.get_current_timezone()}")
-                print(f"DEBUG - TIME_ZONE setting: {settings.TIME_ZONE}")
-                
-                # Importar pytz para manejo más preciso de zonas horarias
-                import pytz
-                
-                # Obtener la zona horaria de Buenos Aires
-                buenos_aires_tz = pytz.timezone('America/Argentina/Buenos_Aires')
-                
-                # Localizar las fechas en la zona horaria de Buenos Aires
-                # Esto asegura que 10:30 se interprete como 10:30 en Buenos Aires, no en US East
-                fecha_inicio = buenos_aires_tz.localize(fecha_inicio_naive)
-                fecha_fin = buenos_aires_tz.localize(fecha_fin_naive)
-                
-                # Debug: Imprimir fechas después de la conversión
-                print(f"DEBUG - Fecha inicio aware: {fecha_inicio}")
-                print(f"DEBUG - Fecha fin aware: {fecha_fin}")
-                print(f"DEBUG - Fecha inicio UTC: {fecha_inicio.astimezone(pytz.UTC)}")
-                print(f"DEBUG - Fecha fin UTC: {fecha_fin.astimezone(pytz.UTC)}")
-            except ValueError as e:
-                error_msg = f'Error en el formato de fecha: {str(e)}'
+                fecha_inicio = DateTimeService.parse_datetime_from_form(fecha, hora_inicio)
+                fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
+            except ValidationError as e:
+                logger.error(f'Error parseando fechas: {str(e)}')
                 if is_ajax:
-                    return JsonResponse({'success': False, 'error': error_msg}, status=400)
-                messages.error(request, error_msg)
+                    return JsonResponse({'success': False, 'error': str(e)}, status=400)
+                messages.error(request, str(e))
                 return redirect('calendario:calendario')
             
-            # Validar que la fecha de fin sea posterior a la de inicio
-            if fecha_fin <= fecha_inicio:
-                error_msg = 'La hora de fin debe ser posterior a la hora de inicio'
-                if is_ajax:
-                    return JsonResponse({'success': False, 'error': error_msg}, status=400)
-                messages.error(request, error_msg)
-                return redirect('calendario:calendario')
-            
-            # Verificar conflictos de horarios
-            reservas_conflicto = Reserva.objects.filter(
-                recurso=recurso,
-                estado='confirmada',
-                fecha_inicio__lt=fecha_fin,
-                fecha_fin__gt=fecha_inicio
-            )
-            
-            if reservas_conflicto.exists():
-                reserva_conflicto = reservas_conflicto.first()
-                error_msg = (f'Ya existe una reserva para este recurso en el horario seleccionado: '
-                           f'{reserva_conflicto.titulo} '
-                           f'({reserva_conflicto.fecha_inicio.strftime("%d/%m/%Y %H:%M")} - '
-                           f'{reserva_conflicto.fecha_fin.strftime("%d/%m/%Y %H:%M")})')
-                if is_ajax:
-                    return JsonResponse({'success': False, 'error': error_msg}, status=400)
-                messages.error(request, error_msg)
-                return redirect('calendario:calendario')
-            
-            # Verificar restricciones específicas del recurso
-            horarios_restringidos = recurso.get_horarios_restringidos()
-            for restriccion in horarios_restringidos:
-                hora_inicio_reserva = fecha_inicio.time()
-                hora_fin_reserva = fecha_fin.time()
-                hora_inicio_restriccion = datetime.strptime(restriccion['inicio'], '%H:%M').time()
-                hora_fin_restriccion = datetime.strptime(restriccion['fin'], '%H:%M').time()
-                
-                # Verificar si hay solapamiento con horario restringido
-                if (hora_inicio_reserva < hora_fin_restriccion and 
-                    hora_fin_reserva > hora_inicio_restriccion):
-                    error_msg = (f'No se puede reservar en el horario de {restriccion["inicio"]} a '
-                               f'{restriccion["fin"]} para {recurso.nombre}: {restriccion["motivo"]}')
-                    if is_ajax:
-                        return JsonResponse({'success': False, 'error': error_msg}, status=400)
-                    messages.error(request, error_msg)
-                    return redirect('calendario:calendario')
-            
-            # Crear la reserva
-            reserva = Reserva.objects.create(
-                recurso=recurso,
+            # Usar el servicio para crear la reserva
+            reserva = ReservaService.crear_reserva(
                 usuario=request.user,
+                recurso=recurso,
                 titulo=titulo,
                 descripcion=descripcion,
                 fecha_inicio=fecha_inicio,
-                fecha_fin=fecha_fin,
-                estado='confirmada'
+                fecha_fin=fecha_fin
             )
             
             success_msg = f'Reserva creada exitosamente en {recurso.nombre}.'
+            
             if is_ajax:
                 return JsonResponse({
                     'success': True, 
@@ -191,11 +131,11 @@ def crear_reserva(request):
                     'recurso_nombre': recurso.nombre
                 })
             messages.success(request, success_msg)
-            # Redirigir con parámetro de sala para mostrar la sala donde se creó la reserva
             return redirect(f"{reverse('calendario:calendario')}?sala={recurso.id}")
             
         except Exception as e:
             error_msg = f'Error inesperado al crear la reserva: {str(e)}'
+            logger.error(f'Error inesperado en crear_reserva: {str(e)}', exc_info=True)
             if is_ajax:
                 return JsonResponse({'success': False, 'error': error_msg}, status=500)
             messages.error(request, error_msg)
@@ -208,8 +148,19 @@ def mis_reservas(request):
     """Vista para mostrar las reservas del usuario"""
     import json
     
-    reservas = Reserva.objects.filter(usuario=request.user).order_by('-fecha_inicio')
-    recursos = Recurso.objects.filter(activo=True)
+    logger.info(f'Acceso a mis reservas por usuario: {request.user.username}')
+    
+    # Optimizar consulta con select_related para evitar N+1 queries
+    reservas_query = Reserva.objects.filter(usuario=request.user).select_related(
+        'recurso', 'usuario'
+    ).order_by('-fecha_inicio')
+    
+    # Paginación simple
+    paginator = Paginator(reservas_query, 15)  # 15 reservas por página
+    page_number = request.GET.get('page')
+    reservas = paginator.get_page(page_number)
+    
+    recursos = CacheService.get_recursos_activos()
     
     # Crear JSON de salas para JavaScript
     salas_data = []
@@ -221,6 +172,8 @@ def mis_reservas(request):
         })
     
     salas_json = json.dumps(salas_data, ensure_ascii=False)
+    
+    logger.debug(f'Mostrando página {page_number or 1} con {len(reservas)} reservas para usuario {request.user.username}')
     
     context = {
         'reservas': reservas,
@@ -235,24 +188,31 @@ def editar_reserva(request, reserva_id):
     """Vista para editar una reserva"""
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     
+    logger.info(f'Edición de reserva ID: {reserva_id} por usuario: {request.user.username}')
+    
     if request.method == 'POST':
         # Verificar si es una petición AJAX
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
-        print(f"=== DEBUG EDICIÓN RESERVA ===")
-        print(f"Reserva ID: {reserva_id}")
-        print(f"Usuario: {request.user}")
-        print(f"Es AJAX: {is_ajax}")
-        print(f"Datos POST: {dict(request.POST)}")
-        
         form = ReservaForm(request.POST, instance=reserva)
-        print(f"Formulario válido: {form.is_valid()}")
-        if not form.is_valid():
-            print(f"Errores del formulario: {form.errors}")
         
         if form.is_valid():
-            form.save()
-            print("Reserva guardada exitosamente")
+            # Extraer datos del formulario
+            titulo = form.cleaned_data['titulo']
+            descripcion = form.cleaned_data['descripcion']
+            fecha_inicio = form.cleaned_data['fecha_inicio']
+            fecha_fin = form.cleaned_data['fecha_fin']
+            
+            # Usar el servicio para actualizar la reserva
+            reserva_actualizada = ReservaService.actualizar_reserva(
+                reserva=reserva,
+                titulo=titulo,
+                descripcion=descripcion,
+                fecha_inicio=fecha_inicio,
+                fecha_fin=fecha_fin
+            )
+            
+            logger.info(f'Reserva actualizada exitosamente: {reserva_id}')
             
             if is_ajax:
                 return JsonResponse({
@@ -263,6 +223,8 @@ def editar_reserva(request, reserva_id):
                 messages.success(request, 'Reserva actualizada exitosamente.')
                 return redirect('calendario:mis_reservas')
         else:
+            logger.warning(f'Formulario inválido en edición: {form.errors}')
+            
             if is_ajax:
                 return JsonResponse({
                     'success': False,
@@ -281,12 +243,15 @@ def eliminar_reserva(request, reserva_id):
     """Vista para eliminar una reserva"""
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     
+    logger.info(f'Eliminación de reserva ID: {reserva_id} por usuario: {request.user.username}')
+    
     if request.method == 'POST':
         # Verificar si es una petición AJAX
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         try:
             reserva.delete()
+            logger.info(f'Reserva eliminada exitosamente: {reserva_id}')
             
             if is_ajax:
                 return JsonResponse({
@@ -297,6 +262,8 @@ def eliminar_reserva(request, reserva_id):
                 messages.success(request, 'Reserva eliminada exitosamente.')
                 return redirect('calendario:mis_reservas')
         except Exception as e:
+            logger.error(f'Error al eliminar reserva {reserva_id}: {str(e)}', exc_info=True)
+            
             if is_ajax:
                 return JsonResponse({
                     'success': False,
@@ -308,12 +275,73 @@ def eliminar_reserva(request, reserva_id):
     
     return render(request, 'calendario/eliminar_reserva.html', {'reserva': reserva})
 
+
+@login_required
+def dashboard(request):
+    """Dashboard con métricas básicas - Solo para administradores"""
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    from django.contrib.auth.decorators import user_passes_test
+    
+    # Verificar que el usuario sea admin
+    if not request.user.is_staff and not request.user.is_superuser:
+        logger.warning(f'Intento de acceso al dashboard por usuario no admin: {request.user.username}')
+        messages.error(request, 'No tienes permisos para acceder al dashboard.')
+        return redirect('calendario:calendario')
+    
+    hoy = timezone.now().date()
+    semana_pasada = hoy - timedelta(days=7)
+    mes_pasado = hoy - timedelta(days=30)
+    
+    logger.info(f'Acceso al dashboard por admin: {request.user.username}')
+    
+    # Métricas globales del sistema
+    context = {
+        'reservas_hoy': Reserva.objects.filter(
+            fecha_inicio__date=hoy
+        ).count(),
+        
+        'reservas_semana': Reserva.objects.filter(
+            fecha_inicio__date__gte=semana_pasada
+        ).count(),
+        
+        'reservas_mes': Reserva.objects.filter(
+            fecha_inicio__date__gte=mes_pasado
+        ).count(),
+        
+        'recursos_activos': Recurso.objects.filter(activo=True).count(),
+        
+        'usuarios_activos': User.objects.filter(is_active=True).count(),
+        
+        'proxima_reserva': Reserva.objects.filter(
+            fecha_inicio__gte=timezone.now(),
+            estado='confirmada'
+        ).order_by('fecha_inicio').first(),
+        
+        'reservas_recientes': Reserva.objects.select_related('recurso', 'usuario').order_by('-fecha_inicio')[:10],
+        
+        'recurso_mas_usado': Reserva.objects.values('recurso__nombre').annotate(
+            count=Count('id')
+        ).order_by('-count').first(),
+        
+        'usuarios_mas_activos': Reserva.objects.values('usuario__username', 'usuario__first_name', 'usuario__last_name').annotate(
+            count=Count('id')
+        ).order_by('-count')[:5],
+    }
+    
+    logger.debug(f'Dashboard generado - Reservas hoy: {context["reservas_hoy"]}')
+    
+    return render(request, 'calendario/dashboard.html', context)
+
 def api_reservas(request):
     """API para obtener las reservas en formato JSON para el calendario"""
     fecha_inicio = request.GET.get('start')
     fecha_fin = request.GET.get('end')
     sala_id = request.GET.get('sala')
     
+    logger.debug(f'API reservas - Parámetros: start={fecha_inicio}, end={fecha_fin}, sala={sala_id}')
+    
+    # Consulta optimizada con select_related y prefetch_related
     reservas = Reserva.objects.select_related('recurso', 'usuario').filter(
         estado='confirmada'
     ).only(
@@ -332,14 +360,16 @@ def api_reservas(request):
                 fecha_inicio__lt=fecha_fin_dt,
                 fecha_fin__gt=fecha_inicio_dt
             )
-        except (ValueError, AttributeError):
-            pass
+            logger.debug(f'Filtro de fecha aplicado: {fecha_inicio_dt} - {fecha_fin_dt}')
+        except (ValueError, AttributeError) as e:
+            logger.warning(f'Error parseando fechas en API: {str(e)}')
     
     if sala_id and sala_id != 'todas':
         try:
             reservas = reservas.filter(recurso_id=sala_id)
-        except ValueError:
-            pass
+            logger.debug(f'Filtro de sala aplicado: {sala_id}')
+        except ValueError as e:
+            logger.warning(f'Error parseando sala_id: {str(e)}')
     
     eventos = [
         {
@@ -359,6 +389,8 @@ def api_reservas(request):
         }
         for reserva in reservas
     ]
+    
+    logger.debug(f'API reservas - Retornando {len(eventos)} eventos')
     
     return JsonResponse(eventos, safe=False)
 
@@ -419,7 +451,7 @@ def api_horarios_ocupados(request):
 
 def api_validar_conflicto(request):
     """
-    API para validar conflictos de reservas en tiempo real
+    API para validar conflictos de reservas en tiempo real usando el servicio centralizado
     """
     if request.method != 'GET':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
@@ -431,109 +463,69 @@ def api_validar_conflicto(request):
         hora_inicio = request.GET.get('hora_inicio')
         hora_fin = request.GET.get('hora_fin')
         
+        logger.debug(f'API validar conflicto - Parámetros: sala={sala_id}, fecha={fecha}, hora_inicio={hora_inicio}, hora_fin={hora_fin}')
+        
         if not all([sala_id, fecha, hora_inicio, hora_fin]):
+            logger.warning('Parámetros faltantes en API validar conflicto')
             return JsonResponse({'error': 'Parámetros faltantes'}, status=400)
         
-        # Convertir fecha
-        fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
-        
-        # Validar formato de horas
+        # Obtener recurso
         try:
-            hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
-            hora_fin_obj = datetime.strptime(hora_fin, '%H:%M').time()
-        except ValueError:
-            return JsonResponse({'error': 'Formato de hora inválido'}, status=400)
-        
-        # Validar que la hora de inicio sea anterior a la de fin
-        if hora_inicio_obj >= hora_fin_obj:
+            recurso = Recurso.objects.get(id=sala_id, activo=True)
+        except Recurso.DoesNotExist:
+            logger.warning(f'Recurso no encontrado: {sala_id}')
             return JsonResponse({
                 'conflicts': [{
-                    'type': 'time_validation',
-                    'message': 'La hora de inicio debe ser anterior a la hora de fin'
-                }]
+                    'type': 'resource_not_found',
+                    'message': 'La sala seleccionada no existe'
+                }],
+                'valid': False
             })
         
-        # Buscar conflictos de reservas existentes
-        conflictos = []
-        
-        # Verificar reservas existentes en el mismo horario
-        reservas_existentes = Reserva.objects.filter(
-            recurso_id=sala_id,
-            fecha=fecha_obj
-        ).exclude(
-            Q(hora_fin__lte=hora_inicio_obj) | Q(hora_inicio__gte=hora_fin_obj)
-        )
-        
-        for reserva in reservas_existentes:
-            conflictos.append({
-                'type': 'reserva_conflict',
-                'message': f'Conflicto con reserva existente: "{reserva.titulo}" ({reserva.hora_inicio} - {reserva.hora_fin})',
-                'reserva_id': reserva.id,
-                'reserva_titulo': reserva.titulo,
-                'reserva_hora_inicio': reserva.hora_inicio.strftime('%H:%M'),
-                'reserva_hora_fin': reserva.hora_fin.strftime('%H:%M')
-            })
-        
-        # Verificar restricciones del recurso
+        # Crear fechas usando el servicio
         try:
-            recurso = Recurso.objects.get(id=sala_id)
-            horarios_restringidos = recurso.get_horarios_restringidos()
+            fecha_inicio = DateTimeService.parse_datetime_from_form(fecha, hora_inicio)
+            fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
+        except ValidationError as e:
+            logger.warning(f'Error parseando fechas en validación: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        
+        # Usar el servicio para validar la reserva
+        try:
+            ReservaService.validar_reserva_completa(recurso, fecha_inicio, fecha_fin)
             
-            for restriccion in horarios_restringidos:
-                if (restriccion['hora_inicio'] < hora_fin_obj and 
-                    restriccion['hora_fin'] > hora_inicio_obj):
-                    conflictos.append({
-                        'type': 'restriction_conflict',
-                        'message': f'El horario solicitado está restringido: {restriccion["motivo"]}',
-                        'restriccion': restriccion
-                    })
-        except Recurso.DoesNotExist:
-            conflictos.append({
-                'type': 'resource_not_found',
-                'message': 'La sala seleccionada no existe'
+            logger.debug('Validación completada: válida=True')
+            
+            return JsonResponse({
+                'conflicts': [],
+                'valid': True,
+                'fecha': fecha,
+                'hora_inicio': hora_inicio,
+                'hora_fin': hora_fin,
+                'sala_id': sala_id
             })
-        
-        # Verificar horarios de trabajo (7:00 - 18:00)
-        if hora_inicio_obj < datetime.strptime('07:00', '%H:%M').time():
-            conflictos.append({
-                'type': 'working_hours',
-                'message': 'Las reservas solo pueden realizarse entre las 07:00 y 18:00'
-            })
-        
-        if hora_fin_obj > datetime.strptime('18:00', '%H:%M').time():
-            conflictos.append({
-                'type': 'working_hours',
-                'message': 'Las reservas solo pueden realizarse entre las 07:00 y 18:00'
-            })
-        
-        # Verificar que la fecha no sea en el pasado
-        hoy = datetime.now().date()
-        if fecha_obj < hoy:
-            conflictos.append({
-                'type': 'past_date',
-                'message': 'No se pueden realizar reservas en fechas pasadas'
-            })
-        
-        # Verificar que la fecha no sea más de 6 meses en el futuro
-        max_fecha = hoy + timedelta(days=180)
-        if fecha_obj > max_fecha:
-            conflictos.append({
-                'type': 'future_date',
-                'message': 'Las reservas solo pueden realizarse hasta 6 meses en el futuro'
-            })
+            
+        except Exception as validation_error:
+            # El middleware manejará las excepciones específicas
+            # Aquí solo capturamos cualquier error de validación
+            conflictos = [{
+                'type': 'validation_error',
+                'message': str(validation_error)
+            }]
+            
+            logger.debug(f'Validación completada: válida=False, errores={len(conflictos)}')
         
         return JsonResponse({
             'conflicts': conflictos,
-            'valid': len(conflictos) == 0,
+                'valid': False,
             'fecha': fecha,
             'hora_inicio': hora_inicio,
             'hora_fin': hora_fin,
             'sala_id': sala_id
         })
         
-    except ValueError as e:
-        return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
     except Exception as e:
+        logger.error(f'Error inesperado en API validar conflicto: {str(e)}', exc_info=True)
         return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
 
 

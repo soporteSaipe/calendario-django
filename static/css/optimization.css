@@ -1,7 +1,12 @@
 /**
- * OPTIMIZACIONES DE RENDIMIENTO
- * Mejoras para carga más rápida y mejor experiencia
+ * OPTIMIZATION.CSS - CONSOLIDADO
+ * Optimizaciones de rendimiento
+ * Generado automáticamente: 2025-09-22 12:34:30
+ * Archivos originales: optimization.css
  */
+
+/* ===== OPTIMIZATION.CSS ===== */
+
 
 /* ===== OPTIMIZACIONES DE RENDIMIENTO ===== */
 
@@ -331,3 +336,5 @@ html {
   will-change: auto;
   contain: layout style paint;
 }
+
+

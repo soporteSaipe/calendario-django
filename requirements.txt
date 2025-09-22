@@ -7,6 +7,10 @@ pytz>=2023.3
 # Base de datos PostgreSQL
 psycopg2-binary>=2.9.0
 
+# Cache Redis
+redis>=4.5.0
+django-redis>=5.4.0
+
 # Servidor web para producción
 gunicorn>=20.1.0
 

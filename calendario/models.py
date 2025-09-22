@@ -38,8 +38,9 @@ class Reserva(models.Model):
     """Modelo para representar las reservas"""
     ESTADOS = [
         ('confirmada', 'Confirmada'),
+        ('en_curso', 'En curso'),
+        ('terminada', 'Terminada'),
         ('cancelada', 'Cancelada'),
-        ('completada', 'Completada'),
     ]
     
     recurso = models.ForeignKey(Recurso, on_delete=models.CASCADE, verbose_name="Recurso")
