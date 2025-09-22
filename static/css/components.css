@@ -162,14 +162,14 @@
 }
 
 .btn-warning-modern {
-  background: linear-gradient(135deg, #FF9800 0%, var(--warning) 100%);
-  border-color: #FF9800;
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  border-color: var(--warning);
   color: var(--text-on-dark);
 }
 
 .btn-warning-modern:hover {
-  background: linear-gradient(135deg, var(--warning) 0%, #FF9800 100%);
-  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.15);
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
 }
 
 /* Botón de reserva elegante */
@@ -312,13 +312,13 @@
 }
 
 .alert-danger-modern {
-  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(244, 67, 54, 0.2) 100%);
   color: var(--danger);
   border-left-color: var(--danger);
 }
 
 .alert-warning-modern {
-  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.2) 100%);
   color: var(--warning);
   border-left-color: var(--warning);
 }
@@ -475,16 +475,16 @@
 }
 
 .btn-action-edit {
-  background: linear-gradient(135deg, var(--warning) 0%, #ff8f00 100%);
-  color: var(--text-on-light);
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  color: var(--text-on-dark);
   box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
 }
 
 .btn-action-edit:hover {
-  background: linear-gradient(135deg, #ff8f00 0%, var(--warning) 100%);
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
-  color: var(--text-on-light);
+  color: var(--text-on-dark);
   text-decoration: none;
 }
 
@@ -1271,8 +1271,8 @@
 }
 
 .badge-modern.badge-warning {
-  background: linear-gradient(135deg, #ffc107, #fd7e14);
-  color: white;
+  background: linear-gradient(135deg, var(--warning), var(--warning));
+  color: var(--text-on-dark);
 }
 
 .badge-modern.badge-danger {
@@ -1286,8 +1286,8 @@
 }
 
 .badge-modern.badge-en_curso {
-  background: linear-gradient(135deg, #ffc107, #fd7e14);
-  color: white;
+  background: linear-gradient(135deg, var(--warning), var(--warning));
+  color: var(--text-on-dark);
 }
 
 .badge-modern.badge-terminada {

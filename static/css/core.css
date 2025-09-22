@@ -469,17 +469,7 @@ p {
 }
 
 /* Cards con colores unificados */
-.card-header-modern {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: var(--color-text-on-dark);
-  border-bottom-color: var(--color-primary);
-}
-
-.calendar-header-modern {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: var(--color-text-on-dark);
-  border-bottom-color: var(--color-primary);
-}
+/* card-header-modern movido a components.css para evitar duplicados */
 
 /* Alertas con colores unificados */
 .alert-success-modern {

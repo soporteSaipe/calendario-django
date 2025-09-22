@@ -1,0 +1,467 @@
+/**
+ * DARK MODE CSS
+ * Sistema de modo oscuro completo con detección automática y toggle manual
+ * Compatible con prefers-color-scheme y toggle personalizado
+ */
+
+/* ===== VARIABLES DE MODO OSCURO ===== */
+[data-theme="dark"],
+:root.dark {
+  /* Colores principales - Paleta estética para modo oscuro */
+  --primary: #6366F1;        /* Indigo moderno */
+  --primary-dark: #4F46E5;   /* Indigo más oscuro */
+  --primary-light: #1E1B4B;  /* Indigo muy oscuro para fondos */
+  --secondary: #8B5CF6;      /* Violeta suave */
+  --accent: #06B6D4;         /* Cyan vibrante */
+  --warning: #F59E0B;        /* Ámbar */
+  --danger: #EF4444;         /* Rojo moderno */
+  --success: #10B981;        /* Verde esmeralda */
+  --info: #3B82F6;           /* Azul moderno */
+  --neutral: #6B7280;        /* Gris neutro */
+  
+  /* Colores de fondo - Modo oscuro */
+  --bg-primary: #0F172A;        /* Azul muy oscuro */
+  --bg-secondary: #1E293B;      /* Azul oscuro */
+  --bg-card: #334155;           /* Gris azulado para cards */
+  --bg-accent: #1E1B4B;         /* Indigo oscuro para acentos */
+  --bg-dark: #020617;           /* Azul casi negro */
+  
+  /* Colores de texto - Modo oscuro */
+  --text-primary: #F9FAFB;      /* Blanco suave */
+  --text-secondary: #6366F1;    /* Indigo para texto secundario */
+  --text-muted: #9CA3AF;        /* Gris claro para texto atenuado */
+  --text-light: #E5E7EB;        /* Gris muy claro */
+  --text-on-dark: #FFFFFF;      /* Blanco puro para texto sobre fondos oscuros */
+  --text-on-light: #1F2937;     /* Gris oscuro para texto sobre fondos claros */
+  
+  /* Sombras adaptadas para modo oscuro */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.7);
+}
+
+/* ===== DETECCIÓN AUTOMÁTICA DE PREFERENCIAS DEL SISTEMA ===== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Aplicar modo oscuro automáticamente */
+    --primary: #6366F1;        /* Indigo moderno */
+    --primary-dark: #4F46E5;   /* Indigo más oscuro */
+    --primary-light: #1E1B4B;  /* Indigo muy oscuro para fondos */
+    --secondary: #8B5CF6;      /* Violeta suave */
+    --accent: #06B6D4;         /* Cyan vibrante */
+    --warning: #F59E0B;        /* Ámbar */
+    --danger: #EF4444;         /* Rojo moderno */
+    --success: #10B981;        /* Verde esmeralda */
+    --info: #3B82F6;           /* Azul moderno */
+    --neutral: #6B7280;        /* Gris neutro */
+    
+    --bg-primary: #0F172A;        /* Azul muy oscuro */
+    --bg-secondary: #1E293B;      /* Azul oscuro */
+    --bg-card: #334155;           /* Gris azulado para cards */
+    --bg-accent: #1E1B4B;         /* Indigo oscuro para acentos */
+    --bg-dark: #020617;           /* Azul casi negro */
+    
+    --text-primary: #F9FAFB;      /* Blanco suave */
+    --text-secondary: #6366F1;    /* Indigo para texto secundario */
+    --text-muted: #9CA3AF;        /* Gris claro para texto atenuado */
+    --text-light: #E5E7EB;        /* Gris muy claro */
+    --text-on-dark: #FFFFFF;      /* Blanco puro para texto sobre fondos oscuros */
+    --text-on-light: #1F2937;     /* Gris oscuro para texto sobre fondos claros */
+    
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* ===== TOGGLE DE MODO OSCURO ===== */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 24px;
+  background: var(--neutral);
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  margin: 0 var(--space-sm);
+}
+
+.theme-toggle:hover {
+  background: var(--primary);
+  transform: scale(1.05);
+}
+
+.theme-toggle::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: var(--transition-normal);
+  left: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .theme-toggle::before,
+:root.dark .theme-toggle::before {
+  transform: translateX(24px);
+  background: #FFD700;
+}
+
+/* Iconos del toggle */
+.theme-toggle .sun-icon,
+.theme-toggle .moon-icon {
+  position: absolute;
+  font-size: 12px;
+  transition: var(--transition-normal);
+  color: white;
+}
+
+.theme-toggle .sun-icon {
+  left: 6px;
+  opacity: 1;
+}
+
+.theme-toggle .moon-icon {
+  right: 6px;
+  opacity: 0;
+}
+
+[data-theme="dark"] .theme-toggle .sun-icon,
+:root.dark .theme-toggle .sun-icon {
+  opacity: 0;
+}
+
+[data-theme="dark"] .theme-toggle .moon-icon,
+:root.dark .theme-toggle .moon-icon {
+  opacity: 1;
+}
+
+/* ===== AJUSTES ESPECÍFICOS PARA COMPONENTES ===== */
+
+/* Body y fondo principal */
+[data-theme="dark"] body,
+:root.dark body {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-accent) 100%);
+  color: var(--text-primary);
+}
+
+/* Card headers - Usar nueva paleta estética */
+[data-theme="dark"] .card-header-modern,
+:root.dark .card-header-modern {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  color: var(--text-on-dark) !important;
+  border-bottom-color: var(--primary) !important;
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Calendar headers */
+[data-theme="dark"] .calendar-header-modern,
+:root.dark .calendar-header-modern {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  color: var(--text-on-dark) !important;
+  border-bottom-color: var(--primary) !important;
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Navbar en modo oscuro con nueva paleta */
+[data-theme="dark"] .navbar-modern,
+:root.dark .navbar-modern {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Cards con mejor contraste en modo oscuro */
+[data-theme="dark"] .card-modern,
+:root.dark .card-modern {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .card-modern:not(:has(#calendar)),
+:root.dark .card-modern:not(:has(#calendar)) {
+  background: rgba(51, 65, 85, 0.8) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Navbar duplicada eliminada - ya está definida arriba */
+
+/* Footer en modo oscuro */
+[data-theme="dark"] .footer-modern,
+:root.dark .footer-modern {
+  background: var(--bg-dark) !important;
+  border-top: 1px solid rgba(99, 102, 241, 0.2) !important;
+  color: var(--text-muted) !important;
+}
+
+/* Breadcrumbs en modo oscuro */
+[data-theme="dark"] .breadcrumb-container,
+:root.dark .breadcrumb-container {
+  background: rgba(45, 45, 45, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+/* Formularios en modo oscuro */
+[data-theme="dark"] .form-control-modern,
+:root.dark .form-control-modern {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control-modern:focus,
+:root.dark .form-control-modern:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.2);
+}
+
+[data-theme="dark"] .form-control-modern::placeholder,
+:root.dark .form-control-modern::placeholder {
+  color: var(--text-muted);
+}
+
+/* Botones en modo oscuro */
+[data-theme="dark"] .btn-modern,
+:root.dark .btn-modern {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .btn-modern:hover,
+:root.dark .btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Alertas en modo oscuro */
+[data-theme="dark"] .alert-modern,
+:root.dark .alert-modern {
+  background: rgba(45, 45, 45, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Modales en modo oscuro */
+[data-theme="dark"] .modal-content-modern,
+:root.dark .modal-content-modern {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Tablas en modo oscuro */
+[data-theme="dark"] .table-modern,
+:root.dark .table-modern {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .table-modern th,
+:root.dark .table-modern th {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .table-modern td,
+:root.dark .table-modern td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ===== CALENDARIO EN MODO OSCURO ===== */
+[data-theme="dark"] .fc,
+:root.dark .fc {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .fc-daygrid-day,
+:root.dark .fc-daygrid-day {
+  background: var(--bg-secondary);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .fc-daygrid-day:hover,
+:root.dark .fc-daygrid-day:hover {
+  background: var(--bg-accent);
+}
+
+[data-theme="dark"] .fc-event,
+:root.dark .fc-event {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .fc-button,
+:root.dark .fc-button {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .fc-button:hover,
+:root.dark .fc-button:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+[data-theme="dark"] .fc-button:disabled,
+:root.dark .fc-button:disabled {
+  background: var(--neutral);
+  color: var(--text-muted);
+}
+
+/* ===== CORRECCIÓN DE COLORES HARDCODEADOS ===== */
+
+/* Botones de advertencia */
+[data-theme="dark"] .btn-warning-modern,
+:root.dark .btn-warning-modern {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
+  border-color: var(--warning) !important;
+  color: var(--text-on-dark) !important;
+}
+
+[data-theme="dark"] .btn-warning-modern:hover,
+:root.dark .btn-warning-modern:hover {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* Botones de acción */
+[data-theme="dark"] .btn-action-edit,
+:root.dark .btn-action-edit {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
+  color: var(--text-on-dark) !important;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3) !important;
+}
+
+[data-theme="dark"] .btn-action-edit:hover,
+:root.dark .btn-action-edit:hover {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4) !important;
+}
+
+/* Alertas */
+[data-theme="dark"] .alert-danger-modern,
+:root.dark .alert-danger-modern {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(244, 67, 54, 0.2) 100%) !important;
+  color: var(--danger) !important;
+  border-left-color: var(--danger) !important;
+}
+
+[data-theme="dark"] .alert-warning-modern,
+:root.dark .alert-warning-modern {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.2) 100%) !important;
+  color: var(--warning) !important;
+  border-left-color: var(--warning) !important;
+}
+
+/* Badges */
+[data-theme="dark"] .badge-modern.badge-warning,
+:root.dark .badge-modern.badge-warning,
+[data-theme="dark"] .badge-modern.badge-en_curso,
+:root.dark .badge-modern.badge-en_curso {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
+  color: var(--text-on-dark) !important;
+}
+
+/* Efectos de hover en card headers */
+[data-theme="dark"] .card-header-modern::before,
+:root.dark .card-header-modern::before {
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent) !important;
+}
+
+/* ===== TRANSICIONES SUAVES ===== */
+* {
+  transition: background-color var(--transition-normal),
+              color var(--transition-normal),
+              border-color var(--transition-normal),
+              box-shadow var(--transition-normal);
+}
+
+/* ===== INDICADOR DE MODO OSCURO ACTIVO ===== */
+.theme-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+  z-index: var(--z-tooltip);
+  opacity: 0.7;
+  transition: var(--transition-normal);
+}
+
+.theme-indicator:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* ===== RESPONSIVE PARA MODO OSCURO ===== */
+@media (max-width: 768px) {
+  .theme-toggle {
+    width: 40px;
+    height: 20px;
+  }
+  
+  .theme-toggle::before {
+    width: 16px;
+    height: 16px;
+  }
+  
+  [data-theme="dark"] .theme-toggle::before,
+  :root.dark .theme-toggle::before {
+    transform: translateX(20px);
+  }
+  
+  .theme-indicator {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+/* ===== ACCESIBILIDAD ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  [data-theme="dark"],
+  :root.dark {
+    --bg-primary: white;
+    --bg-secondary: white;
+    --bg-card: white;
+    --text-primary: black;
+    --text-secondary: black;
+    --text-muted: #666;
+  }
+}
