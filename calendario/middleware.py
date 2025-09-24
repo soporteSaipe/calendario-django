@@ -14,7 +14,7 @@ from .exceptions import (
     FechaInvalidaError,
     HorarioTrabajoError
 )
-from django_ratelimit.exceptions import Ratelimited
+# from django_ratelimit.exceptions import Ratelimited  # Temporalmente deshabilitado
 
 logger = logging.getLogger('calendario')
 
@@ -39,9 +39,9 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         # Manejar excepciones específicas
-        if isinstance(exception, Ratelimited):
-            return self._handle_rate_limit_error(request, exception, is_ajax)
-        elif isinstance(exception, ReservaValidationError):
+        # if isinstance(exception, Ratelimited):
+        #     return self._handle_rate_limit_error(request, exception, is_ajax)
+        if isinstance(exception, ReservaValidationError):
             return self._handle_validation_error(request, exception, is_ajax)
         elif isinstance(exception, RecursoNotFoundError):
             return self._handle_recurso_not_found(request, exception, is_ajax)
