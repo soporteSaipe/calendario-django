@@ -29,7 +29,7 @@ urlpatterns = [
     path('dashboard/', dashboard_views.dashboard, name='dashboard'),
     
     # Exportación
-    path('export/', export_views.export_calendar, name='export_calendar'),
+    path('export/', export_views.export_calendar_simple, name='export_calendar'),
     
     # Documentación y métricas
     path('docs/', docs_views.api_documentation_view, name='api_docs'),

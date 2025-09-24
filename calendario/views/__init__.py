@@ -16,7 +16,7 @@ from .api_views import (
     api_validar_conflicto
 )
 from .dashboard_views import dashboard
-from .export_views import export_calendar
+from .export_views import export_calendar_simple
 from .docs_views import (
     api_documentation_view,
     api_docs_json,
@@ -36,7 +36,7 @@ __all__ = [
     'api_horarios_ocupados',
     'api_validar_conflicto',
     'dashboard',
-    'export_calendar',
+    'export_calendar_simple',
     'api_documentation_view',
     'api_docs_json',
     'api_docs_openapi',
