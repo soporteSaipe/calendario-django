@@ -15,12 +15,13 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(107, 114, 128, 0.8); /* Gris medio */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: var(--border-radius-lg);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white; /* Letras blancas */
 }
 
 /* Selector de vista */
@@ -452,23 +453,25 @@
 }
 
 .btn-export-pdf {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+  color: var(--text-on-dark);
 }
 
 .btn-export-pdf:hover {
-  background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
 .btn-export-ical {
-  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  color: var(--text-on-dark);
 }
 
 .btn-export-ical:hover {
-  background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
 .btn-export-options {
@@ -850,11 +853,11 @@
 }
 
 .export-history-icon.pdf {
-  background: #dc3545;
+  background: var(--danger);
 }
 
 .export-history-icon.ical {
-  background: #28a745;
+  background: var(--success);
 }
 
 .export-history-details {

@@ -447,7 +447,7 @@
   width: 20px;
   height: 20px;
   border-radius: var(--border-radius-full);
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--color-border-light);
   transition: all var(--transition-normal);
   display: inline-block;
   margin-right: 8px;
