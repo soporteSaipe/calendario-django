@@ -184,7 +184,7 @@ CalendarioApp.CalendarExport = {
   setupEventListeners: function() {
     // Botones de exportación
     document.addEventListener('click', (e) => {
-      if (e.target.matches('.btn-export-pdf, .btn-export-ical')) {
+      if (e.target.matches('.btn-export-pdf, .btn-export-excel')) {
         const format = e.target.dataset.format;
         this.showExportOptions(format);
       } else if (e.target.matches('.btn-export-options')) {

@@ -16,7 +16,7 @@ from .api_views import (
     api_validar_conflicto
 )
 from .dashboard_views import dashboard
-from .export_views import export_calendar_simple
+from .export_views_simple import export_calendar_simple
 from .docs_views import (
     api_documentation_view,
     api_docs_json,
