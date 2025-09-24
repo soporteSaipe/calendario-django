@@ -635,8 +635,8 @@ def export_calendar(request):
         
         # Convertir fechas
         try:
-            fecha_inicio = datetime.strptime(date_from, '%Y-%m-%d').date()
-            fecha_fin = datetime.strptime(date_to, '%Y-%m-%d').date()
+            fecha_inicio = datetime.strptime(date_from, '%Y-%m-%d')
+            fecha_fin = datetime.strptime(date_to, '%Y-%m-%d')
         except ValueError as e:
             return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
         
@@ -644,7 +644,7 @@ def export_calendar(request):
             return JsonResponse({'error': 'Fecha de inicio debe ser anterior a fecha de fin'}, status=400)
         
         # Validar rango de fechas (máximo 1 año)
-        if (fecha_fin - fecha_inicio).days > 365:
+        if (fecha_fin.date() - fecha_inicio.date()).days > 365:
             return JsonResponse({'error': 'El rango de fechas no puede exceder 1 año'}, status=400)
         
         # Filtrar salas
@@ -663,7 +663,7 @@ def export_calendar(request):
         # Obtener reservas
         reservas = Reserva.objects.filter(
             recurso_id__in=salas_ids,
-            fecha_inicio__date__range=[fecha_inicio, fecha_fin],
+            fecha_inicio__date__range=[fecha_inicio.date(), fecha_fin.date()],
             estado='confirmada'
         ).select_related('recurso', 'usuario').order_by('fecha_inicio')
         

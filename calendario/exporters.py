@@ -60,6 +60,7 @@ class PDFExportStrategy(ExportStrategy):
             from reportlab.lib import colors
             from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
             from reportlab.lib.utils import simpleSplit
+            from datetime import datetime as dt
             
             # Crear buffer para el PDF
             buffer = BytesIO()
@@ -116,7 +117,7 @@ class PDFExportStrategy(ExportStrategy):
             info_text = f"""
             <b>Período:</b> {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}<br/>
             <b>Total de reservas:</b> {len(reservas)}<br/>
-            <b>Generado el:</b> {datetime.now().strftime('%d/%m/%Y %H:%M')}
+            <b>Generado el:</b> {dt.now().strftime('%d/%m/%Y %H:%M')}
             """
             info = Paragraph(info_text, styles['Normal'])
             story.append(info)
@@ -151,6 +152,11 @@ class PDFExportStrategy(ExportStrategy):
                 for key in col_widths:
                     col_widths[key] *= scale_factor
             
+            # Asegurar que todos los anchos sean positivos
+            for key in col_widths:
+                if col_widths[key] <= 0:
+                    col_widths[key] = 0.5  # Ancho mínimo
+            
             # Crear encabezados
             headers = ['Hora', 'Sala', 'Título', 'Usuario']
             widths = [col_widths['hora'], col_widths['sala'], col_widths['titulo'], col_widths['usuario']]
@@ -161,6 +167,9 @@ class PDFExportStrategy(ExportStrategy):
             if include_ubic:
                 headers.append('Ubicación')
                 widths.append(col_widths['ubicacion'])
+            
+            # Validar que todos los anchos sean válidos
+            widths = [w if w is not None and w > 0 else 0.5 for w in widths]
             
             # Agrupar reservas por fecha
             reservas_por_fecha = {}
