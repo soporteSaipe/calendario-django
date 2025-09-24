@@ -463,6 +463,17 @@
   box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
+.btn-export-excel {
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
+  box-shadow: 0 2px 4px rgba(13, 202, 240, 0.2);
+  color: var(--text-on-dark);
+}
+
+.btn-export-excel:hover {
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
+  box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3);
+}
+
 .btn-export-ical {
   background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
   box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
@@ -854,6 +865,10 @@
 
 .export-history-icon.pdf {
   background: var(--danger);
+}
+
+.export-history-icon.excel {
+  background: var(--info);
 }
 
 .export-history-icon.ical {

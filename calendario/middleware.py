@@ -14,7 +14,6 @@ from .exceptions import (
     FechaInvalidaError,
     HorarioTrabajoError
 )
-# from django_ratelimit.exceptions import Ratelimited  # Temporalmente deshabilitado
 
 logger = logging.getLogger('calendario')
 

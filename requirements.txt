@@ -21,10 +21,9 @@ whitenoise>=6.0.0
 # Exportación de calendarios
 reportlab==4.4.4
 icalendar==6.3.1
+openpyxl==3.1.2
 
 
-# Rate limiting para seguridad
-django-ratelimit>=4.1.0
 
 # Dependencias adicionales
 Pillow>=9.0.0

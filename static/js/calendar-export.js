@@ -14,7 +14,7 @@ CalendarioApp.CalendarExport = {
 
   // Configuración
   config: {
-    supportedFormats: ['pdf', 'ical'],
+    supportedFormats: ['pdf', 'xlsx', 'ical'],
     maxExportSize: 1000, // Máximo número de eventos a exportar
     exportTimeout: 30000, // 30 segundos timeout
     retryAttempts: 3,
@@ -46,6 +46,9 @@ CalendarioApp.CalendarExport = {
         <div class="export-actions">
           <button class="btn-export btn-export-pdf" data-format="pdf" title="Exportar como PDF">
             <i class="fas fa-file-pdf me-1"></i>PDF
+          </button>
+          <button class="btn-export btn-export-excel" data-format="xlsx" title="Exportar como Excel">
+            <i class="fas fa-file-excel me-1"></i>Excel
           </button>
           <button class="btn-export btn-export-ical" data-format="ical" title="Exportar como iCal">
             <i class="fas fa-calendar-alt me-1"></i>iCal
@@ -109,6 +112,13 @@ CalendarioApp.CalendarExport = {
                     <span class="format-label">
                       <i class="fas fa-file-pdf"></i>
                       PDF
+                    </span>
+                  </label>
+                  <label class="format-option">
+                    <input type="radio" name="exportFormat" value="xlsx">
+                    <span class="format-label">
+                      <i class="fas fa-file-excel"></i>
+                      Excel
                     </span>
                   </label>
                   <label class="format-option">

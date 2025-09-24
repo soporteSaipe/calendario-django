@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'django_ratelimit',  # Temporalmente deshabilitado por problemas de cache
     'calendario',
 ]
 

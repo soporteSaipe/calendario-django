@@ -577,6 +577,19 @@
   box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
 }
 
+[data-theme="dark"] .btn-export-excel,
+:root.dark .btn-export-excel {
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%) !important;
+  color: var(--text-on-dark) !important;
+  box-shadow: 0 2px 4px rgba(13, 202, 240, 0.2) !important;
+}
+
+[data-theme="dark"] .btn-export-excel:hover,
+:root.dark .btn-export-excel:hover {
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%) !important;
+  box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3) !important;
+}
+
 [data-theme="dark"] .btn-export-ical,
 :root.dark .btn-export-ical {
   background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%) !important;
@@ -593,6 +606,11 @@
 [data-theme="dark"] .export-history-icon.pdf,
 :root.dark .export-history-icon.pdf {
   background: var(--danger) !important;
+}
+
+[data-theme="dark"] .export-history-icon.excel,
+:root.dark .export-history-icon.excel {
+  background: var(--info) !important;
 }
 
 [data-theme="dark"] .export-history-icon.ical,
