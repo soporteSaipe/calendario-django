@@ -14,6 +14,7 @@ from .exceptions import (
     FechaInvalidaError,
     HorarioTrabajoError
 )
+from .logging_config import calendario_logger, security_logger
 
 logger = logging.getLogger('calendario')
 
@@ -31,8 +32,17 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
         if not request.path.startswith('/calendario/'):
             return None
         
-        # Log del error
-        logger.error(f'Error en {request.path}: {str(exception)}', exc_info=True)
+        # Log del error usando el logger estructurado
+        calendario_logger.error(
+            f'Error en {request.path}: {str(exception)}',
+            extra_data={
+                'error_type': type(exception).__name__,
+                'error_message': str(exception),
+                'request_path': request.path,
+                'request_method': request.method
+            },
+            request=request
+        )
         
         # Determinar si es una petición AJAX
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -67,7 +77,13 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
             'retry_after': 60
         }
         
-        logger.warning(f'Rate limit excedido en {request.path} por usuario: {request.user.username if request.user.is_authenticated else "Anónimo"}')
+        security_logger.log_rate_limit_exceeded(
+            user_id=getattr(request.user, 'id', None) if request.user.is_authenticated else None,
+            ip_address=self._get_client_ip(request),
+            endpoint=request.path,
+            limit=60,  # Default limit
+            request=request
+        )
         
         if is_ajax:
             return JsonResponse(error_data, status=429)

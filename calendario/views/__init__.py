@@ -17,6 +17,14 @@ from .api_views import (
 )
 from .dashboard_views import dashboard
 from .export_views import export_calendar
+from .docs_views import (
+    api_documentation_view,
+    api_docs_json,
+    api_docs_openapi,
+    api_docs_markdown,
+    system_metrics_view,
+    health_check_endpoint
+)
 
 __all__ = [
     'calendario_view',
@@ -29,4 +37,10 @@ __all__ = [
     'api_validar_conflicto',
     'dashboard',
     'export_calendar',
+    'api_documentation_view',
+    'api_docs_json',
+    'api_docs_openapi',
+    'api_docs_markdown',
+    'system_metrics_view',
+    'health_check_endpoint',
 ]
