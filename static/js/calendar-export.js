@@ -24,6 +24,10 @@ CalendarioApp.CalendarExport = {
   // Inicialización
   init: function() {
     console.log('Inicializando sistema de exportación de calendarios...');
+    console.log('CalendarExport - Estado de inicialización:');
+    console.log('- Es admin:', this.isAdmin());
+    console.log('- Calendar container:', document.querySelector('.calendar-container'));
+    
     this.createExportControls();
     this.setupEventListeners();
   },
@@ -31,10 +35,18 @@ CalendarioApp.CalendarExport = {
   // Crear controles de exportación
   createExportControls: function() {
     // Solo mostrar para administradores
-    if (!this.isAdmin()) return;
+    if (!this.isAdmin()) {
+      console.log('CalendarExport - No se muestran controles: usuario no es admin');
+      return;
+    }
 
     const calendarContainer = document.querySelector('.calendar-container');
-    if (!calendarContainer) return;
+    if (!calendarContainer) {
+      console.log('CalendarExport - No se muestran controles: calendar-container no encontrado');
+      return;
+    }
+    
+    console.log('CalendarExport - Creando controles de exportación...');
 
     const exportControls = document.createElement('div');
     exportControls.className = 'calendar-export-controls';
@@ -143,7 +155,15 @@ CalendarioApp.CalendarExport = {
   isAdmin: function() {
     // Verificar si el usuario es administrador
     const userMenu = document.querySelector('.dropdown-menu');
-    return userMenu && userMenu.querySelector('a[href="/admin/"]');
+    const adminLink = userMenu && userMenu.querySelector('a[href="/admin/"]');
+    
+    // Debug: mostrar información de depuración
+    console.log('CalendarExport - Verificando permisos de admin:');
+    console.log('- User menu encontrado:', !!userMenu);
+    console.log('- Admin link encontrado:', !!adminLink);
+    console.log('- Usuario autenticado:', document.querySelector('.navbar-nav .dropdown-toggle') !== null);
+    
+    return adminLink !== null;
   },
 
   // Cargar opciones de salas

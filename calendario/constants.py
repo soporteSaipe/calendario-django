@@ -42,6 +42,7 @@ class ExportConfig:
     SUPPORTED_FORMATS = ['pdf', 'xlsx', 'excel']
     DEFAULT_FORMAT = 'pdf'
     MAX_RECORDS_PER_EXPORT = 10000
+    MAX_EXPORT_DAYS = 365  # Máximo 1 año para exportaciones
 
 
 class TimezoneConfig:
