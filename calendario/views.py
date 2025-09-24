@@ -1,12 +1,15 @@
 import logging
+from datetime import datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
+# from django_ratelimit.decorators import ratelimit  # Temporalmente deshabilitado para desarrollo
 
 from .models import Recurso, Reserva
 from .forms import ReservaForm
@@ -46,12 +49,31 @@ def calendario_view(request):
     return render(request, 'calendario/calendario.html', context)
 
 @login_required
+# @ratelimit(key='user', rate='10/m', method='POST', block=True)  # Temporalmente deshabilitado para desarrollo
 def crear_reserva(request):
     """Vista para crear una nueva reserva"""
     if not request.user.is_authenticated:
         logger.warning('Intento de crear reserva sin autenticación')
         messages.error(request, 'Debes iniciar sesión para crear reservas.')
         return redirect('login')
+    
+    # Verificar si el usuario ha excedido el límite de rate limiting
+    if getattr(request, 'limited', False):
+        error_msg = 'Has alcanzado el límite de reservas (10 por minuto). Intenta en unos minutos.'
+        logger.warning(f'Rate limit excedido para usuario: {request.user.username}')
+        
+        # Verificar si es una petición AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            return JsonResponse({
+                'success': False, 
+                'error': error_msg,
+                'error_type': 'rate_limit_exceeded',
+                'retry_after': 60
+            }, status=429)
+        else:
+            messages.error(request, error_msg)
+            return redirect('calendario:calendario')
     
     if request.method == 'POST':
         # Verificar si es una petición AJAX
@@ -184,11 +206,30 @@ def mis_reservas(request):
     return render(request, 'calendario/mis_reservas.html', context)
 
 @login_required
+# @ratelimit(key='user', rate='15/m', method='POST', block=True)  # Temporalmente deshabilitado para desarrollo
 def editar_reserva(request, reserva_id):
     """Vista para editar una reserva"""
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     
     logger.info(f'Edición de reserva ID: {reserva_id} por usuario: {request.user.username}')
+    
+    # Verificar si el usuario ha excedido el límite de rate limiting
+    if getattr(request, 'limited', False):
+        error_msg = 'Has alcanzado el límite de ediciones (15 por minuto). Intenta en unos minutos.'
+        logger.warning(f'Rate limit excedido para usuario: {request.user.username}')
+        
+        # Verificar si es una petición AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            return JsonResponse({
+                'success': False, 
+                'error': error_msg,
+                'error_type': 'rate_limit_exceeded',
+                'retry_after': 60
+            }, status=429)
+        else:
+            messages.error(request, error_msg)
+            return redirect('calendario:mis_reservas')
     
     if request.method == 'POST':
         # Verificar si es una petición AJAX
@@ -239,11 +280,30 @@ def editar_reserva(request, reserva_id):
     return render(request, 'calendario/editar_reserva.html', {'form': form, 'reserva': reserva})
 
 @login_required
+# @ratelimit(key='user', rate='20/m', method='POST', block=True)  # Temporalmente deshabilitado para desarrollo
 def eliminar_reserva(request, reserva_id):
     """Vista para eliminar una reserva"""
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     
     logger.info(f'Eliminación de reserva ID: {reserva_id} por usuario: {request.user.username}')
+    
+    # Verificar si el usuario ha excedido el límite de rate limiting
+    if getattr(request, 'limited', False):
+        error_msg = 'Has alcanzado el límite de eliminaciones (20 por minuto). Intenta en unos minutos.'
+        logger.warning(f'Rate limit excedido para usuario: {request.user.username}')
+        
+        # Verificar si es una petición AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            return JsonResponse({
+                'success': False, 
+                'error': error_msg,
+                'error_type': 'rate_limit_exceeded',
+                'retry_after': 60
+            }, status=429)
+        else:
+            messages.error(request, error_msg)
+            return redirect('calendario:mis_reservas')
     
     if request.method == 'POST':
         # Verificar si es una petición AJAX
@@ -333,6 +393,7 @@ def dashboard(request):
     
     return render(request, 'calendario/dashboard.html', context)
 
+# @ratelimit(key='user', rate='30/m', method='GET', block=True)  # Temporalmente deshabilitado para desarrollo
 def api_reservas(request):
     """API para obtener las reservas en formato JSON para el calendario"""
     fecha_inicio = request.GET.get('start')
@@ -340,6 +401,16 @@ def api_reservas(request):
     sala_id = request.GET.get('sala')
     
     logger.debug(f'API reservas - Parámetros: start={fecha_inicio}, end={fecha_fin}, sala={sala_id}')
+    
+    # Verificar si el usuario ha excedido el límite de rate limiting
+    if getattr(request, 'limited', False):
+        error_msg = 'Has alcanzado el límite de consultas (30 por minuto). Intenta en unos minutos.'
+        logger.warning(f'Rate limit excedido para API reservas: {request.user.username if request.user.is_authenticated else "Anónimo"}')
+        return JsonResponse({
+            'error': error_msg,
+            'error_type': 'rate_limit_exceeded',
+            'retry_after': 60
+        }, status=429)
     
     # Consulta optimizada con select_related y prefetch_related
     reservas = Reserva.objects.select_related('recurso', 'usuario').filter(
@@ -449,12 +520,23 @@ def api_horarios_ocupados(request):
         return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
 
 
+# @ratelimit(key='user', rate='50/m', method='GET', block=True)  # Temporalmente deshabilitado para desarrollo
 def api_validar_conflicto(request):
     """
     API para validar conflictos de reservas en tiempo real usando el servicio centralizado
     """
     if request.method != 'GET':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+    # Verificar si el usuario ha excedido el límite de rate limiting
+    if getattr(request, 'limited', False):
+        error_msg = 'Has alcanzado el límite de validaciones (50 por minuto). Intenta en unos minutos.'
+        logger.warning(f'Rate limit excedido para API validar conflicto: {request.user.username if request.user.is_authenticated else "Anónimo"}')
+        return JsonResponse({
+            'error': error_msg,
+            'error_type': 'rate_limit_exceeded',
+            'retry_after': 60
+        }, status=429)
     
     try:
         # Obtener parámetros

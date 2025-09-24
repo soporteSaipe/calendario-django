@@ -14,6 +14,7 @@ from .exceptions import (
     FechaInvalidaError,
     HorarioTrabajoError
 )
+from django_ratelimit.exceptions import Ratelimited
 
 logger = logging.getLogger('calendario')
 
@@ -38,7 +39,9 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         # Manejar excepciones específicas
-        if isinstance(exception, ReservaValidationError):
+        if isinstance(exception, Ratelimited):
+            return self._handle_rate_limit_error(request, exception, is_ajax)
+        elif isinstance(exception, ReservaValidationError):
             return self._handle_validation_error(request, exception, is_ajax)
         elif isinstance(exception, RecursoNotFoundError):
             return self._handle_recurso_not_found(request, exception, is_ajax)
@@ -55,6 +58,24 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
         
         # Para otras excepciones, no hacer nada (dejar que Django las maneje)
         return None
+    
+    def _handle_rate_limit_error(self, request, exception, is_ajax):
+        """Manejar errores de rate limiting"""
+        error_data = {
+            'success': False,
+            'error': 'Has alcanzado el límite de solicitudes. Intenta en unos minutos.',
+            'error_type': 'rate_limit_exceeded',
+            'retry_after': 60
+        }
+        
+        logger.warning(f'Rate limit excedido en {request.path} por usuario: {request.user.username if request.user.is_authenticated else "Anónimo"}')
+        
+        if is_ajax:
+            return JsonResponse(error_data, status=429)
+        else:
+            from django.contrib import messages
+            messages.error(request, error_data['error'])
+            return None
     
     def _handle_validation_error(self, request, exception, is_ajax):
         """Manejar errores de validación de reservas"""

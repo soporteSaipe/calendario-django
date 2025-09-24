@@ -20,3 +20,6 @@ whitenoise>=6.0.0
 # Exportación de calendarios
 reportlab>=4.0.0
 icalendar>=5.0.0
+
+# Rate limiting para seguridad
+django-ratelimit>=3.0.0
