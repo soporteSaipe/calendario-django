@@ -474,16 +474,6 @@
   box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3);
 }
 
-.btn-export-ical {
-  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-  color: var(--text-on-dark);
-}
-
-.btn-export-ical:hover {
-  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-}
 
 .btn-export-options {
   background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
@@ -871,9 +861,6 @@
   background: var(--info);
 }
 
-.export-history-icon.ical {
-  background: var(--success);
-}
 
 .export-history-details {
   display: flex;

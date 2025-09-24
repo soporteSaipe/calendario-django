@@ -48,17 +48,17 @@ class ExportStrategy(ABC):
 
 
 class PDFExportStrategy(ExportStrategy):
-    """Estrategia para exportación en formato PDF"""
+    """Estrategia para exportación en formato PDF con columnas fijas"""
     
     def export(self, reservas: List[Reserva], fecha_inicio: datetime, fecha_fin: datetime, options: Dict[str, Any]) -> HttpResponse:
-        """Generar exportación PDF del calendario"""
+        """Generar exportación PDF del calendario con columnas fijas y texto adaptativo"""
         try:
             from reportlab.lib.pagesizes import A4
             from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib.units import inch
             from reportlab.lib import colors
-            from reportlab.lib.enums import TA_CENTER, TA_LEFT
+            from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
             from reportlab.lib.utils import simpleSplit
             
             # Crear buffer para el PDF
@@ -68,10 +68,10 @@ class PDFExportStrategy(ExportStrategy):
             doc = SimpleDocTemplate(
                 buffer, 
                 pagesize=A4, 
-                rightMargin=50, 
-                leftMargin=50, 
-                topMargin=50, 
-                bottomMargin=50
+                rightMargin=40, 
+                leftMargin=40, 
+                topMargin=40, 
+                bottomMargin=40
             )
             
             # Estilos mejorados
@@ -93,6 +93,18 @@ class PDFExportStrategy(ExportStrategy):
                 textColor=colors.HexColor('#34495e')
             )
             
+            # Estilo para texto en celdas con wrap automático
+            cell_style = ParagraphStyle(
+                'CellStyle',
+                parent=styles['Normal'],
+                fontSize=8,
+                alignment=TA_LEFT,
+                leftIndent=2,
+                rightIndent=2,
+                spaceAfter=2,
+                spaceBefore=2
+            )
+            
             # Contenido del PDF
             story = []
             
@@ -110,6 +122,46 @@ class PDFExportStrategy(ExportStrategy):
             story.append(info)
             story.append(Spacer(1, 20))
             
+            # === DEFINIR COLUMNAS FIJAS ===
+            # Anchos fijos en pulgadas (total disponible: ~7.5 pulgadas)
+            col_widths = {
+                'hora': 1.0,      # Hora inicio-fin
+                'sala': 0.8,      # Nombre de sala
+                'titulo': 2.2,    # Título (más ancho para texto largo)
+                'usuario': 0.8,   # Usuario
+                'descripcion': 2.0, # Descripción (si se incluye)
+                'ubicacion': 1.0   # Ubicación (si se incluye)
+            }
+            
+            # Determinar qué columnas incluir
+            include_desc = options.get('include_descriptions', False)
+            include_ubic = options.get('include_location', False)
+            
+            # Calcular anchos totales
+            total_width = col_widths['hora'] + col_widths['sala'] + col_widths['titulo'] + col_widths['usuario']
+            if include_desc:
+                total_width += col_widths['descripcion']
+            if include_ubic:
+                total_width += col_widths['ubicacion']
+            
+            # Ajustar proporcionalmente si excede el ancho disponible
+            max_width = 7.5
+            if total_width > max_width:
+                scale_factor = max_width / total_width
+                for key in col_widths:
+                    col_widths[key] *= scale_factor
+            
+            # Crear encabezados
+            headers = ['Hora', 'Sala', 'Título', 'Usuario']
+            widths = [col_widths['hora'], col_widths['sala'], col_widths['titulo'], col_widths['usuario']]
+            
+            if include_desc:
+                headers.append('Descripción')
+                widths.append(col_widths['descripcion'])
+            if include_ubic:
+                headers.append('Ubicación')
+                widths.append(col_widths['ubicacion'])
+            
             # Agrupar reservas por fecha
             reservas_por_fecha = {}
             for reserva in reservas:
@@ -124,65 +176,72 @@ class PDFExportStrategy(ExportStrategy):
                 fecha_header = Paragraph(f"<b>{fecha_str}</b>", header_style)
                 story.append(fecha_header)
                 
-                # Crear tabla de reservas con columnas dinámicas
-                table_data = [['Hora', 'Sala', 'Título', 'Usuario']]
-                
-                if options.get('include_descriptions', False):
-                    table_data[0].append('Descripción')
-                if options.get('include_location', False):
-                    table_data[0].append('Ubicación')
+                # Crear tabla de reservas
+                table_data = [headers]
                 
                 for reserva in reservas_fecha:
-                    row = [
-                        f"{reserva.fecha_inicio.strftime('%H:%M')} - {reserva.fecha_fin.strftime('%H:%M')}",
-                        reserva.recurso.nombre,
-                        reserva.titulo[:30] + '...' if len(reserva.titulo) > 30 else reserva.titulo,
-                        reserva.usuario.username
-                    ]
+                    # Crear fila con Paragraphs para wrap automático
+                    row = []
                     
-                    if options.get('include_descriptions', False):
+                    # Hora
+                    hora_text = f"{reserva.fecha_inicio.strftime('%H:%M')} - {reserva.fecha_fin.strftime('%H:%M')}"
+                    row.append(Paragraph(hora_text, cell_style))
+                    
+                    # Sala
+                    row.append(Paragraph(reserva.recurso.nombre, cell_style))
+                    
+                    # Título (con wrap automático)
+                    row.append(Paragraph(reserva.titulo, cell_style))
+                    
+                    # Usuario
+                    row.append(Paragraph(reserva.usuario.username, cell_style))
+                    
+                    # Descripción (si se incluye)
+                    if include_desc:
                         descripcion = reserva.descripcion or 'Sin descripción'
-                        # Truncar descripción para evitar superposición
-                        descripcion = descripcion[:40] + '...' if len(descripcion) > 40 else descripcion
-                        row.append(descripcion)
+                        row.append(Paragraph(descripcion, cell_style))
                     
-                    if options.get('include_location', False):
+                    # Ubicación (si se incluye)
+                    if include_ubic:
                         ubicacion = f"Capacidad: {reserva.recurso.capacidad}"
-                        row.append(ubicacion)
+                        row.append(Paragraph(ubicacion, cell_style))
                     
                     table_data.append(row)
                 
-                # Calcular anchos de columna dinámicamente
-                num_cols = len(table_data[0])
-                if num_cols == 4:
-                    col_widths = [1.2*inch, 1.0*inch, 2.0*inch, 1.0*inch]
-                elif num_cols == 5:
-                    col_widths = [1.0*inch, 0.8*inch, 1.5*inch, 0.8*inch, 1.2*inch]
-                elif num_cols == 6:
-                    col_widths = [0.8*inch, 0.7*inch, 1.2*inch, 0.7*inch, 1.0*inch, 0.8*inch]
-                else:
-                    col_widths = [1.0*inch] * num_cols
+                # Crear tabla con anchos fijos
+                table = Table(table_data, colWidths=widths, repeatRows=1)
                 
-                # Crear tabla
-                table = Table(table_data, colWidths=col_widths, repeatRows=1)
-                table.setStyle(TableStyle([
+                # Estilo de tabla mejorado
+                table_style = [
+                    # Encabezados
                     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498db')),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                     ('FONTSIZE', (0, 0), (-1, 0), 9),
                     ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('TOPPADDING', (0, 0), (-1, 0), 8),
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+                    
+                    # Datos
                     ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
                     ('FONTSIZE', (0, 1), (-1, -1), 8),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('VALIGN', (0, 1), (-1, -1), 'TOP'),
+                    ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
+                    
+                    # Bordes
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                    ('LINEBELOW', (0, 0), (-1, 0), 2, colors.HexColor('#2c3e50')),
+                    
+                    # Padding
                     ('LEFTPADDING', (0, 0), (-1, -1), 4),
                     ('RIGHTPADDING', (0, 0), (-1, -1), 4),
-                    ('TOPPADDING', (0, 0), (-1, -1), 4),
-                    ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
-                ]))
+                    ('TOPPADDING', (0, 1), (-1, -1), 6),
+                    ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+                ]
                 
+                table.setStyle(TableStyle(table_style))
                 story.append(table)
                 story.append(Spacer(1, 15))
             
@@ -196,7 +255,7 @@ class PDFExportStrategy(ExportStrategy):
             
             # Crear respuesta
             response = HttpResponse(pdf_content, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="calendario_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.pdf"'
+            response['Content-Disposition'] = f'attachment; filename="reporte_salas_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.pdf"'
             
             return response
             
@@ -215,99 +274,224 @@ class PDFExportStrategy(ExportStrategy):
 
 
 class ExcelExportStrategy(ExportStrategy):
-    """Estrategia para exportación en formato Excel"""
+    """Estrategia para exportación en formato Excel con análisis para RRHH"""
     
     def export(self, reservas: List[Reserva], fecha_inicio: datetime, fecha_fin: datetime, options: Dict[str, Any]) -> HttpResponse:
-        """Generar exportación Excel del calendario"""
+        """Generar exportación Excel del calendario con análisis visual"""
         try:
             from openpyxl import Workbook
-            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, NamedStyle
             from openpyxl.utils import get_column_letter
+            from openpyxl.chart import BarChart, Reference
+            from openpyxl.formatting.rule import ColorScaleRule
+            from collections import defaultdict, Counter
+            import datetime as dt
             
             # Crear workbook
             wb = Workbook()
-            ws = wb.active
-            ws.title = "Reservas de Salas"
             
-            # Estilos
-            header_font = Font(bold=True, color="FFFFFF")
-            header_fill = PatternFill(start_color="3498db", end_color="3498db", fill_type="solid")
+            # === HOJA 1: RESUMEN EJECUTIVO ===
+            ws_summary = wb.active
+            ws_summary.title = "Resumen Ejecutivo"
+            
+            # Estilos personalizados
+            title_style = Font(name='Arial', size=16, bold=True, color='2F4F4F')
+            subtitle_style = Font(name='Arial', size=12, bold=True, color='4682B4')
+            header_style = Font(name='Arial', size=11, bold=True, color='FFFFFF')
+            data_style = Font(name='Arial', size=10)
+            
+            # Colores
+            header_fill = PatternFill(start_color='4682B4', end_color='4682B4', fill_type='solid')
+            title_fill = PatternFill(start_color='E6F3FF', end_color='E6F3FF', fill_type='solid')
             border = Border(
-                left=Side(style='thin'),
-                right=Side(style='thin'),
-                top=Side(style='thin'),
-                bottom=Side(style='thin')
+                left=Side(style='thin', color='000000'),
+                right=Side(style='thin', color='000000'),
+                top=Side(style='thin', color='000000'),
+                bottom=Side(style='thin', color='000000')
             )
-            center_alignment = Alignment(horizontal='center', vertical='center')
             
-            # Encabezados
-            headers = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Sala', 'Título', 'Usuario']
-            col = 1
+            # Título principal
+            ws_summary.merge_cells('A1:H1')
+            ws_summary['A1'] = f"REPORTE DE UTILIZACIÓN DE SALAS - SAIPE"
+            ws_summary['A1'].font = title_style
+            ws_summary['A1'].fill = title_fill
+            ws_summary['A1'].alignment = Alignment(horizontal='center', vertical='center')
             
-            if options.get('include_descriptions', False):
-                headers.append('Descripción')
-            if options.get('include_location', False):
-                headers.append('Ubicación')
-            if options.get('include_attendees', False):
-                headers.append('Asistentes')
+            # Información del período
+            ws_summary['A3'] = f"Período: {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}"
+            ws_summary['A3'].font = subtitle_style
+            ws_summary['A4'] = f"Generado: {dt.datetime.now().strftime('%d/%m/%Y %H:%M')}"
+            ws_summary['A4'].font = data_style
             
-            # Escribir encabezados
-            for header in headers:
-                cell = ws.cell(row=1, column=col, value=header)
-                cell.font = header_font
-                cell.fill = header_fill
-                cell.border = border
-                cell.alignment = center_alignment
-                col += 1
+            # === ESTADÍSTICAS PRINCIPALES ===
+            row = 6
             
-            # Escribir datos
-            row = 2
-            for reserva in reservas:
-                col = 1
+            # Calcular estadísticas
+            total_reservas = len(reservas)
+            salas_utilizadas = len(set(r.recurso.nombre for r in reservas))
+            usuarios_activos = len(set(r.usuario.username for r in reservas))
+            horas_totales = sum((r.fecha_fin - r.fecha_inicio).total_seconds() / 3600 for r in reservas)
+            
+            # Estadísticas por sala
+            uso_por_sala = Counter(r.recurso.nombre for r in reservas)
+            sala_mas_usada = uso_por_sala.most_common(1)[0] if uso_por_sala else ("N/A", 0)
+            
+            # Estadísticas por usuario
+            uso_por_usuario = Counter(r.usuario.username for r in reservas)
+            usuario_mas_activo = uso_por_usuario.most_common(1)[0] if uso_por_usuario else ("N/A", 0)
+            
+            # Escribir estadísticas
+            stats_data = [
+                ['MÉTRICA', 'VALOR', 'DETALLE'],
+                ['Total de Reservas', total_reservas, f'En {salas_utilizadas} salas diferentes'],
+                ['Salas Utilizadas', salas_utilizadas, f'De un total disponible'],
+                ['Usuarios Activos', usuarios_activos, f'Realizaron reservas'],
+                ['Horas Totales', f'{horas_totales:.1f}h', f'De utilización'],
+                ['Sala Más Usada', sala_mas_usada[0], f'{sala_mas_usada[1]} reservas'],
+                ['Usuario Más Activo', usuario_mas_activo[0], f'{usuario_mas_activo[1]} reservas'],
+            ]
+            
+            for i, (metric, value, detail) in enumerate(stats_data):
+                ws_summary[f'A{row}'] = metric
+                ws_summary[f'B{row}'] = value
+                ws_summary[f'C{row}'] = detail
                 
-                # Datos básicos
-                ws.cell(row=row, column=col, value=reserva.fecha_inicio.date()).border = border
-                col += 1
-                ws.cell(row=row, column=col, value=reserva.fecha_inicio.time()).border = border
-                col += 1
-                ws.cell(row=row, column=col, value=reserva.fecha_fin.time()).border = border
-                col += 1
-                ws.cell(row=row, column=col, value=reserva.recurso.nombre).border = border
-                col += 1
-                ws.cell(row=row, column=col, value=reserva.titulo).border = border
-                col += 1
-                ws.cell(row=row, column=col, value=reserva.usuario.username).border = border
-                col += 1
-                
-                # Datos opcionales
-                if options.get('include_descriptions', False):
-                    ws.cell(row=row, column=col, value=reserva.descripcion or '').border = border
-                    col += 1
-                
-                if options.get('include_location', False):
-                    ubicacion = f"Sala {reserva.recurso.nombre} - Capacidad: {reserva.recurso.capacidad}"
-                    ws.cell(row=row, column=col, value=ubicacion).border = border
-                    col += 1
-                
-                if options.get('include_attendees', False):
-                    # Por ahora vacío, se puede expandir en el futuro
-                    ws.cell(row=row, column=col, value='').border = border
-                    col += 1
+                # Aplicar estilos
+                if i == 0:  # Header
+                    for col in ['A', 'B', 'C']:
+                        cell = ws_summary[f'{col}{row}']
+                        cell.font = header_style
+                        cell.fill = header_fill
+                        cell.border = border
+                        cell.alignment = Alignment(horizontal='center', vertical='center')
+                else:
+                    for col in ['A', 'B', 'C']:
+                        cell = ws_summary[f'{col}{row}']
+                        cell.font = data_style
+                        cell.border = border
+                        cell.alignment = Alignment(horizontal='left', vertical='center')
                 
                 row += 1
             
-            # Ajustar ancho de columnas
-            for column in ws.columns:
-                max_length = 0
-                column_letter = get_column_letter(column[0].column)
-                for cell in column:
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
-                    except:
-                        pass
-                adjusted_width = min(max_length + 2, 50)  # Máximo 50 caracteres
-                ws.column_dimensions[column_letter].width = adjusted_width
+            # === HOJA 2: DETALLE DE RESERVAS ===
+            ws_detail = wb.create_sheet("Detalle de Reservas")
+            
+            # Encabezados detallados
+            headers = [
+                'Fecha', 'Día Semana', 'Hora Inicio', 'Hora Fin', 'Duración (h)',
+                'Sala', 'Capacidad', 'Título', 'Usuario', 'Email', 'Departamento'
+            ]
+            
+            if options.get('include_descriptions', False):
+                headers.append('Descripción')
+            
+            # Escribir encabezados
+            for col, header in enumerate(headers, 1):
+                cell = ws_detail.cell(row=1, column=col, value=header)
+                cell.font = header_style
+                cell.fill = header_fill
+                cell.border = border
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+            
+            # Escribir datos detallados
+            row = 2
+            for reserva in reservas:
+                duracion_horas = (reserva.fecha_fin - reserva.fecha_inicio).total_seconds() / 3600
+                dia_semana = reserva.fecha_inicio.strftime('%A')
+                
+                data = [
+                    reserva.fecha_inicio.date(),
+                    dia_semana,
+                    reserva.fecha_inicio.time(),
+                    reserva.fecha_fin.time(),
+                    round(duracion_horas, 2),
+                    reserva.recurso.nombre,
+                    reserva.recurso.capacidad,
+                    reserva.titulo,
+                    reserva.usuario.username,
+                    reserva.usuario.email or 'N/A',
+                    'N/A'  # Se puede expandir con departamento
+                ]
+                
+                if options.get('include_descriptions', False):
+                    data.append(reserva.descripcion or '')
+                
+                for col, value in enumerate(data, 1):
+                    cell = ws_detail.cell(row=row, column=col, value=value)
+                    cell.font = data_style
+                    cell.border = border
+                    cell.alignment = Alignment(horizontal='left', vertical='center')
+                
+                row += 1
+            
+            # === HOJA 3: ANÁLISIS POR SALA ===
+            ws_analysis = wb.create_sheet("Análisis por Sala")
+            
+            # Encabezados de análisis
+            ws_analysis['A1'] = "ANÁLISIS DE UTILIZACIÓN POR SALA"
+            ws_analysis['A1'].font = title_style
+            ws_analysis['A1'].fill = title_fill
+            ws_analysis['A1'].alignment = Alignment(horizontal='center', vertical='center')
+            ws_analysis.merge_cells('A1:E1')
+            
+            # Encabezados de tabla
+            analysis_headers = ['Sala', 'Reservas', 'Horas Totales', 'Promedio por Reserva', 'Eficiencia']
+            for col, header in enumerate(analysis_headers, 1):
+                cell = ws_analysis.cell(row=3, column=col, value=header)
+                cell.font = header_style
+                cell.fill = header_fill
+                cell.border = border
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+            
+            # Calcular análisis por sala
+            sala_stats = defaultdict(lambda: {'reservas': 0, 'horas': 0})
+            for reserva in reservas:
+                sala = reserva.recurso.nombre
+                duracion = (reserva.fecha_fin - reserva.fecha_inicio).total_seconds() / 3600
+                sala_stats[sala]['reservas'] += 1
+                sala_stats[sala]['horas'] += duracion
+            
+            # Escribir análisis
+            row = 4
+            for sala, stats in sala_stats.items():
+                promedio = stats['horas'] / stats['reservas'] if stats['reservas'] > 0 else 0
+                eficiencia = "Alta" if stats['horas'] > 20 else "Media" if stats['horas'] > 10 else "Baja"
+                
+                data = [sala, stats['reservas'], f"{stats['horas']:.1f}h", f"{promedio:.1f}h", eficiencia]
+                
+                for col, value in enumerate(data, 1):
+                    cell = ws_analysis.cell(row=row, column=col, value=value)
+                    cell.font = data_style
+                    cell.border = border
+                    cell.alignment = Alignment(horizontal='center', vertical='center')
+                
+                row += 1
+            
+            # === AJUSTAR ANCHOS DE COLUMNAS ===
+            for ws in [ws_summary, ws_detail, ws_analysis]:
+                for column in ws.columns:
+                    max_length = 0
+                    column_letter = get_column_letter(column[0].column)
+                    for cell in column:
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(str(cell.value))
+                        except:
+                            pass
+                    adjusted_width = min(max(max_length + 2, 12), 50)
+                    ws.column_dimensions[column_letter].width = adjusted_width
+            
+            # === APLICAR FORMATO CONDICIONAL ===
+            # Colorear celdas de duración
+            for row in range(2, ws_detail.max_row + 1):
+                duracion_cell = ws_detail[f'E{row}']
+                if duracion_cell.value:
+                    if duracion_cell.value > 4:
+                        duracion_cell.fill = PatternFill(start_color='FFE6E6', end_color='FFE6E6', fill_type='solid')
+                    elif duracion_cell.value > 2:
+                        duracion_cell.fill = PatternFill(start_color='FFF2E6', end_color='FFF2E6', fill_type='solid')
+                    else:
+                        duracion_cell.fill = PatternFill(start_color='E6FFE6', end_color='E6FFE6', fill_type='solid')
             
             # Crear buffer
             buffer = BytesIO()
@@ -318,7 +502,7 @@ class ExcelExportStrategy(ExportStrategy):
             
             # Crear respuesta
             response = HttpResponse(excel_content, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="calendario_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="reporte_salas_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.xlsx"'
             
             return response
             
@@ -336,99 +520,6 @@ class ExcelExportStrategy(ExportStrategy):
         return 'xlsx'
 
 
-class ICalExportStrategy(ExportStrategy):
-    """Estrategia para exportación en formato iCalendar"""
-    
-    def export(self, reservas: List[Reserva], fecha_inicio: datetime, fecha_fin: datetime, options: Dict[str, Any]) -> HttpResponse:
-        """Generar exportación iCal del calendario"""
-        try:
-            from icalendar import Calendar, Event
-            import pytz
-            
-            # Crear calendario iCal
-            cal = Calendar()
-            cal.add('prodid', '-//SAIPE//Sistema de Reservas//ES')
-            cal.add('version', '2.0')
-            cal.add('calscale', 'GREGORIAN')
-            cal.add('method', 'PUBLISH')
-            cal.add('X-WR-CALNAME', 'Reservas de Salas SAIPE')
-            cal.add('X-WR-CALDESC', f'Reservas de salas del {fecha_inicio.strftime("%d/%m/%Y")} al {fecha_fin.strftime("%d/%m/%Y")}')
-            cal.add('X-WR-TIMEZONE', 'America/Argentina/Buenos_Aires')
-            
-            # Zona horaria
-            tz = pytz.timezone('America/Argentina/Buenos_Aires')
-            
-            # Crear evento para cada reserva
-            for reserva in reservas:
-                event = Event()
-                
-                # ID único del evento
-                event.add('uid', f'reserva-{reserva.id}@saipe.com')
-                
-                # Fecha y hora de inicio
-                dtstart = reserva.fecha_inicio
-                if dtstart.tzinfo is None:
-                    dtstart = tz.localize(dtstart)
-                event.add('dtstart', dtstart)
-                
-                # Fecha y hora de fin
-                dtend = reserva.fecha_fin
-                if dtend.tzinfo is None:
-                    dtend = tz.localize(dtend)
-                event.add('dtend', dtend)
-                
-                # Título
-                event.add('summary', reserva.titulo)
-                
-                # Descripción
-                descripcion_parts = [f"Sala: {reserva.recurso.nombre}"]
-                if options.get('include_descriptions', False) and reserva.descripcion:
-                    descripcion_parts.append(f"Descripción: {reserva.descripcion}")
-                if options.get('include_location', False):
-                    descripcion_parts.append(f"Capacidad: {reserva.recurso.capacidad} personas")
-                if options.get('include_attendees', False):
-                    descripcion_parts.append(f"Reservado por: {reserva.usuario.get_full_name() or reserva.usuario.username}")
-                
-                event.add('description', '\n'.join(descripcion_parts))
-                
-                # Ubicación
-                if options.get('include_location', False):
-                    event.add('location', f"Sala {reserva.recurso.nombre}")
-                
-                # Organizador
-                event.add('organizer', f"MAILTO:{reserva.usuario.email or 'noreply@saipe.com'}")
-                
-                # Estado
-                event.add('status', 'CONFIRMED')
-                
-                # Creado y modificado
-                event.add('created', reserva.fecha_creacion)
-                event.add('last-modified', reserva.fecha_modificacion or reserva.fecha_creacion)
-                
-                # Agregar evento al calendario
-                cal.add_component(event)
-            
-            # Generar contenido iCal
-            ical_content = cal.to_ical().decode('utf-8')
-            
-            # Crear respuesta
-            response = HttpResponse(ical_content, content_type='text/calendar; charset=utf-8')
-            response['Content-Disposition'] = f'attachment; filename="calendario_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.ics"'
-            
-            return response
-            
-        except ImportError as e:
-            logger.error(f'iCalendar no está instalado: {str(e)}')
-            return JsonResponse({'error': 'icalendar no está instalado. Instala con: pip install icalendar'}, status=500)
-        except Exception as e:
-            logger.error(f'Error al generar iCal: {str(e)}', exc_info=True)
-            return JsonResponse({'error': f'Error al generar iCal: {str(e)}'}, status=500)
-    
-    def get_content_type(self) -> str:
-        return 'text/calendar; charset=utf-8'
-    
-    def get_file_extension(self) -> str:
-        return 'ics'
 
 
 class ExportFactory:
@@ -438,8 +529,6 @@ class ExportFactory:
         'pdf': PDFExportStrategy(),
         'xlsx': ExcelExportStrategy(),
         'excel': ExcelExportStrategy(),  # Alias para compatibilidad
-        'ical': ICalExportStrategy(),
-        'ics': ICalExportStrategy(),     # Alias para compatibilidad
     }
     
     @classmethod
