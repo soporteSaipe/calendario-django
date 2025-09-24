@@ -636,26 +636,41 @@ def export_calendar(request):
             return JsonResponse({'error': 'Formato no soportado'}, status=400)
         
         # Convertir fechas
-        fecha_inicio = datetime.strptime(date_from, '%Y-%m-%d').date()
-        fecha_fin = datetime.strptime(date_to, '%Y-%m-%d').date()
+        try:
+            fecha_inicio = datetime.strptime(date_from, '%Y-%m-%d').date()
+            fecha_fin = datetime.strptime(date_to, '%Y-%m-%d').date()
+        except ValueError as e:
+            return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
         
         if fecha_inicio > fecha_fin:
             return JsonResponse({'error': 'Fecha de inicio debe ser anterior a fecha de fin'}, status=400)
         
+        # Validar rango de fechas (máximo 1 año)
+        if (fecha_fin - fecha_inicio).days > 365:
+            return JsonResponse({'error': 'El rango de fechas no puede exceder 1 año'}, status=400)
+        
         # Filtrar salas
         if salas and salas[0]:  # Si se especificaron salas
-            salas_ids = [int(sala) for sala in salas if sala.isdigit()]
+            try:
+                salas_ids = [int(sala) for sala in salas if sala.isdigit()]
+                if not salas_ids:
+                    return JsonResponse({'error': 'IDs de salas inválidos'}, status=400)
+            except ValueError:
+                return JsonResponse({'error': 'IDs de salas inválidos'}, status=400)
         else:
-            salas_ids = list(Recurso.objects.values_list('id', flat=True))
+            salas_ids = list(Recurso.objects.filter(activo=True).values_list('id', flat=True))
+            if not salas_ids:
+                return JsonResponse({'error': 'No hay salas disponibles'}, status=404)
         
         # Obtener reservas
         reservas = Reserva.objects.filter(
             recurso_id__in=salas_ids,
-            fecha__range=[fecha_inicio, fecha_fin]
-        ).select_related('recurso', 'usuario').order_by('fecha', 'hora_inicio')
+            fecha_inicio__date__range=[fecha_inicio, fecha_fin],
+            estado='confirmada'
+        ).select_related('recurso', 'usuario').order_by('fecha_inicio')
         
         if not reservas.exists():
-            return JsonResponse({'error': 'No hay reservas en el rango de fechas especificado'}, status=404)
+            return JsonResponse({'error': 'No hay reservas confirmadas en el rango de fechas especificado'}, status=404)
         
         # Generar exportación según el formato
         if format_type == 'pdf':
@@ -671,10 +686,9 @@ def export_calendar(request):
                 'include_location': include_location
             })
             
-    except ValueError as e:
-        return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
+        logger.error(f'Error en export_calendar: {str(e)}', exc_info=True)
+        return JsonResponse({'error': f'Error interno del servidor: {str(e)}'}, status=500)
 
 
 def generate_pdf_export(reservas, fecha_inicio, fecha_fin, options):
@@ -689,6 +703,9 @@ def generate_pdf_export(reservas, fecha_inicio, fecha_fin, options):
         from reportlab.lib import colors
         from reportlab.lib.enums import TA_CENTER, TA_LEFT
         from io import BytesIO
+        import logging
+        
+        logger = logging.getLogger(__name__)
         
         # Crear buffer para el PDF
         buffer = BytesIO()
@@ -735,7 +752,7 @@ def generate_pdf_export(reservas, fecha_inicio, fecha_fin, options):
         # Agrupar reservas por fecha
         reservas_por_fecha = {}
         for reserva in reservas:
-            fecha_str = reserva.fecha.strftime('%d/%m/%Y')
+            fecha_str = reserva.fecha_inicio.date().strftime('%d/%m/%Y')
             if fecha_str not in reservas_por_fecha:
                 reservas_por_fecha[fecha_str] = []
             reservas_por_fecha[fecha_str].append(reserva)
@@ -756,7 +773,7 @@ def generate_pdf_export(reservas, fecha_inicio, fecha_fin, options):
             
             for reserva in reservas_fecha:
                 row = [
-                    f"{reserva.hora_inicio.strftime('%H:%M')} - {reserva.hora_fin.strftime('%H:%M')}",
+                    f"{reserva.fecha_inicio.strftime('%H:%M')} - {reserva.fecha_fin.strftime('%H:%M')}",
                     reserva.recurso.nombre,
                     reserva.titulo,
                     reserva.usuario.username
@@ -804,9 +821,11 @@ def generate_pdf_export(reservas, fecha_inicio, fecha_fin, options):
         
         return response
         
-    except ImportError:
+    except ImportError as e:
+        logger.error(f'ReportLab no está instalado: {str(e)}')
         return JsonResponse({'error': 'ReportLab no está instalado. Instala con: pip install reportlab'}, status=500)
     except Exception as e:
+        logger.error(f'Error al generar PDF: {str(e)}', exc_info=True)
         return JsonResponse({'error': f'Error al generar PDF: {str(e)}'}, status=500)
 
 
@@ -840,13 +859,15 @@ def generate_ical_export(reservas, fecha_inicio, fecha_fin, options):
             event.add('uid', f'reserva-{reserva.id}@saipe.com')
             
             # Fecha y hora de inicio
-            dtstart = datetime.combine(reserva.fecha, reserva.hora_inicio)
-            dtstart = tz.localize(dtstart)
+            dtstart = reserva.fecha_inicio
+            if dtstart.tzinfo is None:
+                dtstart = tz.localize(dtstart)
             event.add('dtstart', dtstart)
             
             # Fecha y hora de fin
-            dtend = datetime.combine(reserva.fecha, reserva.hora_fin)
-            dtend = tz.localize(dtend)
+            dtend = reserva.fecha_fin
+            if dtend.tzinfo is None:
+                dtend = tz.localize(dtend)
             event.add('dtend', dtend)
             
             # Título
@@ -889,7 +910,9 @@ def generate_ical_export(reservas, fecha_inicio, fecha_fin, options):
         
         return response
         
-    except ImportError:
+    except ImportError as e:
+        logger.error(f'iCalendar no está instalado: {str(e)}')
         return JsonResponse({'error': 'icalendar no está instalado. Instala con: pip install icalendar'}, status=500)
     except Exception as e:
+        logger.error(f'Error al generar iCal: {str(e)}', exc_info=True)
         return JsonResponse({'error': f'Error al generar iCal: {str(e)}'}, status=500)

@@ -1,3 +1,4 @@
+# Sistema de Reservas SAIPE - Dependencias
 # Django y dependencias principales
 Django>=5.2.6
 python-dotenv>=1.0.0
@@ -18,8 +19,16 @@ gunicorn>=20.1.0
 whitenoise>=6.0.0
 
 # Exportación de calendarios
-reportlab>=4.0.0
-icalendar>=5.0.0
+reportlab==4.4.4
+icalendar==6.3.1
+
 
 # Rate limiting para seguridad
-django-ratelimit>=3.0.0
+django-ratelimit>=4.1.0
+
+# Dependencias adicionales
+Pillow>=9.0.0
+python-dateutil>=2.8.0
+
+# Logging y debugging
+django-debug-toolbar>=4.0.0
