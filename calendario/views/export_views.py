@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from ..models import Recurso, Reserva
 from ..exporters import ExportFactory
 from ..decorators import require_staff, log_view_access, measure_performance
-# from ..query_optimizers import ExportQueryOptimizer
+from ..query_optimizers import ExportQueryOptimizer
 from ..constants import (
     ExportConfig,
     ErrorMessages,
@@ -21,6 +21,9 @@ logger = logging.getLogger('calendario')
 
 
 @login_required
+@require_staff
+@log_view_access
+@measure_performance
 def export_calendar(request):
     """
     Exportar calendario usando Factory y Strategy patterns
@@ -37,10 +40,6 @@ def export_calendar(request):
     
     Retorna: Archivo de exportación o error JSON
     """
-    
-    # Verificar permisos de staff
-    if not request.user.is_staff:
-        return JsonResponse({'error': 'Acceso denegado'}, status=403)
     
     try:
         # Obtener parámetros
@@ -92,12 +91,10 @@ def export_calendar(request):
             if not salas_ids:
                 return JsonResponse({'error': 'No hay salas disponibles'}, status=404)
         
-        # Obtener reservas de manera simple
-        reservas = Reserva.objects.filter(
-            recurso_id__in=salas_ids,
-            fecha_inicio__date__range=[fecha_inicio.date(), fecha_fin.date()],
-            estado='confirmada'
-        ).select_related('recurso', 'usuario').order_by('fecha_inicio')
+        # Obtener reservas usando el optimizador
+        reservas = ExportQueryOptimizer.get_reservas_para_exportacion(
+            salas_ids, fecha_inicio, fecha_fin
+        )
         
         # Validar límite de registros
         if reservas.count() > ExportConfig.MAX_RECORDS_PER_EXPORT:

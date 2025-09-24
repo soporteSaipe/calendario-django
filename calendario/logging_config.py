@@ -327,8 +327,47 @@ class BusinessLogger:
         )
 
 
-# Instancias globales de loggers
-calendario_logger = CalendarioLogger()
-performance_logger = PerformanceLogger()
-security_logger = SecurityLogger()
-business_logger = BusinessLogger()
+# Instancias globales de loggers (inicializadas bajo demanda)
+_calendario_logger = None
+_performance_logger = None
+_security_logger = None
+_business_logger = None
+
+
+def get_calendario_logger():
+    """Obtener instancia del logger de calendario"""
+    global _calendario_logger
+    if _calendario_logger is None:
+        _calendario_logger = CalendarioLogger()
+    return _calendario_logger
+
+
+def get_performance_logger():
+    """Obtener instancia del logger de performance"""
+    global _performance_logger
+    if _performance_logger is None:
+        _performance_logger = PerformanceLogger()
+    return _performance_logger
+
+
+def get_security_logger():
+    """Obtener instancia del logger de seguridad"""
+    global _security_logger
+    if _security_logger is None:
+        _security_logger = SecurityLogger()
+    return _security_logger
+
+
+def get_business_logger():
+    """Obtener instancia del logger de negocio"""
+    global _business_logger
+    if _business_logger is None:
+        _business_logger = BusinessLogger()
+    return _business_logger
+
+
+# Alias para compatibilidad
+calendario_logger = get_calendario_logger
+performance_logger = get_performance_logger
+security_logger = get_security_logger
+business_logger = get_business_logger

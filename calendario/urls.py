@@ -7,7 +7,6 @@ from .views import (
     export_views,
     docs_views
 )
-from .views.export_views_debug import export_calendar_debug
 
 app_name = 'calendario'
 
@@ -31,7 +30,6 @@ urlpatterns = [
     
     # Exportación
     path('export/', export_views.export_calendar, name='export_calendar'),
-    path('export-debug/', export_calendar_debug, name='export_calendar_debug'),
     
     # Documentación y métricas
     path('docs/', docs_views.api_documentation_view, name='api_docs'),

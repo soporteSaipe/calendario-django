@@ -33,7 +33,7 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
             return None
         
         # Log del error usando el logger estructurado
-        calendario_logger.error(
+        calendario_logger().error(
             f'Error en {request.path}: {str(exception)}',
             extra_data={
                 'error_type': type(exception).__name__,
@@ -77,7 +77,7 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
             'retry_after': 60
         }
         
-        security_logger.log_rate_limit_exceeded(
+        security_logger().log_rate_limit_exceeded(
             user_id=getattr(request.user, 'id', None) if request.user.is_authenticated else None,
             ip_address=self._get_client_ip(request),
             endpoint=request.path,
