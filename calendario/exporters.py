@@ -59,7 +59,6 @@ class PDFExportStrategy(ExportStrategy):
             from reportlab.lib.units import inch
             from reportlab.lib import colors
             from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
-            from reportlab.lib.utils import simpleSplit
             from datetime import datetime as dt
             
             # Crear buffer para el PDF
@@ -124,52 +123,32 @@ class PDFExportStrategy(ExportStrategy):
             story.append(Spacer(1, 20))
             
             # === DEFINIR COLUMNAS FIJAS ===
-            # Anchos fijos en pulgadas (total disponible: ~7.5 pulgadas)
-            col_widths = {
-                'hora': 1.0,      # Hora inicio-fin
-                'sala': 0.8,      # Nombre de sala
-                'titulo': 2.2,    # Título (más ancho para texto largo)
-                'usuario': 0.8,   # Usuario
-                'descripcion': 2.0, # Descripción (si se incluye)
-                'ubicacion': 1.0   # Ubicación (si se incluye)
-            }
-            
             # Determinar qué columnas incluir
             include_desc = options.get('include_descriptions', False)
             include_ubic = options.get('include_location', False)
             
-            # Calcular anchos totales
-            total_width = col_widths['hora'] + col_widths['sala'] + col_widths['titulo'] + col_widths['usuario']
-            if include_desc:
-                total_width += col_widths['descripcion']
-            if include_ubic:
-                total_width += col_widths['ubicacion']
-            
-            # Ajustar proporcionalmente si excede el ancho disponible
-            max_width = 7.5
-            if total_width > max_width:
-                scale_factor = max_width / total_width
-                for key in col_widths:
-                    col_widths[key] *= scale_factor
-            
-            # Asegurar que todos los anchos sean positivos
-            for key in col_widths:
-                if col_widths[key] <= 0:
-                    col_widths[key] = 0.5  # Ancho mínimo
-            
-            # Crear encabezados
+            # Crear encabezados y anchos fijos
             headers = ['Hora', 'Sala', 'Título', 'Usuario']
-            widths = [col_widths['hora'], col_widths['sala'], col_widths['titulo'], col_widths['usuario']]
+            widths = [1.0, 0.8, 2.2, 0.8]  # Anchos fijos en pulgadas
             
             if include_desc:
                 headers.append('Descripción')
-                widths.append(col_widths['descripcion'])
+                widths.append(2.0)
             if include_ubic:
                 headers.append('Ubicación')
-                widths.append(col_widths['ubicacion'])
+                widths.append(1.0)
             
-            # Validar que todos los anchos sean válidos
-            widths = [w if w is not None and w > 0 else 0.5 for w in widths]
+            # Ajustar anchos si hay demasiadas columnas
+            total_width = sum(widths)
+            max_width = 7.0  # Ancho máximo disponible
+            
+            if total_width > max_width:
+                # Escalar proporcionalmente
+                scale_factor = max_width / total_width
+                widths = [w * scale_factor for w in widths]
+            
+            # Asegurar anchos mínimos
+            widths = [max(w, 0.5) for w in widths]
             
             # Agrupar reservas por fecha
             reservas_por_fecha = {}
@@ -217,8 +196,8 @@ class PDFExportStrategy(ExportStrategy):
                     
                     table_data.append(row)
                 
-                # Crear tabla con anchos fijos
-                table = Table(table_data, colWidths=widths, repeatRows=1)
+                # Crear tabla sin anchos específicos para evitar problemas
+                table = Table(table_data, repeatRows=1)
                 
                 # Estilo de tabla mejorado
                 table_style = [

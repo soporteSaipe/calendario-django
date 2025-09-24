@@ -1,17 +1,32 @@
 from django.urls import path
-from . import views
+from .views import (
+    calendar_views,
+    reservation_views,
+    api_views,
+    dashboard_views,
+    export_views
+)
 
 app_name = 'calendario'
 
 urlpatterns = [
-    path('', views.calendario_view, name='calendario'),
-    path('dashboard/', views.dashboard, name='dashboard'),
-    path('crear/', views.crear_reserva, name='crear_reserva'),
-    path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
-    path('editar/<int:reserva_id>/', views.editar_reserva, name='editar_reserva'),
-    path('eliminar/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
-    path('api/reservas/', views.api_reservas, name='api_reservas'),
-    path('api/horarios-ocupados/', views.api_horarios_ocupados, name='api_horarios_ocupados'),
-    path('api/validar-conflicto/', views.api_validar_conflicto, name='api_validar_conflicto'),
-    path('export/', views.export_calendar, name='export_calendar'),
+    # Vistas del calendario
+    path('', calendar_views.calendario_view, name='calendario'),
+    
+    # Vistas de reservas
+    path('crear/', reservation_views.crear_reserva, name='crear_reserva'),
+    path('mis-reservas/', reservation_views.mis_reservas, name='mis_reservas'),
+    path('editar/<int:reserva_id>/', reservation_views.editar_reserva, name='editar_reserva'),
+    path('eliminar/<int:reserva_id>/', reservation_views.eliminar_reserva, name='eliminar_reserva'),
+    
+    # API endpoints
+    path('api/reservas/', api_views.api_reservas, name='api_reservas'),
+    path('api/horarios-ocupados/', api_views.api_horarios_ocupados, name='api_horarios_ocupados'),
+    path('api/validar-conflicto/', api_views.api_validar_conflicto, name='api_validar_conflicto'),
+    
+    # Dashboard administrativo
+    path('dashboard/', dashboard_views.dashboard, name='dashboard'),
+    
+    # Exportación
+    path('export/', export_views.export_calendar, name='export_calendar'),
 ]

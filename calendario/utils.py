@@ -17,6 +17,12 @@ from .exceptions import (
     FechaInvalidaError,
     HorarioTrabajoError
 )
+from .constants import (
+    BusinessRules,
+    CacheConfig,
+    TimezoneConfig
+)
+from .query_optimizers import ReservaQueryOptimizer
 
 # Configurar logger específico para el módulo
 logger = logging.getLogger(__name__)
@@ -29,15 +35,15 @@ class ReservaService:
     @staticmethod
     def validar_horarios_trabajo(fecha_inicio: datetime, fecha_fin: datetime) -> None:
         """
-        Validar que las reservas estén dentro del horario de trabajo (7:00 - 18:00)
+        Validar que las reservas estén dentro del horario de trabajo
         """
         # Verificar horario de inicio
-        if fecha_inicio.time() < datetime.strptime('07:00', '%H:%M').time():
-            raise HorarioTrabajoError('Las reservas solo pueden realizarse a partir de las 07:00')
+        if fecha_inicio.time() < datetime.strptime(f'{BusinessRules.MIN_HOUR:02d}:00', '%H:%M').time():
+            raise HorarioTrabajoError(f'Las reservas solo pueden realizarse a partir de las {BusinessRules.MIN_HOUR:02d}:00')
         
         # Verificar horario de fin
-        if fecha_fin.time() > datetime.strptime('18:00', '%H:%M').time():
-            raise HorarioTrabajoError('Las reservas solo pueden realizarse hasta las 18:00')
+        if fecha_fin.time() > datetime.strptime(f'{BusinessRules.MAX_HOUR:02d}:00', '%H:%M').time():
+            raise HorarioTrabajoError(f'Las reservas solo pueden realizarse hasta las {BusinessRules.MAX_HOUR:02d}:00')
     
     @staticmethod
     def validar_fechas(fecha_inicio: datetime, fecha_fin: datetime) -> None:
@@ -51,9 +57,9 @@ class ReservaService:
             raise FechaInvalidaError('No se pueden realizar reservas en fechas pasadas')
         
         # Verificar que la fecha no sea más de 6 meses en el futuro
-        max_fecha = hoy + timedelta(days=180)
+        max_fecha = hoy + timedelta(days=BusinessRules.MAX_FUTURE_DAYS)
         if fecha_inicio.date() > max_fecha:
-            raise FechaInvalidaError('Las reservas solo pueden realizarse hasta 6 meses en el futuro')
+            raise FechaInvalidaError(f'Las reservas solo pueden realizarse hasta {BusinessRules.MAX_FUTURE_DAYS} días en el futuro')
         
         # Verificar que fecha_fin sea posterior a fecha_inicio
         if fecha_fin <= fecha_inicio:
@@ -65,19 +71,12 @@ class ReservaService:
         """
         Validar conflictos con reservas existentes
         """
-        # Construir query para buscar conflictos
-        query = Reserva.objects.filter(
-            recurso=recurso,
-            estado='confirmada',
-            fecha_inicio__lt=fecha_fin,
-            fecha_fin__gt=fecha_inicio
+        # Usar optimizador de consultas
+        reservas_conflicto = ReservaQueryOptimizer.get_reservas_conflicto(
+            recurso, fecha_inicio, fecha_fin, reserva_excluir
         )
         
-        # Excluir la reserva que se está editando
-        if reserva_excluir:
-            query = query.exclude(id=reserva_excluir)
-        
-        reserva_conflicto = query.select_related('usuario').first()
+        reserva_conflicto = reservas_conflicto.first()
         
         if reserva_conflicto:
             logger.warning(f'Conflicto de reserva detectado: {reserva_conflicto.titulo}')
@@ -207,13 +206,13 @@ class CacheService:
         except Exception:
             cache_recursos = cache
         
-        cache_key = 'recursos_activos'
+        cache_key = CacheConfig.CACHE_KEY_RECURSOS
         recursos = cache_recursos.get(cache_key)
         
         if recursos is None:
             logger.debug('Cache miss para recursos activos, consultando BD')
             recursos = list(Recurso.objects.filter(activo=True).select_related())
-            cache_recursos.set(cache_key, recursos, 600)  # 10 minutos
+            cache_recursos.set(cache_key, recursos, CacheConfig.RECURSOS_TIMEOUT)
             logger.info(f'Recursos activos cacheados: {len(recursos)} recursos')
         else:
             logger.debug(f'Cache hit para recursos activos: {len(recursos)} recursos')
@@ -229,9 +228,9 @@ class CacheService:
         
         try:
             cache_recursos = caches['recursos']
-            cache_recursos.delete('recursos_activos')
+            cache_recursos.delete(CacheConfig.CACHE_KEY_RECURSOS)
         except Exception:
-            cache.delete('recursos_activos')
+            cache.delete(CacheConfig.CACHE_KEY_RECURSOS)
         
         logger.info('Cache de recursos invalidado')
     
@@ -287,9 +286,9 @@ class DateTimeService:
             # Crear datetime naive
             fecha_inicio_naive = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
             
-            # Localizar en zona horaria de Buenos Aires
-            buenos_aires_tz = pytz.timezone('America/Argentina/Buenos_Aires')
-            fecha_inicio = buenos_aires_tz.localize(fecha_inicio_naive)
+            # Localizar en zona horaria configurada
+            timezone_tz = pytz.timezone(TimezoneConfig.DEFAULT_TIMEZONE)
+            fecha_inicio = timezone_tz.localize(fecha_inicio_naive)
             
             logger.debug(f'Fecha parseada: {fecha_inicio} (UTC: {fecha_inicio.astimezone(pytz.UTC)})')
             
