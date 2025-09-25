@@ -34,16 +34,14 @@ CalendarioApp.CalendarViews = {
   // Esperar a que el calendario esté listo
   waitForCalendar: function() {
     let attempts = 0;
-    const maxAttempts = 50; // 5 segundos máximo
+    const maxAttempts = 20; // Reducido a 2 segundos máximo
     
     const checkCalendar = () => {
       attempts++;
-      console.log(`Intento ${attempts} de conectar con el calendario...`);
       
       // Buscar en CalendarioApp primero
       if (window.CalendarioApp && CalendarioApp.Calendar && CalendarioApp.Calendar.calendar) {
         this.state.calendarInstance = CalendarioApp.Calendar.calendar;
-        console.log('Calendario encontrado en CalendarioApp.Calendar.calendar');
         this.updateCalendarView();
         return;
       }
@@ -52,7 +50,6 @@ CalendarioApp.CalendarViews = {
       const calendarElement = document.getElementById('calendar');
       if (calendarElement && calendarElement._fullCalendar) {
         this.state.calendarInstance = calendarElement._fullCalendar;
-        console.log('Calendario encontrado en el DOM');
         this.updateCalendarView();
         return;
       }
@@ -61,11 +58,19 @@ CalendarioApp.CalendarViews = {
       if (attempts < maxAttempts) {
         setTimeout(checkCalendar, 100);
       } else {
-        console.warn('No se pudo conectar con el calendario después de', maxAttempts, 'intentos');
+        // Fallback: intentar inicializar sin conexión
+        this.initializeFallback();
       }
     };
     
     checkCalendar();
+  },
+
+  // Inicialización de respaldo
+  initializeFallback: function() {
+    // Crear controles básicos sin conexión al calendario
+    this.createViewControls();
+    this.bindEvents();
   },
 
   // Crear controles de vista

@@ -15,6 +15,7 @@ from .exceptions import (
     HorarioTrabajoError
 )
 from .logging_config import calendario_logger, security_logger
+from .http_responses import HTTP, ERROR_CODES
 
 logger = logging.getLogger('calendario')
 
@@ -70,13 +71,6 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
     
     def _handle_rate_limit_error(self, request, exception, is_ajax):
         """Manejar errores de rate limiting"""
-        error_data = {
-            'success': False,
-            'error': 'Has alcanzado el límite de solicitudes. Intenta en unos minutos.',
-            'error_type': 'rate_limit_exceeded',
-            'retry_after': 60
-        }
-        
         security_logger().log_rate_limit_exceeded(
             user_id=getattr(request.user, 'id', None) if request.user.is_authenticated else None,
             ip_address=self._get_client_ip(request),
@@ -86,10 +80,15 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
         )
         
         if is_ajax:
-            return JsonResponse(error_data, status=429)
+            return HTTP.rate_limited(
+                retry_after=60,
+                limit=60,
+                remaining=0,
+                request=request
+            )
         else:
             from django.contrib import messages
-            messages.error(request, error_data['error'])
+            messages.error(request, 'Has alcanzado el límite de solicitudes. Intenta en unos minutos.')
             return None
     
     def _handle_validation_error(self, request, exception, is_ajax):
@@ -110,36 +109,34 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
     
     def _handle_recurso_not_found(self, request, exception, is_ajax):
         """Manejar cuando un recurso no se encuentra"""
-        error_data = {
-            'success': False,
-            'error': 'El recurso seleccionado no existe o no está activo',
-            'error_type': 'resource_not_found',
-            'recurso_id': exception.recurso_id
-        }
-        
         if is_ajax:
-            return JsonResponse(error_data, status=404)
+            return HTTP.not_found(
+                message='El recurso seleccionado no existe o no está activo',
+                resource_type='recurso',
+                resource_id=str(exception.recurso_id),
+                request=request
+            )
         else:
             from django.contrib import messages
-            messages.error(request, error_data['error'])
+            messages.error(request, 'El recurso seleccionado no existe o no está activo')
             return None
     
     def _handle_conflicto_reserva(self, request, exception, is_ajax):
         """Manejar conflictos de reservas"""
-        error_data = {
-            'success': False,
-            'error': str(exception),
-            'error_type': 'conflict_error',
-            'reserva_conflicto': {
-                'id': exception.reserva_conflicto.id,
-                'titulo': exception.reserva_conflicto.titulo,
-                'fecha_inicio': exception.reserva_conflicto.fecha_inicio.isoformat(),
-                'fecha_fin': exception.reserva_conflicto.fecha_fin.isoformat()
-            }
-        }
-        
         if is_ajax:
-            return JsonResponse(error_data, status=409)  # Conflict
+            conflict_details = {
+                'reserva_conflicto': {
+                    'id': exception.reserva_conflicto.id,
+                    'titulo': exception.reserva_conflicto.titulo,
+                    'fecha_inicio': exception.reserva_conflicto.fecha_inicio.isoformat(),
+                    'fecha_fin': exception.reserva_conflicto.fecha_fin.isoformat()
+                }
+            }
+            return HTTP.conflict(
+                message=str(exception),
+                conflict_details=conflict_details,
+                request=request
+            )
         else:
             from django.contrib import messages
             messages.error(request, str(exception))
@@ -147,16 +144,16 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
     
     def _handle_restriccion_horario(self, request, exception, is_ajax):
         """Manejar restricciones de horario"""
-        error_data = {
-            'success': False,
-            'error': str(exception),
-            'error_type': 'time_restriction',
-            'restriccion': exception.restriccion,
-            'recurso': exception.recurso.nombre
-        }
-        
         if is_ajax:
-            return JsonResponse(error_data, status=422)  # Unprocessable Entity
+            validation_errors = {
+                'restriccion': exception.restriccion,
+                'recurso': exception.recurso.nombre
+            }
+            return HTTP.unprocessable_entity(
+                message=str(exception),
+                validation_errors=validation_errors,
+                request=request
+            )
         else:
             from django.contrib import messages
             messages.error(request, str(exception))

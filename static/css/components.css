@@ -120,7 +120,7 @@
 
 .btn-modern.loading {
   position: relative;
-  color: transparent !important;
+  color: transparent;
 }
 
 .btn-modern.loading::after {
@@ -337,6 +337,8 @@
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .modal-header-modern {
@@ -617,6 +619,8 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   overflow: hidden;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .modal-header-modern {
@@ -658,7 +662,7 @@
 }
 
 .modal-body {
-  padding: var(--space-xl);
+  padding: var(--space-lg);
   background: var(--bg-card);
 }
 
@@ -837,17 +841,19 @@
 
 /* ===== CONTENIDO DE DETALLES ===== */
 #reservaDetailsContent {
-  min-height: 300px;
+  min-height: 200px;
+  max-height: calc(70vh - 200px);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto;
 }
 
 .reserva-details-card {
   background: var(--bg-card);
   border: 1px solid var(--color-border-light);
   border-radius: var(--border-radius-lg);
-  padding: var(--space-xl);
+  padding: var(--space-lg);
   box-shadow: var(--shadow-sm);
   width: 100%;
   max-width: 500px;
@@ -1020,10 +1026,18 @@
   .modal-dialog {
     margin: 0.5rem;
     max-width: calc(100% - 1rem);
+    max-height: calc(70vh - 1rem);
+  }
+  
+  .modal-content-modern {
+    max-height: calc(70vh - 1rem);
+    overflow-y: auto;
   }
   
   .modal-body {
-    padding: var(--space-lg);
+    padding: var(--space-md);
+    max-height: calc(70vh - 150px);
+    overflow-y: auto;
   }
   
   .nav-pills .nav-link {
@@ -1059,10 +1073,18 @@
   .modal-dialog {
     margin: 0.25rem;
     max-width: calc(100% - 0.5rem);
+    max-height: calc(70vh - 0.5rem);
+  }
+  
+  .modal-content-modern {
+    max-height: calc(70vh - 0.5rem);
+    overflow-y: auto;
   }
   
   .modal-body {
-    padding: var(--space-md);
+    padding: var(--space-sm);
+    max-height: calc(70vh - 120px);
+    overflow-y: auto;
   }
   
   .nav-pills {
@@ -1150,6 +1172,8 @@
 
 .reserva-details-container {
   padding: 0;
+  max-height: calc(70vh - 150px);
+  overflow-y: auto;
 }
 
 .reserva-details-header {
@@ -1176,13 +1200,13 @@
 .reserva-info-section {
   background: var(--bs-light);
   border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
   border-left: 4px solid var(--bs-primary);
 }
 
 .info-item {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .info-item:last-child {
@@ -1239,7 +1263,7 @@
 .reserva-description-section {
   background: var(--bs-light);
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
   border-left: 4px solid var(--bs-success);
 }
 
@@ -1298,13 +1322,17 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .reserva-details-container {
+    max-height: calc(70vh - 120px);
+  }
+  
   .reserva-details-title {
     font-size: 1.25rem;
   }
   
   .reserva-info-section,
   .reserva-description-section {
-    padding: 1rem;
+    padding: 0.75rem;
   }
   
   .duration-content {
@@ -1313,7 +1341,22 @@
   }
   
   .info-item {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .reserva-details-container {
+    max-height: calc(70vh - 100px);
+  }
+  
+  .reserva-details-title {
+    font-size: 1.1rem;
+  }
+  
+  .reserva-info-section,
+  .reserva-description-section {
+    padding: 0.5rem;
   }
 }
 

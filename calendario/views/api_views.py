@@ -17,6 +17,7 @@ from ..constants import (
     ValidationMessages,
     ErrorMessages
 )
+from ..http_responses import HTTP, ERROR_CODES
 
 logger = logging.getLogger('calendario')
 
@@ -107,7 +108,12 @@ def api_horarios_ocupados(request):
     fecha = request.GET.get('fecha')
     
     if not recurso_id or not fecha:
-        return JsonResponse({'error': 'recurso_id y fecha son requeridos'}, status=400)
+        return HTTP.bad_request(
+            message='recurso_id y fecha son requeridos',
+            error_code=ERROR_CODES.MISSING_REQUIRED_FIELD,
+            details={'required_params': ['recurso_id', 'fecha']},
+            request=request
+        )
     
     try:
         # Convertir fecha a datetime
@@ -148,10 +154,18 @@ def api_horarios_ocupados(request):
         })
         
     except ValueError as e:
-        return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
+        return HTTP.bad_request(
+            message=f'Formato de fecha inválido: {str(e)}',
+            error_code=ERROR_CODES.INVALID_DATE_FORMAT,
+            details={'received_date': fecha},
+            request=request
+        )
     except Exception as e:
         logger.error(f'Error en api_horarios_ocupados: {str(e)}', exc_info=True)
-        return JsonResponse({'error': ErrorMessages.UNEXPECTED_ERROR.format(error=str(e))}, status=500)
+        return HTTP.internal_server_error(
+            message=ErrorMessages.UNEXPECTED_ERROR.format(error=str(e)),
+            request=request
+        )
 
 
 @rate_limit(requests_per_minute=RateLimitConfig.VALIDATION_REQUESTS)
@@ -170,7 +184,10 @@ def api_validar_conflicto(request):
     Retorna: Resultado de la validación con posibles conflictos
     """
     if request.method != 'GET':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
+        return HTTP.method_not_allowed(
+            allowed_methods=['GET'],
+            request=request
+        )
     
     try:
         # Obtener parámetros
@@ -183,20 +200,24 @@ def api_validar_conflicto(request):
         
         if not all([sala_id, fecha, hora_inicio, hora_fin]):
             logger.warning('Parámetros faltantes en API validar conflicto')
-            return JsonResponse({'error': 'Parámetros faltantes'}, status=400)
+            return HTTP.bad_request(
+                message='Parámetros faltantes',
+                error_code=ERROR_CODES.MISSING_REQUIRED_FIELD,
+                details={'required_params': ['sala', 'fecha', 'hora_inicio', 'hora_fin']},
+                request=request
+            )
         
         # Obtener recurso
         try:
             recurso = Recurso.objects.get(id=sala_id, activo=True)
         except Recurso.DoesNotExist:
             logger.warning(f'Recurso no encontrado: {sala_id}')
-            return JsonResponse({
-                'conflicts': [{
-                    'type': 'resource_not_found',
-                    'message': ValidationMessages.RESOURCE_NOT_FOUND
-                }],
-                'valid': False
-            })
+            return HTTP.not_found(
+                message=ValidationMessages.RESOURCE_NOT_FOUND,
+                resource_type='sala',
+                resource_id=str(sala_id),
+                request=request
+            )
         
         # Crear fechas usando el servicio
         try:
@@ -204,7 +225,11 @@ def api_validar_conflicto(request):
             fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
         except ValidationError as e:
             logger.warning(f'Error parseando fechas en validación: {str(e)}')
-            return JsonResponse({'error': str(e)}, status=400)
+            return HTTP.bad_request(
+                message=str(e),
+                error_code=ERROR_CODES.INVALID_DATE_FORMAT,
+                request=request
+            )
         
         # Usar el servicio para validar la reserva
         try:
@@ -230,16 +255,22 @@ def api_validar_conflicto(request):
             }]
             
             logger.debug(f'Validación completada: válida=False, errores={len(conflictos)}')
-        
-        return JsonResponse({
-            'conflicts': conflictos,
-            'valid': False,
-            'fecha': fecha,
-            'hora_inicio': hora_inicio,
-            'hora_fin': hora_fin,
-            'sala_id': sala_id
-        })
+            
+            return HTTP.unprocessable_entity(
+                message='La reserva no puede ser realizada',
+                validation_errors={
+                    'conflicts': conflictos,
+                    'fecha': fecha,
+                    'hora_inicio': hora_inicio,
+                    'hora_fin': hora_fin,
+                    'sala_id': sala_id
+                },
+                request=request
+            )
         
     except Exception as e:
         logger.error(f'Error inesperado en API validar conflicto: {str(e)}', exc_info=True)
-        return JsonResponse({'error': ErrorMessages.UNEXPECTED_ERROR.format(error=str(e))}, status=500)
+        return HTTP.internal_server_error(
+            message=ErrorMessages.UNEXPECTED_ERROR.format(error=str(e)),
+            request=request
+        )

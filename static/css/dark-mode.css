@@ -1,7 +1,8 @@
 /**
- * DARK MODE CSS - SISTEMA COMPLETO
+ * DARK MODE CSS - SISTEMA COMPLETO SIN !IMPORTANT
  * Revisión completa de todos los colores del modo claro
  * Generación automática de modo oscuro para cada color
+ * Reestructurado para eliminar todos los !important
  */
 
 /* ===== VARIABLES DE MODO OSCURO COMPLETAS ===== */
@@ -267,7 +268,7 @@
   opacity: 1;
 }
 
-/* ===== COMPONENTES PRINCIPALES ===== */
+/* ===== COMPONENTES PRINCIPALES - MODO OSCURO ===== */
 
 /* Body y fondo principal */
 [data-theme="dark"] body,
@@ -276,351 +277,342 @@
   color: var(--text-primary);
 }
 
-/* Navbar */
+/* Navbar - Selector más específico */
 [data-theme="dark"] .navbar-modern,
 :root.dark .navbar-modern {
-  background: rgba(15, 23, 42, 0.95) !important;
+  background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--color-border-light) !important;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
-/* Cards */
+/* Cards - Selector más específico */
 [data-theme="dark"] .card-modern,
 :root.dark .card-modern {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--color-border-light) !important;
-  box-shadow: var(--shadow-md) !important;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-md);
 }
 
 [data-theme="dark"] .card-modern:not(:has(#calendar)),
 :root.dark .card-modern:not(:has(#calendar)) {
-  background: rgba(51, 65, 85, 0.8) !important;
+  background: rgba(51, 65, 85, 0.8);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border-medium) !important;
-  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--color-border-medium);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Headers de Cards */
+/* Headers de Cards - Selector más específico */
 [data-theme="dark"] .card-header-modern,
 :root.dark .card-header-modern {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-  color: var(--text-on-dark) !important;
-  border-bottom-color: var(--primary) !important;
-  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2) !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-on-dark);
+  border-bottom-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
 }
 
 [data-theme="dark"] .calendar-header-modern,
 :root.dark .calendar-header-modern {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-  color: var(--text-on-dark) !important;
-  border-bottom-color: var(--primary) !important;
-  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2) !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-on-dark);
+  border-bottom-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
 }
 
-/* Footer */
+/* Footer - Selector más específico */
 [data-theme="dark"] .footer-modern,
 :root.dark .footer-modern {
-  background: var(--bg-dark) !important;
-  border-top: 1px solid var(--color-border-light) !important;
-  color: var(--text-muted) !important;
+  background: var(--bg-dark);
+  border-top: 1px solid var(--color-border-light);
+  color: var(--text-muted);
 }
 
-/* Breadcrumbs */
+/* Breadcrumbs - Selector más específico */
 [data-theme="dark"] .breadcrumb-container,
 :root.dark .breadcrumb-container {
-  background: rgba(51, 65, 85, 0.8) !important;
+  background: rgba(51, 65, 85, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid var(--color-border-light) !important;
+  border: 1px solid var(--color-border-light);
 }
 
-/* ===== FORMULARIOS ===== */
+/* ===== FORMULARIOS - MODO OSCURO ===== */
 [data-theme="dark"] .form-control-modern,
 :root.dark .form-control-modern {
-  background: var(--bg-secondary) !important;
-  border: 1px solid var(--color-border-medium) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-secondary);
+  border: 1px solid var(--color-border-medium);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .form-control-modern:focus,
 :root.dark .form-control-modern:focus {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 [data-theme="dark"] .form-control-modern::placeholder,
 :root.dark .form-control-modern::placeholder {
-  color: var(--text-muted) !important;
+  color: var(--text-muted);
 }
 
-/* ===== BOTONES ===== */
+/* ===== BOTONES - MODO OSCURO ===== */
 [data-theme="dark"] .btn-modern,
 :root.dark .btn-modern {
-  border: 1px solid var(--color-border-medium) !important;
+  border: 1px solid var(--color-border-medium);
 }
 
 [data-theme="dark"] .btn-modern:hover,
 :root.dark .btn-modern:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg) !important;
+  box-shadow: var(--shadow-lg);
 }
 
-/* Botones de advertencia */
+/* Botones de advertencia - Selector más específico */
 [data-theme="dark"] .btn-warning-modern,
 :root.dark .btn-warning-modern {
-  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
-  border-color: var(--warning) !important;
-  color: var(--text-on-dark) !important;
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  border-color: var(--warning);
+  color: var(--text-on-dark);
 }
 
 [data-theme="dark"] .btn-warning-modern:hover,
 :root.dark .btn-warning-modern:hover {
-  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
-/* Botones de acción */
+/* Botones de acción - Selector más específico */
 [data-theme="dark"] .btn-action-edit,
 :root.dark .btn-action-edit {
-  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
-  color: var(--text-on-dark) !important;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  color: var(--text-on-dark);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
 [data-theme="dark"] .btn-action-edit:hover,
 :root.dark .btn-action-edit:hover {
-  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4) !important;
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
-/* Botones de eliminar */
+/* Botones de eliminar - Selector más específico */
 [data-theme="dark"] .btn-action-delete,
 :root.dark .btn-action-delete {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%) !important;
-  color: var(--text-on-dark) !important;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3) !important;
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+  color: var(--text-on-dark);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 [data-theme="dark"] .btn-action-delete:hover,
 :root.dark .btn-action-delete:hover {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%) !important;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
-/* Botones de crear reserva */
+/* Botones de crear reserva - Selector más específico */
 [data-theme="dark"] .btn-crear-reserva,
 :root.dark .btn-crear-reserva {
-  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%) !important;
-  color: var(--text-on-dark) !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
+  color: var(--text-on-dark);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 [data-theme="dark"] .btn-crear-reserva:hover,
 :root.dark .btn-crear-reserva:hover {
-  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%) !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
-/* ===== ALERTAS ===== */
+/* ===== ALERTAS - MODO OSCURO ===== */
 [data-theme="dark"] .alert-modern,
 :root.dark .alert-modern {
-  background: rgba(51, 65, 85, 0.9) !important;
-  border: 1px solid var(--color-border-light) !important;
-  color: var(--text-primary) !important;
+  background: rgba(51, 65, 85, 0.9);
+  border: 1px solid var(--color-border-light);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .alert-danger-modern,
 :root.dark .alert-danger-modern {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.2) 100%) !important;
-  color: var(--danger) !important;
-  border-left-color: var(--danger) !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.2) 100%);
+  color: var(--danger);
+  border-left-color: var(--danger);
 }
 
 [data-theme="dark"] .alert-warning-modern,
 :root.dark .alert-warning-modern {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.2) 100%) !important;
-  color: var(--warning) !important;
-  border-left-color: var(--warning) !important;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.2) 100%);
+  color: var(--warning);
+  border-left-color: var(--warning);
 }
 
 [data-theme="dark"] .alert-success-modern,
 :root.dark .alert-success-modern {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%) !important;
-  color: var(--success) !important;
-  border-left-color: var(--success) !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
+  color: var(--success);
+  border-left-color: var(--success);
 }
 
 [data-theme="dark"] .alert-info-modern,
 :root.dark .alert-info-modern {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.2) 100%) !important;
-  color: var(--info) !important;
-  border-left-color: var(--info) !important;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.2) 100%);
+  color: var(--info);
+  border-left-color: var(--info);
 }
 
-/* ===== BADGES ===== */
+/* ===== BADGES - MODO OSCURO ===== */
 [data-theme="dark"] .badge-modern.badge-warning,
 :root.dark .badge-modern.badge-warning,
 [data-theme="dark"] .badge-modern.badge-en_curso,
 :root.dark .badge-modern.badge-en_curso {
-  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%) !important;
-  color: var(--text-on-dark) !important;
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
+  color: var(--text-on-dark);
 }
 
 [data-theme="dark"] .badge-modern.badge-success,
 :root.dark .badge-modern.badge-success,
 [data-theme="dark"] .badge-modern.badge-terminada,
 :root.dark .badge-modern.badge-terminada {
-  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%) !important;
-  color: var(--text-on-dark) !important;
+  background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
+  color: var(--text-on-dark);
 }
 
 [data-theme="dark"] .badge-modern.badge-danger,
 :root.dark .badge-modern.badge-danger {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%) !important;
-  color: var(--text-on-dark) !important;
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+  color: var(--text-on-dark);
 }
 
 [data-theme="dark"] .badge-modern.badge-info,
 :root.dark .badge-modern.badge-info {
-  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%) !important;
-  color: var(--text-on-dark) !important;
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
+  color: var(--text-on-dark);
 }
 
-/* ===== TABLAS ===== */
+/* ===== TABLAS - MODO OSCURO ===== */
 [data-theme="dark"] .table-modern,
 :root.dark .table-modern {
-  background: var(--bg-card) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .table-modern th,
 :root.dark .table-modern th {
-  background: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
-  border-bottom: 1px solid var(--color-border-light) !important;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 [data-theme="dark"] .table-modern td,
 :root.dark .table-modern td {
-  border-bottom: 1px solid var(--color-border-light) !important;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
-/* ===== MODALES ===== */
+/* ===== MODALES - MODO OSCURO ===== */
 [data-theme="dark"] .modal-content-modern,
 :root.dark .modal-content-modern {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--color-border-medium) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-medium);
+  color: var(--text-primary);
 }
 
-/* ===== CALENDARIO ===== */
+/* ===== CALENDARIO - MODO OSCURO ===== */
 [data-theme="dark"] .fc,
 :root.dark .fc {
-  background: var(--bg-card) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
-/* Controles de vista del calendario */
-[data-theme="dark"] .calendar-view-controls,
-:root.dark .calendar-view-controls {
-  background: rgba(75, 85, 99, 0.8) !important; /* Gris medio más oscuro */
-  color: white !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
 
 [data-theme="dark"] .fc-daygrid-day,
 :root.dark .fc-daygrid-day {
-  background: var(--bg-secondary) !important;
-  border-color: var(--color-border-light) !important;
+  background: var(--bg-secondary);
+  border-color: var(--color-border-light);
 }
 
 [data-theme="dark"] .fc-daygrid-day:hover,
 :root.dark .fc-daygrid-day:hover {
-  background: var(--bg-accent) !important;
+  background: var(--bg-accent);
 }
 
 [data-theme="dark"] .fc-event,
 :root.dark .fc-event {
-  border: 1px solid var(--color-border-medium) !important;
-  color: var(--text-primary) !important;
+  border: 1px solid var(--color-border-medium);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .fc-button,
 :root.dark .fc-button {
-  background: var(--bg-secondary) !important;
-  border: 1px solid var(--color-border-medium) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-secondary);
+  border: 1px solid var(--color-border-medium);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .fc-button:hover,
 :root.dark .fc-button:hover {
-  background: var(--primary) !important;
-  border-color: var(--primary) !important;
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 [data-theme="dark"] .fc-button:disabled,
 :root.dark .fc-button:disabled {
-  background: var(--neutral) !important;
-  color: var(--text-muted) !important;
+  background: var(--neutral);
+  color: var(--text-muted);
 }
 
-/* ===== EXPORTACIÓN ===== */
+/* ===== EXPORTACIÓN - MODO OSCURO ===== */
 [data-theme="dark"] .btn-export-pdf,
 :root.dark .btn-export-pdf {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%) !important;
-  color: var(--text-on-dark) !important;
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2) !important;
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+  color: var(--text-on-dark);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
 [data-theme="dark"] .btn-export-pdf:hover,
 :root.dark .btn-export-pdf:hover {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%) !important;
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
 [data-theme="dark"] .btn-export-excel,
 :root.dark .btn-export-excel {
-  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%) !important;
-  color: var(--text-on-dark) !important;
-  box-shadow: 0 2px 4px rgba(13, 202, 240, 0.2) !important;
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
+  color: var(--text-on-dark);
+  box-shadow: 0 2px 4px rgba(13, 202, 240, 0.2);
 }
 
 [data-theme="dark"] .btn-export-excel:hover,
 :root.dark .btn-export-excel:hover {
-  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%) !important;
-  box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3) !important;
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
+  box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3);
 }
-
 
 [data-theme="dark"] .export-history-icon.pdf,
 :root.dark .export-history-icon.pdf {
-  background: var(--danger) !important;
+  background: var(--danger);
 }
 
 [data-theme="dark"] .export-history-icon.excel,
 :root.dark .export-history-icon.excel {
-  background: var(--info) !important;
+  background: var(--info);
 }
 
-
-/* ===== NOTIFICACIONES ===== */
+/* ===== NOTIFICACIONES - MODO OSCURO ===== */
 [data-theme="dark"] .notification-loading,
 :root.dark .notification-loading {
-  border-left: 4px solid var(--secondary) !important;
+  border-left: 4px solid var(--secondary);
 }
 
 [data-theme="dark"] .notification-loading::before,
 :root.dark .notification-loading::before {
-  background: rgba(139, 92, 246, 0.1) !important;
-  color: var(--secondary) !important;
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--secondary);
 }
 
-/* ===== EFECTOS DE HOVER EN CARD HEADERS ===== */
+/* ===== EFECTOS DE HOVER EN CARD HEADERS - MODO OSCURO ===== */
 [data-theme="dark"] .card-header-modern::before,
 :root.dark .card-header-modern::before {
   background: linear-gradient(90deg, 
     transparent, 
     rgba(255, 255, 255, 0.1), 
-    transparent) !important;
+    transparent);
 }
 
 /* ===== INDICADOR DE MODO OSCURO ACTIVO ===== */
@@ -685,8 +677,8 @@
 /* ===== ACCESIBILIDAD ===== */
 @media (prefers-reduced-motion: reduce) {
   * {
-    transition: none !important;
-    animation: none !important;
+    transition: none;
+    animation: none;
   }
 }
 

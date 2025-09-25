@@ -145,66 +145,6 @@ def validate_request_data(required_fields=None, optional_fields=None):
     return decorator
 
 
-def handle_ajax_response(view_func):
-    """
-    Decorador para manejar respuestas AJAX de forma consistente
-    
-    Usage:
-        @handle_ajax_response
-        def vista_con_ajax(request):
-            # ...
-    """
-    @wraps(view_func)
-    def wrapper(request, *args, **kwargs):
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-        
-        try:
-            response = view_func(request, *args, **kwargs)
-            
-            # Si la vista retorna un HttpResponse, devolverlo tal como está
-            if hasattr(response, 'status_code'):
-                return response
-            
-            # Si es una respuesta AJAX, convertir a JSON
-            if is_ajax:
-                if isinstance(response, dict):
-                    return JsonResponse(response)
-                else:
-                    return JsonResponse({'success': True, 'data': response})
-            
-            return response
-            
-        except ValidationError as e:
-            error_msg = str(e)
-            logger.warning(f'Error de validación en {view_func.__name__}: {error_msg}')
-            
-            if is_ajax:
-                return JsonResponse({
-                    'success': False,
-                    'error': error_msg,
-                    'error_type': 'validation_error'
-                }, status=400)
-            else:
-                messages.error(request, error_msg)
-                return redirect('calendario:calendario')
-                
-        except Exception as e:
-            error_msg = ErrorMessages.UNEXPECTED_ERROR.format(error=str(e))
-            logger.error(f'Error inesperado en {view_func.__name__}: {str(e)}', exc_info=True)
-            
-            if is_ajax:
-                return JsonResponse({
-                    'success': False,
-                    'error': error_msg,
-                    'error_type': 'server_error'
-                }, status=500)
-            else:
-                messages.error(request, error_msg)
-                return redirect('calendario:calendario')
-    
-    return wrapper
-
-
 def log_view_access(view_func):
     """
     Decorador para logging de acceso a vistas

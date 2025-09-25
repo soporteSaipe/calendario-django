@@ -15,13 +15,6 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: rgba(107, 114, 128, 0.8); /* Gris medio */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: var(--border-radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white; /* Letras blancas */
 }
 
 /* Selector de vista */
@@ -123,7 +116,7 @@
 .current-view-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text-primary);
   margin: 0;
   min-width: 200px;
   text-align: center;
@@ -329,9 +322,6 @@
 }
 
 /* Animaciones */
-.calendar-view-controls {
-  animation: slideDown 0.3s ease-out;
-}
 
 @keyframes slideDown {
   from {

@@ -18,7 +18,6 @@ from ..decorators import (
     rate_limit,
     require_authentication,
     validate_request_data,
-    handle_ajax_response,
     log_view_access,
     validate_resource_access
 )
@@ -30,6 +29,7 @@ from ..constants import (
     SuccessMessages,
     ErrorMessages
 )
+from ..http_responses import HTTP, ERROR_CODES
 
 logger = logging.getLogger('calendario')
 
@@ -37,7 +37,6 @@ logger = logging.getLogger('calendario')
 @login_required
 @rate_limit(requests_per_minute=RateLimitConfig.CREATE_RESERVA)
 @validate_request_data(['recurso', 'titulo', 'fecha', 'hora_inicio', 'hora_fin'])
-@handle_ajax_response
 @log_view_access
 def crear_reserva(request):
     """
@@ -69,7 +68,12 @@ def crear_reserva(request):
                 error_msg = ValidationMessages.RESOURCE_NOT_FOUND
                 logger.warning(f'Intento de reservar recurso inexistente: {recurso_id}')
                 if is_ajax:
-                    return JsonResponse({'success': False, 'error': error_msg}, status=400)
+                    return HTTP.not_found(
+                        message=error_msg,
+                        resource_type='recurso',
+                        resource_id=str(recurso_id),
+                        request=request
+                    )
                 messages.error(request, error_msg)
                 return redirect('calendario:calendario')
             
@@ -80,7 +84,11 @@ def crear_reserva(request):
             except Exception as e:
                 logger.error(f'Error parseando fechas: {str(e)}')
                 if is_ajax:
-                    return JsonResponse({'success': False, 'error': str(e)}, status=400)
+                    return HTTP.bad_request(
+                        message=str(e),
+                        error_code=ERROR_CODES.INVALID_DATE_FORMAT,
+                        request=request
+                    )
                 messages.error(request, str(e))
                 return redirect('calendario:calendario')
             
@@ -97,13 +105,15 @@ def crear_reserva(request):
             success_msg = SuccessMessages.RESERVA_CREATED.format(recurso=recurso.nombre)
             
             if is_ajax:
-                return JsonResponse({
-                    'success': True, 
-                    'message': success_msg,
-                    'reserva_id': reserva.id,
-                    'recurso_id': recurso.id,
-                    'recurso_nombre': recurso.nombre
-                })
+                return HTTP.success(
+                    data={
+                        'reserva_id': reserva.id,
+                        'recurso_id': recurso.id,
+                        'recurso_nombre': recurso.nombre
+                    },
+                    message=success_msg,
+                    request=request
+                )
             messages.success(request, success_msg)
             return redirect(f"{reverse('calendario:calendario')}?sala={recurso.id}")
             
@@ -111,7 +121,10 @@ def crear_reserva(request):
             error_msg = ErrorMessages.UNEXPECTED_ERROR.format(error=str(e))
             logger.error(f'Error inesperado en crear_reserva: {str(e)}', exc_info=True)
             if is_ajax:
-                return JsonResponse({'success': False, 'error': error_msg}, status=500)
+                return HTTP.internal_server_error(
+                    message=error_msg,
+                    request=request
+                )
             messages.error(request, error_msg)
             return redirect('calendario:calendario')
     
@@ -162,7 +175,6 @@ def mis_reservas(request):
 @login_required
 @rate_limit(requests_per_minute=RateLimitConfig.EDIT_RESERVA)
 @validate_resource_access
-@handle_ajax_response
 @log_view_access
 def editar_reserva(request, reserva_id, reserva=None):
     """
@@ -224,7 +236,6 @@ def editar_reserva(request, reserva_id, reserva=None):
 @login_required
 @rate_limit(requests_per_minute=RateLimitConfig.DELETE_RESERVA)
 @validate_resource_access
-@handle_ajax_response
 @log_view_access
 def eliminar_reserva(request, reserva_id, reserva=None):
     """

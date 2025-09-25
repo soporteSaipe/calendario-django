@@ -233,7 +233,6 @@
 
 /* ===== CALENDARIO ===== */
 .calendar-container {
-  background: var(--bg-secondary);
   border-radius: var(--border-radius-lg);
   padding: var(--space-md);
   box-shadow: var(--shadow-sm);

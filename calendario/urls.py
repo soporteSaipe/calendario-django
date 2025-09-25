@@ -4,9 +4,9 @@ from .views import (
     reservation_views,
     api_views,
     dashboard_views,
-    export_views_simple,
     docs_views
 )
+from .views import export_views
 
 app_name = 'calendario'
 
@@ -29,7 +29,7 @@ urlpatterns = [
     path('dashboard/', dashboard_views.dashboard, name='dashboard'),
     
     # Exportación
-    path('export/', export_views_simple.export_calendar_simple, name='export_calendar'),
+    path('export/', export_views.export_calendar_simple, name='export_calendar'),
     
     # Documentación y métricas
     path('docs/', docs_views.api_documentation_view, name='api_docs'),

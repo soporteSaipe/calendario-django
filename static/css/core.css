@@ -22,6 +22,18 @@
   --info: #2196F3;
   --neutral: #9E9E9E;
   
+  /* Alias para compatibilidad */
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-neutral: var(--neutral);
+  
   /* Colores de fondo */
   --bg-primary: #FDF2F8;
   --bg-secondary: #FFFFFF;
