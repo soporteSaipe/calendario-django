@@ -1402,11 +1402,35 @@ CalendarioApp.Utils = {
   }
 };
 
+// ===== MEJORAS DE MODALES =====
+function improveModals() {
+  const modals = document.querySelectorAll('.modal');
+  
+  modals.forEach(modal => {
+    // Limpiar scroll al cerrar
+    modal.addEventListener('hidden.bs.modal', function() {
+      const modalBody = modal.querySelector('.modal-body');
+      if (modalBody) {
+        modalBody.scrollTop = 0;
+      }
+    });
+
+    // Aplicar comportamiento general a todos los modales
+    modal.addEventListener('shown.bs.modal', function() {
+      // Forzar que no aparezca scrollbar externa
+      modal.style.paddingRight = '0px';
+    });
+  });
+}
+
 // ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', function() {
   // Inicializar sistemas básicos
   CalendarioApp.Notifications.init();
   CalendarioApp.Accessibility.init();
+  
+  // Mejorar modales
+  improveModals();
   
   // Esperar a que se configuren las URLs antes de inicializar el calendario
   const initCalendar = () => {

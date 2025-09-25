@@ -169,22 +169,7 @@
   font-size: 0.9rem;
 }
 
-/* Estilos específicos para diferentes vistas */
-.calendar-container.view-month {
-  /* Estilos para vista mensual */
-}
-
-.calendar-container.view-week {
-  /* Estilos para vista semanal */
-}
-
-.calendar-container.view-day {
-  /* Estilos para vista diaria */
-}
-
-.calendar-container.view-year {
-  /* Estilos para vista anual */
-}
+/* Estilos específicos para diferentes vistas - reservado para futuras mejoras */
 
 /* Mejoras para FullCalendar en diferentes vistas */
 .fc-view-harness {
@@ -383,10 +368,37 @@
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface-light) 100%);
   border: 1px solid var(--border);
   border-radius: var(--border-radius-lg);
-  padding: 1.5rem;
+  padding: 1.25rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   animation: slideDown 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== MODO OSCURO PARA EXPORTACIÓN ===== */
+@media (prefers-color-scheme: dark) {
+  .calendar-export-controls {
+    background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
+    border-color: #404040;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+[data-theme="dark"] .calendar-export-controls {
+  background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
+  border-color: #404040;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.calendar-export-controls::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #dc2626 0%, #059669 50%, #6b7280 100%);
 }
 
 .export-header {
@@ -409,213 +421,360 @@
 
 .export-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 /* ===== BOTONES DE EXPORTACIÓN ===== */
 
 .btn-export {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
   border: none;
-  border-radius: var(--border-radius-md);
-  color: var(--text-on-dark);
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: var(--border-radius-lg);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
+  gap: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-export::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-export:hover::before {
+  left: 100%;
 }
 
 .btn-export:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #1D4ED8 0%, #059669 100%);
 }
 
 .btn-export:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btn-export-pdf {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
-  color: var(--text-on-dark);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
+  color: white;
+  border: 1px solid rgba(220, 38, 38, 0.2);
 }
 
 .btn-export-pdf:hover {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  transform: translateY(-2px);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.btn-export-pdf:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
 }
 
 .btn-export-excel {
-  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
-  box-shadow: 0 2px 4px rgba(13, 202, 240, 0.2);
-  color: var(--text-on-dark);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
+  color: white;
+  border: 1px solid rgba(5, 150, 105, 0.2);
 }
 
 .btn-export-excel:hover {
-  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
-  box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3);
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+  transform: translateY(-2px);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+.btn-export-excel:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
 }
 
 
 .btn-export-options {
-  background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
-  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  box-shadow: 0 2px 4px rgba(107, 114, 128, 0.25);
+  color: white;
+  border: 1px solid rgba(107, 114, 128, 0.2);
 }
 
 .btn-export-options:hover {
-  background: linear-gradient(135deg, var(--secondary-dark) 0%, var(--secondary) 100%);
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+  transform: translateY(-2px);
+  border-color: rgba(107, 114, 128, 0.3);
 }
 
-/* ===== PANEL DE OPCIONES ===== */
+.btn-export-options:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(107, 114, 128, 0.25);
+}
 
-.export-options-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--border-radius-md);
+/* ===== MODAL DE EXPORTACIÓN ===== */
+
+#exportModal .modal-dialog {
+  max-width: 600px;
+}
+
+#exportModal .modal-content-modern {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+#exportModal .modal-header-modern {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
   padding: 1.5rem;
-  margin-top: 1rem;
-  animation: slideDown 0.3s ease-out;
 }
 
-.export-options-content {
-  max-width: 800px;
+#exportModal .modal-title-modern {
+  color: white;
+  font-weight: 600;
+  font-size: 1.25rem;
 }
 
-/* ===== SELECTOR DE RANGO DE FECHAS ===== */
+#exportModal .modal-body {
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+}
 
-.date-range-selector {
+#exportModal .modal-footer {
+  background: rgba(248, 250, 252, 0.8);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 0 0 16px 16px;
+  padding: 1.5rem;
+}
+
+.export-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-label {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.form-label i {
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.date-range-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
 }
 
-.date-separator {
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* ===== OPCIONES DE FORMATO ===== */
-
-.format-options {
+.date-input-group {
   display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 2px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: rgba(var(--primary-rgb), 0.05);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary);
+}
+
+.date-info i {
+  color: var(--primary);
+}
+
+.format-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .format-option {
-  display: flex;
-  align-items: center;
   cursor: pointer;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--border-radius-md);
-  transition: all 0.3s ease;
-  background: var(--surface);
-}
-
-.format-option:hover {
-  border-color: var(--primary);
-  background: var(--primary-light);
 }
 
 .format-option input[type="radio"] {
   display: none;
 }
 
-.format-option input[type="radio"]:checked + .format-label {
-  color: var(--primary);
-}
-
-.format-option input[type="radio"]:checked {
-  border-color: var(--primary);
-  background: var(--primary-light);
-}
-
-.format-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  transition: color 0.3s ease;
-}
-
-.format-label i {
-  font-size: 1.1rem;
-}
-
-/* ===== GRUPO DE CHECKBOXES ===== */
-
-.form-check-group {
+.format-card {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-}
-
-.form-check-modern {
-  display: flex;
   align-items: center;
-  cursor: pointer;
-  padding: 0.5rem 0;
-  transition: color 0.3s ease;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  border: 2px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  text-align: center;
 }
 
-.form-check-modern:hover {
+.format-card i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.format-card span {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.format-card small {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.format-option:hover .format-card {
+  border-color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.format-option input[type="radio"]:checked + .format-card {
+  border-color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+}
+
+.format-option input[type="radio"]:checked + .format-card i {
   color: var(--primary);
 }
 
-.form-check-modern input[type="checkbox"] {
-  display: none;
+.export-info {
+  background: rgba(var(--success-rgb), 0.05);
+  border: 1px solid rgba(var(--success-rgb), 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
 }
 
-.checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border);
-  border-radius: var(--border-radius-sm);
-  margin-right: 0.75rem;
-  position: relative;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
 }
 
-.form-check-modern input[type="checkbox"]:checked + .checkmark {
-  background: var(--primary);
-  border-color: var(--primary);
+.info-item:last-child {
+  margin-bottom: 0;
 }
 
-.form-check-modern input[type="checkbox"]:checked + .checkmark::after {
-  content: '';
-  position: absolute;
-  left: 6px;
-  top: 2px;
-  width: 6px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+.info-item i {
+  color: var(--success);
+  font-size: 0.9rem;
 }
-
-/* ===== ACCIONES DEL FOOTER ===== */
 
 .export-actions-footer {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-secondary {
+  background: rgba(107, 114, 128, 0.1);
+  color: var(--text-muted);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(107, 114, 128, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.2);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.3);
 }
 
 /* ===== INDICADOR DE PROGRESO ===== */
@@ -675,12 +834,15 @@
   .export-actions {
     justify-content: center;
     flex-wrap: wrap;
+    gap: 0.5rem;
   }
   
   .btn-export {
     flex: 1;
     min-width: 120px;
     justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
   }
   
   .date-range-selector {
@@ -708,7 +870,71 @@
 
 @media (max-width: 576px) {
   .export-options-panel {
+    margin-top: 0.75rem;
+  }
+
+  .export-options-content {
+    padding: 1.5rem;
+  }
+
+  .export-options-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .export-section {
     padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .export-section.combined {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .form-check-group.compact {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-check-modern.compact {
+    justify-content: flex-start;
+  }
+
+  .export-actions-footer {
+    padding: 1rem 1.5rem;
+    margin: 1.5rem -1.5rem -1.5rem -1.5rem;
+  }
+
+  .export-notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    min-width: auto;
+  }
+
+  #exportModal .modal-body {
+    padding: 1.5rem;
+  }
+
+  .export-form {
+    max-width: none;
+  }
+
+  .date-range-inputs {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .format-selector {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .export-actions-footer {
+    flex-direction: column;
+    gap: 0.75rem;
   }
   
   .btn-export {
@@ -766,7 +992,7 @@
 
 .export-notification {
   position: fixed;
-  bottom: 20px;
+  top: 20px;
   right: 20px;
   z-index: 1050;
   background: var(--success);
@@ -778,17 +1004,53 @@
   align-items: center;
   gap: 0.75rem;
   animation: slideInRight 0.3s ease-out;
+  max-width: 400px;
+  min-width: 300px;
 }
 
 .export-notification.error {
-  background: var(--danger);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  border-left: 4px solid #991b1b;
 }
 
 .export-notification.warning {
-  background: var(--warning);
-  color: var(--text-on-light);
-  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+  border-left: 4px solid #92400e;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.notification-content i {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.notification-content span {
+  flex: 1;
+  font-weight: 500;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.notification-close:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 @keyframes slideInRight {

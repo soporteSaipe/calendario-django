@@ -23,11 +23,6 @@ CalendarioApp.CalendarExport = {
 
   // Inicialización
   init: function() {
-    console.log('Inicializando sistema de exportación de calendarios...');
-    console.log('CalendarExport - Estado de inicialización:');
-    console.log('- Es admin:', this.isAdmin());
-    console.log('- Calendar container:', document.querySelector('.calendar-container'));
-    
     this.createExportControls();
     this.setupEventListeners();
   },
@@ -36,17 +31,13 @@ CalendarioApp.CalendarExport = {
   createExportControls: function() {
     // Solo mostrar para administradores
     if (!this.isAdmin()) {
-      console.log('CalendarExport - No se muestran controles: usuario no es admin');
       return;
     }
 
     const calendarContainer = document.querySelector('.calendar-container');
     if (!calendarContainer) {
-      console.log('CalendarExport - No se muestran controles: calendar-container no encontrado');
       return;
     }
-    
-    console.log('CalendarExport - Creando controles de exportación...');
 
     const exportControls = document.createElement('div');
     exportControls.className = 'calendar-export-controls';
@@ -55,100 +46,118 @@ CalendarioApp.CalendarExport = {
         <h6 class="export-title">
           <i class="fas fa-download me-2"></i>Exportar Calendario
         </h6>
-        <div class="export-actions">
-          <button class="btn-export btn-export-pdf" data-format="pdf" title="Exportar como PDF">
-            <i class="fas fa-file-pdf me-1"></i>PDF
-          </button>
-          <button class="btn-export btn-export-excel" data-format="xlsx" title="Exportar como Excel">
-            <i class="fas fa-file-excel me-1"></i>Excel
-          </button>
-          <button class="btn-export btn-export-options" title="Opciones de exportación">
-            <i class="fas fa-cog me-1"></i>Opciones
-          </button>
-        </div>
+      <div class="export-actions">
+        <button class="btn-export btn-export-pdf" data-format="pdf" title="Exportar como PDF">
+          <i class="fas fa-file-pdf me-1"></i>PDF
+        </button>
+        <button class="btn-export btn-export-excel" data-format="xlsx" title="Exportar como Excel">
+          <i class="fas fa-file-excel me-1"></i>Excel
+        </button>
+        <button class="btn-export btn-export-options" title="Configurar exportación">
+          <i class="fas fa-calendar-alt me-1"></i>Configurar
+        </button>
       </div>
-      <div class="export-options-panel" id="exportOptionsPanel" style="display: none;">
-        <div class="export-options-content">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group-modern">
-                <label class="form-label-modern">Rango de fechas</label>
-                <div class="date-range-selector">
-                  <input type="date" id="exportDateFrom" class="form-control-modern" />
-                  <span class="date-separator">hasta</span>
-                  <input type="date" id="exportDateTo" class="form-control-modern" />
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group-modern">
-                <label class="form-label-modern">Salas a incluir</label>
-                <select id="exportSalas" class="form-select-modern" multiple>
-                  <!-- Se llenará dinámicamente -->
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group-modern">
-                <label class="form-label-modern">Incluir detalles</label>
-                <div class="form-check-group">
-                  <label class="form-check-modern">
-                    <input type="checkbox" id="includeDescriptions" checked>
-                    <span class="checkmark"></span>
-                    Descripciones
-                  </label>
-                  <label class="form-check-modern">
-                    <input type="checkbox" id="includeAttendees" checked>
-                    <span class="checkmark"></span>
-                    Asistentes
-                  </label>
-                  <label class="form-check-modern">
-                    <input type="checkbox" id="includeLocation" checked>
-                    <span class="checkmark"></span>
-                    Ubicación
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group-modern">
-                <label class="form-label-modern">Formato de archivo</label>
-                <div class="format-options">
-                  <label class="format-option">
-                    <input type="radio" name="exportFormat" value="pdf" checked>
-                    <span class="format-label">
-                      <i class="fas fa-file-pdf"></i>
-                      PDF
-                    </span>
-                  </label>
-                  <label class="format-option">
-                    <input type="radio" name="exportFormat" value="xlsx">
-                    <span class="format-label">
-                      <i class="fas fa-file-excel"></i>
-                      Excel
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="export-actions-footer">
-            <button class="btn-modern btn-secondary-modern" id="cancelExport">
-              <i class="fas fa-times me-1"></i>Cancelar
-            </button>
-            <button class="btn-modern btn-primary-modern" id="confirmExport">
-              <i class="fas fa-download me-1"></i>Exportar
-            </button>
-          </div>
-        </div>
       </div>
     `;
 
     calendarContainer.insertAdjacentHTML('beforebegin', exportControls.outerHTML);
-    this.loadSalaOptions();
+    
+    // Crear modal de exportación
+    this.createExportModal();
     this.setDefaultDateRange();
+  },
+
+  // Crear modal de exportación
+  createExportModal: function() {
+    const modalHTML = `
+      <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+              <h5 class="modal-title modal-title-modern" id="exportModalLabel">
+                <i class="fas fa-download me-2"></i>
+                Configurar Exportación
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <div class="export-form">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-calendar-alt"></i>
+                    Rango de Fechas
+                  </label>
+                  <div class="date-range-inputs">
+                    <div class="date-input-group">
+                      <label class="date-label">Desde</label>
+                      <input type="date" id="exportDateFrom" class="form-control" />
+                    </div>
+                    <div class="date-input-group">
+                      <label class="date-label">Hasta</label>
+                      <input type="date" id="exportDateTo" class="form-control" />
+                    </div>
+                  </div>
+                  <div class="date-info">
+                    <i class="fas fa-info-circle"></i>
+                    Máximo 365 días de diferencia
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-file-export"></i>
+                    Formato de Archivo
+                  </label>
+                  <div class="format-selector">
+                    <label class="format-option">
+                      <input type="radio" name="exportFormat" value="pdf" checked>
+                      <div class="format-card">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF</span>
+                        <small>Documento imprimible</small>
+                      </div>
+                    </label>
+                    <label class="format-option">
+                      <input type="radio" name="exportFormat" value="xlsx">
+                      <div class="format-card">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Excel</span>
+                        <small>Hoja de cálculo</small>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="export-info">
+                  <div class="info-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Incluye todas las salas activas</span>
+                  </div>
+                  <div class="info-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Solo reservas confirmadas</span>
+                  </div>
+                  <div class="info-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Incluye descripciones</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
+                <i class="fas fa-times me-1"></i>Cancelar
+              </button>
+              <button type="button" class="btn-modern btn-primary-modern" id="confirmExport">
+                <i class="fas fa-download me-1"></i>Exportar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
   },
 
   // Verificar si es administrador
@@ -166,22 +175,6 @@ CalendarioApp.CalendarExport = {
     return adminLink !== null;
   },
 
-  // Cargar opciones de salas
-  loadSalaOptions: function() {
-    const salaFilter = document.getElementById('salaFilter');
-    const exportSalas = document.getElementById('exportSalas');
-    
-    if (!salaFilter || !exportSalas) return;
-
-    const options = Array.from(salaFilter.options).map(option => {
-      if (option.value) {
-        return `<option value="${option.value}" selected>${option.textContent}</option>`;
-      }
-      return '';
-    }).filter(option => option);
-
-    exportSalas.innerHTML = options.join('');
-  },
 
   // Establecer rango de fechas por defecto
   setDefaultDateRange: function() {
@@ -206,13 +199,11 @@ CalendarioApp.CalendarExport = {
     document.addEventListener('click', (e) => {
       if (e.target.matches('.btn-export-pdf, .btn-export-excel')) {
         const format = e.target.dataset.format;
-        this.showExportOptions(format);
+        this.showExportModal(format);
       } else if (e.target.matches('.btn-export-options')) {
-        this.toggleExportOptions();
+        this.showExportModal();
       } else if (e.target.matches('#confirmExport')) {
         this.confirmExport();
-      } else if (e.target.matches('#cancelExport')) {
-        this.hideExportOptions();
       }
     });
 
@@ -224,46 +215,49 @@ CalendarioApp.CalendarExport = {
     });
   },
 
-  // Mostrar opciones de exportación
-  showExportOptions: function(format) {
-    const panel = document.getElementById('exportOptionsPanel');
-    if (panel) {
-      panel.style.display = 'block';
-      panel.scrollIntoView({ behavior: 'smooth' });
-      
-      // Seleccionar formato
-      const formatInput = document.querySelector(`input[name="exportFormat"][value="${format}"]`);
-      if (formatInput) {
-        formatInput.checked = true;
+  // Mostrar modal de exportación
+  showExportModal: function(format) {
+    const modal = document.getElementById('exportModal');
+    if (modal) {
+      // Seleccionar formato si se especifica
+      if (format) {
+        const formatInput = document.querySelector(`input[name="exportFormat"][value="${format}"]`);
+        if (formatInput) {
+          formatInput.checked = true;
+        }
       }
-    }
-  },
-
-  // Alternar opciones de exportación
-  toggleExportOptions: function() {
-    const panel = document.getElementById('exportOptionsPanel');
-    if (panel) {
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    }
-  },
-
-  // Ocultar opciones de exportación
-  hideExportOptions: function() {
-    const panel = document.getElementById('exportOptionsPanel');
-    if (panel) {
-      panel.style.display = 'none';
+      
+      // Mostrar modal usando Bootstrap
+      const bootstrapModal = new bootstrap.Modal(modal);
+      bootstrapModal.show();
     }
   },
 
   // Actualizar formato de exportación
   updateExportFormat: function(format) {
-    console.log('Formato de exportación cambiado a:', format);
+    // Actualizar UI según el formato seleccionado
+    const buttons = document.querySelectorAll('.btn-export');
+    buttons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.format === format) {
+        btn.classList.add('active');
+      }
+    });
   },
 
   // Confirmar exportación
   confirmExport: function() {
     const exportData = this.getExportData();
     if (!exportData) return;
+
+    // Cerrar modal
+    const modal = document.getElementById('exportModal');
+    if (modal) {
+      const bootstrapModal = bootstrap.Modal.getInstance(modal);
+      if (bootstrapModal) {
+        bootstrapModal.hide();
+      }
+    }
 
     this.startExport(exportData);
   },
@@ -272,28 +266,32 @@ CalendarioApp.CalendarExport = {
   getExportData: function() {
     const dateFrom = document.getElementById('exportDateFrom')?.value;
     const dateTo = document.getElementById('exportDateTo')?.value;
-    const salas = Array.from(document.getElementById('exportSalas')?.selectedOptions || [])
-      .map(option => option.value);
     const format = document.querySelector('input[name="exportFormat"]:checked')?.value;
 
+    // Validación básica
     if (!dateFrom || !dateTo || !format) {
-      this.showError('Por favor completa todos los campos requeridos');
+      this.showError('Por favor completa todos los campos requeridos', 'warning');
       return null;
     }
 
-    if (new Date(dateFrom) > new Date(dateTo)) {
-      this.showError('La fecha de inicio debe ser anterior a la fecha de fin');
+    const startDate = new Date(dateFrom);
+    const endDate = new Date(dateTo);
+
+    if (startDate > endDate) {
+      this.showError('La fecha de inicio debe ser anterior a la fecha de fin', 'error');
+      return null;
+    }
+
+    const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    if (daysDiff > 365) {
+      this.showError('El rango de fechas no puede ser mayor a 365 días', 'warning');
       return null;
     }
 
     return {
       dateFrom,
       dateTo,
-      salas,
-      format,
-      includeDescriptions: document.getElementById('includeDescriptions')?.checked || false,
-      includeAttendees: document.getElementById('includeAttendees')?.checked || false,
-      includeLocation: document.getElementById('includeLocation')?.checked || false
+      format
     };
   },
 
@@ -360,11 +358,7 @@ CalendarioApp.CalendarExport = {
     const params = new URLSearchParams({
       format: exportData.format,
       date_from: exportData.dateFrom,
-      date_to: exportData.dateTo,
-      salas: exportData.salas.join(','),
-      include_descriptions: exportData.includeDescriptions,
-      include_attendees: exportData.includeAttendees,
-      include_location: exportData.includeLocation
+      date_to: exportData.dateTo
     });
 
     return `/calendario/export/?${params.toString()}`;
@@ -446,12 +440,40 @@ CalendarioApp.CalendarExport = {
   },
 
   // Mostrar error
-  showError: function(message) {
+  showError: function(message, type = 'error') {
     if (window.CalendarioApp && CalendarioApp.Notifications) {
-      CalendarioApp.Notifications.error(message, {
+      const notificationType = type === 'warning' ? 'warning' : 'error';
+      CalendarioApp.Notifications[notificationType](message, {
         duration: 5000
       });
+    } else {
+      // Fallback para cuando no hay sistema de notificaciones
+      this.showFallbackNotification(message, type);
     }
+  },
+
+  // Notificación de respaldo
+  showFallbackNotification: function(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `export-notification ${type}`;
+    notification.innerHTML = `
+      <div class="notification-content">
+        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${message}</span>
+        <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove después de 5 segundos
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
   },
 
   // Obtener historial de exportaciones
