@@ -12,6 +12,25 @@ class Recurso(models.Model):
     activo = models.BooleanField(default=True, verbose_name="Activo")
     color = models.CharField(max_length=7, default="#007bff", verbose_name="Color")
     
+    # Campos adicionales para características detalladas
+    descripcion_detallada = models.TextField(
+        blank=True, 
+        verbose_name="Descripción detallada",
+        help_text="Descripción completa de la sala con características y equipamiento"
+    )
+    horario_uso = models.CharField(
+        max_length=200, 
+        blank=True, 
+        verbose_name="Horario de uso",
+        help_text="Ej: Lunes a Viernes de 7:00 AM a 4:00 PM"
+    )
+    tiene_proyector = models.BooleanField(default=False, verbose_name="Proyector HD")
+    tiene_pizarra = models.BooleanField(default=False, verbose_name="Pizarra blanca")
+    tiene_audio = models.BooleanField(default=False, verbose_name="Sistema de audio")
+    tiene_videoconferencia = models.BooleanField(default=False, verbose_name="Videoconferencia")
+    tiene_wifi = models.BooleanField(default=False, verbose_name="WiFi de alta velocidad")
+    tiene_climatizacion = models.BooleanField(default=False, verbose_name="Climatización")
+    
     class Meta:
         verbose_name = "Recurso"
         verbose_name_plural = "Recursos"
@@ -33,6 +52,34 @@ class Recurso(models.Model):
             })
         
         return horarios_restringidos
+    
+    def get_caracteristicas_activas(self):
+        """Obtener lista de características activas de la sala"""
+        caracteristicas = []
+        
+        if self.tiene_proyector:
+            caracteristicas.append('Proyector HD')
+        if self.tiene_pizarra:
+            caracteristicas.append('Pizarra blanca')
+        if self.tiene_audio:
+            caracteristicas.append('Sistema de audio')
+        if self.tiene_videoconferencia:
+            caracteristicas.append('Videoconferencia')
+        if self.tiene_wifi:
+            caracteristicas.append('WiFi de alta velocidad')
+        if self.tiene_climatizacion:
+            caracteristicas.append('Climatización')
+        
+        return caracteristicas
+    
+    def get_descripcion_completa(self):
+        """Obtener descripción completa de la sala"""
+        if self.descripcion_detallada:
+            return self.descripcion_detallada
+        elif self.descripcion:
+            return self.descripcion
+        else:
+            return 'Sala de reunión equipada con proyector, pizarra y sistema de videoconferencia. Ideal para reuniones de equipo y presentaciones.'
 
 class Reserva(models.Model):
     """Modelo para representar las reservas"""

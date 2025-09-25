@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/reservas/', api_views.api_reservas, name='api_reservas'),
     path('api/horarios-ocupados/', api_views.api_horarios_ocupados, name='api_horarios_ocupados'),
     path('api/validar-conflicto/', api_views.api_validar_conflicto, name='api_validar_conflicto'),
+    path('api/sala/<int:sala_id>/detalles/', api_views.api_sala_detalles, name='api_sala_detalles'),
     
     # Dashboard administrativo
     path('dashboard/', dashboard_views.dashboard, name='dashboard'),

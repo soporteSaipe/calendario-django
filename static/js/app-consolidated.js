@@ -484,19 +484,27 @@ CalendarioApp.Calendar = {
     this.salasData = {};
     const salaOptions = document.querySelectorAll('#salaFilter option');
     
+    console.log('Inicializando datos de salas. Opciones encontradas:', salaOptions.length);
+    
     salaOptions.forEach(function(option) {
       if (option.value) {
         const textContent = option.textContent.trim();
         const match = textContent.match(/capacidad: (\d+)/);
         const capacidad = match ? parseInt(match[1]) : 1;
         
-        this.salasData[option.value] = {
+        const salaData = {
+          id: option.value,
           nombre: textContent.split(' (')[0].trim(),
           color: option.getAttribute('data-color') || '#64748B',
           capacidad: capacidad
         };
+        
+        this.salasData[option.value] = salaData;
+        console.log('Sala agregada:', option.value, salaData);
       }
     }.bind(this));
+    
+    console.log('salasData final:', this.salasData);
   },
   
   setInitialSala: function() {
@@ -1228,8 +1236,13 @@ CalendarioApp.Calendar = {
   
   
   showRoomDetailsModal: function() {
+    console.log('currentSalaFilter:', this.currentSalaFilter);
+    console.log('salasData:', this.salasData);
+    
     if (this.currentSalaFilter && this.salasData[this.currentSalaFilter]) {
       const salaData = this.salasData[this.currentSalaFilter];
+      console.log('salaData encontrado:', salaData);
+      
       const modal = new bootstrap.Modal(document.getElementById('salaDetailsModal'));
       
       // Actualizar título
@@ -1240,6 +1253,7 @@ CalendarioApp.Calendar = {
       
       modal.show();
     } else {
+      console.error('No se encontró salaData para:', this.currentSalaFilter);
       CalendarioApp.Notifications.warning('Selecciona una sala para ver sus detalles');
     }
   },
@@ -1247,61 +1261,128 @@ CalendarioApp.Calendar = {
   loadSalaDetails: function(salaData) {
     const content = document.getElementById('salaDetailsContent');
     
-    // Simular carga de datos de la base de datos
-    // En una implementación real, aquí harías una llamada AJAX
-    setTimeout(() => {
+    // Debug: verificar que salaData tenga id
+    console.log('salaData recibido:', salaData);
+    
+    if (!salaData || !salaData.id) {
+      console.error('salaData no tiene id:', salaData);
       content.innerHTML = `
-        <div class="sala-details-card">
-          <div class="sala-details-header">
-            <div class="sala-color-preview" style="background-color: ${salaData.color};">
-              <i class="fas fa-door-open"></i>
-            </div>
-            <div class="sala-details-info">
-              <h4 class="sala-name">${salaData.nombre}</h4>
-              <p class="sala-capacity">
-                <i class="fas fa-users me-2"></i>
-                Capacidad: ${salaData.capacidad} personas
-              </p>
-            </div>
-          </div>
-          
-          <div class="sala-description">
-            <h6><i class="fas fa-info-circle me-2"></i>Descripción</h6>
-            <p>${salaData.descripcion || 'Sala de reunión equipada con proyector, pizarra y sistema de videoconferencia. Ideal para reuniones de equipo y presentaciones.'}</p>
-          </div>
-          
-          <div class="sala-features">
-            <h6><i class="fas fa-cogs me-2"></i>Características</h6>
-            <div class="row">
-              <div class="col-md-6">
-                <ul class="list-unstyled">
-                  <li><i class="fas fa-check text-success me-2"></i>Proyector HD</li>
-                  <li><i class="fas fa-check text-success me-2"></i>Pizarra blanca</li>
-                  <li><i class="fas fa-check text-success me-2"></i>Sistema de audio</li>
-                </ul>
-              </div>
-              <div class="col-md-6">
-                <ul class="list-unstyled">
-                  <li><i class="fas fa-check text-success me-2"></i>Videoconferencia</li>
-                  <li><i class="fas fa-check text-success me-2"></i>WiFi de alta velocidad</li>
-                  <li><i class="fas fa-check text-success me-2"></i>Climatización</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div class="sala-availability">
-            <h6><i class="fas fa-clock me-2"></i>Disponibilidad</h6>
-            <p class="text-muted">Horario de uso: Lunes a Viernes de 7:00 AM a 4:00 PM</p>
-            <div class="availability-status">
-              <span class="badge-modern badge-success">
-                <i class="fas fa-circle me-1"></i>Disponible
-              </span>
-            </div>
-          </div>
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Error: No se pudo obtener la información de la sala.
         </div>
       `;
-    }, 500);
+      return;
+    }
+    
+    // Mostrar loading
+    content.innerHTML = `
+      <div class="text-center py-4">
+        <div class="loading-spinner"></div>
+        <p class="mt-3 text-muted">Cargando detalles de la sala...</p>
+      </div>
+    `;
+    
+    // Hacer llamada AJAX para obtener datos reales
+    fetch(`/calendario/api/sala/${salaData.id}/detalles/`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(datosSala => {
+        // Generar características dinámicamente
+        const caracteristicasHTML = this.generateCaracteristicasHTML(datosSala.caracteristicas);
+        
+        content.innerHTML = `
+          <div class="sala-details-card">
+            <div class="sala-details-header">
+              <div class="sala-color-preview" style="background-color: ${datosSala.color};">
+                <i class="fas fa-door-open"></i>
+              </div>
+              <div class="sala-details-info">
+                <h4 class="sala-name">${datosSala.nombre}</h4>
+                <p class="sala-capacity">
+                  <i class="fas fa-users me-2"></i>
+                  Capacidad: ${datosSala.capacidad} personas
+                </p>
+              </div>
+            </div>
+            
+            <div class="sala-description">
+              <h6><i class="fas fa-info-circle me-2"></i>Descripción</h6>
+              <p>${datosSala.descripcion_detallada}</p>
+            </div>
+            
+            <div class="sala-features">
+              <h6><i class="fas fa-cogs me-2"></i>Características</h6>
+              <div class="row">
+                <div class="col-md-6">
+                  ${caracteristicasHTML}
+                </div>
+              </div>
+            </div>
+            
+            <div class="sala-availability">
+              <h6><i class="fas fa-clock me-2"></i>Disponibilidad</h6>
+              <p class="text-muted">Horario de uso: ${datosSala.horario_uso}</p>
+              <div class="availability-status">
+                <span class="badge-modern badge-success">
+                  <i class="fas fa-circle me-1"></i>Disponible
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .catch(error => {
+        console.error('Error cargando detalles de sala:', error);
+        // Fallback a datos básicos si falla la API
+        content.innerHTML = `
+          <div class="sala-details-card">
+            <div class="sala-details-header">
+              <div class="sala-color-preview" style="background-color: ${salaData.color};">
+                <i class="fas fa-door-open"></i>
+              </div>
+              <div class="sala-details-info">
+                <h4 class="sala-name">${salaData.nombre}</h4>
+                <p class="sala-capacity">
+                  <i class="fas fa-users me-2"></i>
+                  Capacidad: ${salaData.capacidad} personas
+                </p>
+              </div>
+            </div>
+            
+            <div class="sala-description">
+              <h6><i class="fas fa-info-circle me-2"></i>Descripción</h6>
+              <p>Sala de reunión equipada con proyector, pizarra y sistema de videoconferencia. Ideal para reuniones de equipo y presentaciones.</p>
+            </div>
+            
+            <div class="sala-availability">
+              <h6><i class="fas fa-clock me-2"></i>Disponibilidad</h6>
+              <p class="text-muted">Horario de uso: Lunes a Viernes de 7:00 AM a 4:00 PM</p>
+              <div class="availability-status">
+                <span class="badge-modern badge-success">
+                  <i class="fas fa-circle me-1"></i>Disponible
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+  },
+  
+  generateCaracteristicasHTML: function(caracteristicas) {
+    if (!caracteristicas || caracteristicas.length === 0) {
+      return '<p class="text-muted">No hay características específicas configuradas.</p>';
+    }
+    
+    const caracteristicasHTML = caracteristicas.map(caracteristica => 
+      `<li><i class="fas fa-check text-success me-2"></i>${caracteristica}</li>`
+    ).join('');
+    
+    return `<ul class="list-unstyled">${caracteristicasHTML}</ul>`;
   },
   
   initializeColorSystem: function() {

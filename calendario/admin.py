@@ -18,6 +18,14 @@ class RecursoAdmin(admin.ModelAdmin):
         ('Información Básica', {
             'fields': ('nombre', 'descripcion', 'capacidad')
         }),
+        ('Descripción Detallada', {
+            'fields': ('descripcion_detallada', 'horario_uso'),
+            'classes': ('collapse',)
+        }),
+        ('Características y Equipamiento', {
+            'fields': ('tiene_proyector', 'tiene_pizarra', 'tiene_audio', 'tiene_videoconferencia', 'tiene_wifi', 'tiene_climatizacion'),
+            'classes': ('collapse',)
+        }),
         ('Configuración', {
             'fields': ('activo', 'color'),
             'classes': ('collapse',)

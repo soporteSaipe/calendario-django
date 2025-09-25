@@ -24,6 +24,59 @@ logger = logging.getLogger('calendario')
 
 @rate_limit(requests_per_minute=RateLimitConfig.API_REQUESTS)
 @log_view_access
+def api_sala_detalles(request, sala_id):
+    """
+    API para obtener los detalles completos de una sala
+    
+    Endpoint: GET /api/sala/<id>/detalles/
+    
+    Retorna: Detalles completos de la sala incluyendo características
+    """
+    try:
+        # Obtener la sala
+        sala = Recurso.objects.get(id=sala_id, activo=True)
+        
+        # Obtener características activas
+        caracteristicas = sala.get_caracteristicas_activas()
+        
+        # Obtener descripción completa
+        descripcion_completa = sala.get_descripcion_completa()
+        
+        # Obtener horario de uso
+        horario_uso = sala.horario_uso or 'Lunes a Viernes de 7:00 AM a 4:00 PM'
+        
+        # Datos de respuesta
+        datos_sala = {
+            'id': sala.id,
+            'nombre': sala.nombre,
+            'descripcion': sala.descripcion,
+            'descripcion_detallada': descripcion_completa,
+            'capacidad': sala.capacidad,
+            'color': sala.color,
+            'horario_uso': horario_uso,
+            'caracteristicas': caracteristicas,
+            'activo': sala.activo
+        }
+        
+        logger.info(f'Detalles de sala obtenidos: {sala.nombre}')
+        return JsonResponse(datos_sala)
+        
+    except Recurso.DoesNotExist:
+        logger.warning(f'Sala no encontrada: {sala_id}')
+        return HTTP.not_found(
+            message=ValidationMessages.RESOURCE_NOT_FOUND,
+            resource_type='sala',
+            resource_id=sala_id
+        )
+    except Exception as e:
+        logger.error(f'Error obteniendo detalles de sala {sala_id}: {str(e)}')
+        return HTTP.server_error(
+            message=ErrorMessages.INTERNAL_SERVER_ERROR
+        )
+
+
+@rate_limit(requests_per_minute=RateLimitConfig.API_REQUESTS)
+@log_view_access
 def api_reservas(request):
     """
     API para obtener las reservas en formato JSON para el calendario
