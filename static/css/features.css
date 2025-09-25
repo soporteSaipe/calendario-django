@@ -1388,10 +1388,6 @@
   transform: translateX(100%);
 }
 
-.btn-quick-action:active {
-  /* Efectos de transformación removidos */
-}
-
 /* ===== ESTADOS ESPECIALES ===== */
 .sala-info-card.loading {
   opacity: 0.7;

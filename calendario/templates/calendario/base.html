@@ -45,15 +45,6 @@
                         </a>
                     </li>
                     {% if user.is_authenticated %}
-                    {% if user.is_staff or user.is_superuser %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-                           href="{% url 'calendario:dashboard' %}">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'mis_reservas' %}active{% endif %}" 
                            href="{% url 'calendario:mis_reservas' %}">

@@ -566,9 +566,6 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .card-modern:hover {
-    /* Efectos de transformación removidos */
-  }
   
   .btn-modern {
     padding: 0.5rem 1rem;
@@ -748,10 +745,6 @@
 .nav-pills .nav-link i {
   font-size: 1rem;
   transition: transform var(--transition-fast);
-}
-
-.nav-pills .nav-link:hover i {
-  /* Efecto de escala removido */
 }
 
 /* ===== CONTENIDO DE PESTAÑAS ===== */
@@ -1437,10 +1430,6 @@
   transition: transform 0.2s ease;
 }
 
-.btn-sala-details:hover i {
-  /* Efecto de escala removido */
-}
-
 /* Botón "Crear Reserva" del modal - Diseño moderno */
 .btn-crear-reserva {
   background: linear-gradient(135deg, var(--success) 0%, #198754 100%);
@@ -1472,10 +1461,6 @@
 .btn-crear-reserva i {
   font-size: 1rem;
   transition: transform 0.2s ease;
-}
-
-.btn-crear-reserva:hover i {
-  /* Efecto de escala removido */
 }
 
 /* Efectos de brillo para ambos botones */
