@@ -91,8 +91,6 @@
 .nav-btn:hover {
   background: var(--primary);
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
 }
 
 .nav-btn:active {
@@ -108,8 +106,6 @@
 .nav-btn:disabled:hover {
   background: var(--bg-accent);
   color: var(--text-muted);
-  transform: none;
-  box-shadow: none;
 }
 
 /* Título de la vista actual */
@@ -226,7 +222,6 @@
 
 .fc-event:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
 }
 
 .fc-event-title {
@@ -463,13 +458,10 @@
 }
 
 .btn-export:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
   background: linear-gradient(135deg, #1D4ED8 0%, #059669 100%);
 }
 
 .btn-export:active {
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
@@ -482,13 +474,10 @@
 
 .btn-export-pdf:hover {
   background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-  transform: translateY(-2px);
   border-color: rgba(220, 38, 38, 0.3);
 }
 
 .btn-export-pdf:active {
-  transform: translateY(0);
   box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
 }
 
@@ -501,13 +490,10 @@
 
 .btn-export-excel:hover {
   background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
-  transform: translateY(-2px);
   border-color: rgba(5, 150, 105, 0.3);
 }
 
 .btn-export-excel:active {
-  transform: translateY(0);
   box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
 }
 
@@ -521,13 +507,10 @@
 
 .btn-export-options:hover {
   background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
-  transform: translateY(-2px);
   border-color: rgba(107, 114, 128, 0.3);
 }
 
 .btn-export-options:active {
-  transform: translateY(0);
   box-shadow: 0 2px 4px rgba(107, 114, 128, 0.25);
 }
 
@@ -691,8 +674,6 @@
 .format-option:hover .format-card {
   border-color: var(--primary);
   background: rgba(var(--primary-rgb), 0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .format-option input[type="radio"]:checked + .format-card {
@@ -762,7 +743,6 @@
 
 .btn-secondary:hover {
   background: rgba(107, 114, 128, 0.2);
-  transform: translateY(-1px);
 }
 
 .btn-primary {
@@ -773,8 +753,6 @@
 
 .btn-primary:hover {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.3);
 }
 
 /* ===== INDICADOR DE PROGRESO ===== */
@@ -1165,7 +1143,6 @@
 }
 
 .sala-selector-enhanced:hover {
-  transform: translateY(-2px);
   box-shadow: 0 12px 40px rgba(248, 187, 217, 0.25);
   border-color: rgba(248, 187, 217, 0.3);
 }
@@ -1245,7 +1222,6 @@
 }
 
 .sala-info-card:hover {
-  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
   border-color: var(--color-primary);
 }
@@ -1405,8 +1381,6 @@
 }
 
 .btn-quick-action:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
@@ -1415,7 +1389,7 @@
 }
 
 .btn-quick-action:active {
-  transform: translateY(0) scale(1);
+  /* Efectos de transformación removidos */
 }
 
 /* ===== ESTADOS ESPECIALES ===== */
@@ -1445,7 +1419,7 @@
     opacity: 1;
   }
   50% {
-    transform: scale(1.05);
+    /* Efectos de escala removidos */
     opacity: 0.8;
   }
 }

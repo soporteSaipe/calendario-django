@@ -218,7 +218,6 @@
 
 .theme-toggle:hover {
   background: var(--primary);
-  transform: scale(1.05);
 }
 
 .theme-toggle::before {
@@ -361,7 +360,6 @@
 
 [data-theme="dark"] .btn-modern:hover,
 :root.dark .btn-modern:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -637,7 +635,6 @@
 
 .theme-indicator:hover {
   opacity: 1;
-  transform: scale(1.1);
 }
 
 /* ===== TRANSICIONES SUAVES ===== */

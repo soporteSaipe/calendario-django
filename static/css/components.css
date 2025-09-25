@@ -21,7 +21,6 @@
 
 .card-modern:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
 }
 
 .card-modern:not(:has(#calendar)) {
@@ -37,7 +36,6 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
-  transform: translateY(-4px) scale(1.02);
   border-color: rgba(255, 255, 255, 0.3);
 }
 
@@ -101,8 +99,6 @@
 .btn-modern:hover {
   background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
   color: var(--text-on-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(248, 187, 217, 0.15);
   text-decoration: none;
 }
 
@@ -188,8 +184,6 @@
 }
 
 .btn-reserva-elegant:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(13, 110, 253, 0.4);
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
@@ -214,7 +208,6 @@
 
 .btn-reserva-elegant:hover .btn-reserva-icon {
   background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
 }
 
 .btn-reserva-text {
@@ -410,7 +403,6 @@
   color: var(--text-on-dark);
   opacity: 1;
   background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
 }
 
 .btn-close:focus {
@@ -476,7 +468,6 @@
 
 .table-modern tbody tr:hover {
   background: rgba(248, 187, 217, 0.05);
-  transition: background-color 0.2s ease;
 }
 
 .table-modern tbody tr:focus-within {
@@ -509,8 +500,6 @@
 
 .btn-action-edit:hover {
   background: linear-gradient(135deg, var(--warning) 0%, var(--warning) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
   color: var(--text-on-dark);
   text-decoration: none;
 }
@@ -523,8 +512,6 @@
 
 .btn-action-delete:hover {
   background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
   color: var(--text-on-dark);
   text-decoration: none;
 }
@@ -580,7 +567,7 @@
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .card-modern:hover {
-    transform: translateY(-2px) scale(1.01);
+    /* Efectos de transformación removidos */
   }
   
   .btn-modern {
@@ -746,14 +733,12 @@
 .nav-pills .nav-link:hover {
   background: rgba(248, 187, 217, 0.2);
   color: var(--color-primary-dark);
-  transform: translateY(-1px);
 }
 
 .nav-pills .nav-link.active {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: var(--text-on-dark);
   box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
 }
 
 .nav-pills .nav-link.active::before {
@@ -766,7 +751,7 @@
 }
 
 .nav-pills .nav-link:hover i {
-  transform: scale(1.1);
+  /* Efecto de escala removido */
 }
 
 /* ===== CONTENIDO DE PESTAÑAS ===== */
@@ -829,7 +814,6 @@
   box-shadow: 0 0 0 0.3rem var(--color-border-focus);
   outline: none;
   background: var(--bg-card);
-  transform: translateY(-1px);
 }
 
 .form-control-modern:hover,
@@ -957,7 +941,6 @@
 }
 
 .modal-footer .btn-modern:hover {
-  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
@@ -1442,13 +1425,10 @@
 }
 
 .btn-sala-details:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
 .btn-sala-details:active {
-  transform: translateY(0);
   box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
 }
 
@@ -1458,7 +1438,7 @@
 }
 
 .btn-sala-details:hover i {
-  transform: scale(1.1);
+  /* Efecto de escala removido */
 }
 
 /* Botón "Crear Reserva" del modal - Diseño moderno */
@@ -1482,13 +1462,10 @@
 }
 
 .btn-crear-reserva:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
   background: linear-gradient(135deg, #198754 0%, var(--success) 100%);
 }
 
 .btn-crear-reserva:active {
-  transform: translateY(0);
   box-shadow: 0 2px 8px rgba(25, 135, 84, 0.2);
 }
 
@@ -1498,7 +1475,7 @@
 }
 
 .btn-crear-reserva:hover i {
-  transform: scale(1.1);
+  /* Efecto de escala removido */
 }
 
 /* Efectos de brillo para ambos botones */
@@ -1535,13 +1512,10 @@
 }
 
 .btn-reserva-elegant:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(13, 110, 253, 0.4);
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
 .btn-reserva-elegant:active {
-  transform: translateY(0);
   box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
 }
 
@@ -1566,7 +1540,6 @@
 
 .btn-reserva-elegant:hover .btn-reserva-icon {
   background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
 }
 
 .btn-reserva-text {
@@ -1622,8 +1595,6 @@
 }
 
 .btn-quick-action:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
@@ -1632,7 +1603,6 @@
 }
 
 .btn-quick-action:active {
-  transform: translateY(0) scale(1);
   box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
 }
 

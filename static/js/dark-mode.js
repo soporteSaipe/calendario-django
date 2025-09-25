@@ -135,13 +135,7 @@ class DarkModeManager {
         this.setTheme(newTheme);
         this.updateIndicator();
         
-        // Animación de feedback
-        if (this.themeToggle) {
-            this.themeToggle.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.themeToggle.style.transform = '';
-            }, 150);
-        }
+        // Animación de feedback removida - no más transformaciones
     }
     
     setupEventListeners() {

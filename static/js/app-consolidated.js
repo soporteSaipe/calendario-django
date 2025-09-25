@@ -1210,15 +1210,7 @@ CalendarioApp.Calendar = {
   
   setupMicroInteractions: function() {
     // Efectos hover en cards
-    document.querySelectorAll('.card-modern').forEach(card => {
-      card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-2px)';
-      });
-      
-      card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-      });
-    });
+    // Efectos de hover removidos - no más transformaciones en hover
     
     // Configurar acciones rápidas del selector de sala
     this.setupQuickActions();

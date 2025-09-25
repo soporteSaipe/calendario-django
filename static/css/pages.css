@@ -32,8 +32,6 @@
 
 .navbar-brand:hover {
   color: var(--primary);
-  transform: translateY(-1px);
-  transition: var(--transition-fast);
   text-decoration: none;
 }
 
@@ -65,7 +63,6 @@
 .nav-link:hover:not(.active) {
   background: rgba(248, 187, 217, 0.1);
   color: var(--primary);
-  transform: translateY(-1px);
   text-decoration: none;
 }
 
@@ -79,7 +76,6 @@
 .navbar-modern .navbar-nav .nav-item .nav-link.active:hover {
   background-color: var(--primary-dark);
   color: var(--text-on-dark);
-  transform: translateY(-1px);
 }
 
 .dropdown-menu {
@@ -195,8 +191,6 @@
 }
 
 .btn-login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
@@ -644,8 +638,6 @@
 
 .breadcrumb-container:hover {
   box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
-  transition: all var(--transition-fast);
 }
 
 /* ===== BREADCRUMB PRINCIPAL ===== */
@@ -680,7 +672,6 @@
 
 .breadcrumb-modern .breadcrumb-item:not(:last-child):hover::after {
   opacity: 1;
-  transform: scale(1.2);
 }
 
 /* ===== ENLACES DE BREADCRUMB ===== */
@@ -716,8 +707,6 @@
   color: var(--color-primary-dark);
   background: rgba(248, 187, 217, 0.1);
   text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-xs);
 }
 
 .breadcrumb-link:hover::before {
@@ -737,7 +726,6 @@
 }
 
 .breadcrumb-link:hover i {
-  transform: scale(1.1);
   color: var(--color-primary-dark);
 }
 
