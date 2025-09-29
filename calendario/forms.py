@@ -66,7 +66,15 @@ class ReservaForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             recurso = self.instance.recurso
         else:
+            # Para nuevas reservas, intentar obtener el recurso de los datos del formulario
             recurso = None
+            if 'recurso' in self.data:
+                try:
+                    recurso_id = self.data.get('recurso')
+                    if recurso_id:
+                        recurso = Recurso.objects.get(id=recurso_id)
+                except (Recurso.DoesNotExist, ValueError):
+                    pass
         
         self._configure_fields_for_resource_type(recurso)
     

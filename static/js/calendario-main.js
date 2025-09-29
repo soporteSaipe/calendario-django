@@ -534,12 +534,39 @@ CalendarioApp.Calendar = {
     const fecha = form.querySelector('#fecha').value;
     const horaInicio = form.querySelector('#hora_inicio').value;
     const horaFin = form.querySelector('#hora_fin').value;
+    const responsable = form.querySelector('#responsable').value.trim();
+    const destino = form.querySelector('#destino').value.trim();
     
-    if (!recurso || !titulo || !fecha || !horaInicio || !horaFin) {
+    // Obtener el tipo de recurso seleccionado
+    const recursoSelect = form.querySelector('#recurso');
+    const selectedOption = recursoSelect.options[recursoSelect.selectedIndex];
+    const tipoRecurso = selectedOption ? selectedOption.getAttribute('data-tipo') : null;
+    
+    // Validar campos básicos obligatorios para todos los recursos
+    if (!recurso || !fecha || !horaInicio || !horaFin) {
       if (window.CalendarioApp?.ModalFactory) {
         CalendarioApp.ModalFactory.utils.alert('Por favor, completa todos los campos obligatorios', { type: 'error' });
       }
       return;
+    }
+    
+    // Validar campos específicos según el tipo de recurso
+    if (tipoRecurso === 'vehiculo') {
+      // Para vehículos: responsable y destino son obligatorios, título es opcional
+      if (!responsable || !destino) {
+        if (window.CalendarioApp?.ModalFactory) {
+          CalendarioApp.ModalFactory.utils.alert('Para vehículos, los campos Responsable y Destino son obligatorios', { type: 'error' });
+        }
+        return;
+      }
+    } else {
+      // Para salas: título es obligatorio
+      if (!titulo) {
+        if (window.CalendarioApp?.ModalFactory) {
+          CalendarioApp.ModalFactory.utils.alert('Para salas, el campo Título es obligatorio', { type: 'error' });
+        }
+        return;
+      }
     }
     
     // Validar que la hora de fin sea posterior a la de inicio
