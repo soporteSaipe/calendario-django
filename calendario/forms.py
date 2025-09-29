@@ -77,6 +77,10 @@ class ReservaForm(forms.ModelForm):
                     pass
         
         self._configure_fields_for_resource_type(recurso)
+        
+        # Si no hay recurso específico, configurar por defecto para salas
+        if not recurso:
+            self._configure_fields_for_resource_type(None)
     
     def _configure_fields_for_resource_type(self, recurso):
         """Configurar campos según el tipo de recurso"""
@@ -118,9 +122,16 @@ class ReservaForm(forms.ModelForm):
                     raise forms.ValidationError("El campo 'Responsable' es obligatorio para vehículos.")
                 if not destino:
                     raise forms.ValidationError("El campo 'Destino' es obligatorio para vehículos.")
+                # Para vehículos, el título es opcional, pero si se proporciona debe ser válido
+                if titulo and len(titulo.strip()) == 0:
+                    cleaned_data['titulo'] = ''  # Limpiar título vacío
             else:
                 if not titulo:
                     raise forms.ValidationError("El campo 'Título' es obligatorio para salas.")
+        else:
+            # Si no hay recurso seleccionado, validar que al menos se proporcione un título
+            if not titulo:
+                raise forms.ValidationError("Debe seleccionar un recurso y completar los campos obligatorios.")
         
         return cleaned_data
     

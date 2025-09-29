@@ -144,7 +144,7 @@ class Reserva(models.Model):
     
     recurso = models.ForeignKey(Recurso, on_delete=models.CASCADE, verbose_name="Recurso")
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuario")
-    titulo = models.CharField(max_length=200, verbose_name="Título")
+    titulo = models.CharField(max_length=200, blank=True, verbose_name="Título")
     descripcion = models.TextField(blank=True, verbose_name="Descripción")
     fecha_inicio = models.DateTimeField(verbose_name="Fecha de inicio")
     fecha_fin = models.DateTimeField(verbose_name="Fecha de fin")
