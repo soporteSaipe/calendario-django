@@ -699,8 +699,29 @@ CalendarioApp.Calendar = {
         const recursoSelect = document.getElementById('recurso');
         const salaSeleccionada = recursoSelect ? recursoSelect.value : null;
         const esComedor = salaSeleccionada && self.isComedor(salaSeleccionada);
+        const esVehiculo = salaSeleccionada && self.isVehiculo(salaSeleccionada);
         
-        if (esComedor) {
+        if (esVehiculo) {
+          // Para vehículos: generar opciones 24/7 (hasta 00:00 del día siguiente)
+          for (let h = 0; h < 24; h++) {
+            for (let m = 0; m < 60; m += 30) {
+              const horaActualMinutos = h * 60 + m;
+              
+              // Solo agregar si es posterior a la hora de inicio
+              if (horaActualMinutos > horaInicioMinutos) {
+                const horaStr = h.toString().padStart(2, '0');
+                const minutoStr = m.toString().padStart(2, '0');
+                const horaCompleta = `${horaStr}:${minutoStr}`;
+                
+                const option = new Option(horaCompleta, horaCompleta);
+                horaFinSelect.add(option);
+              }
+            }
+          }
+          // Agregar 00:00 como opción final (fin del día siguiente)
+          const option = new Option('00:00 (fin del día siguiente)', '00:00');
+          horaFinSelect.add(option);
+        } else if (esComedor) {
           // Horarios especiales para el comedor
           const horariosFinComedor = [
             '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00',
@@ -752,6 +773,18 @@ CalendarioApp.Calendar = {
     
     const nombreSala = option.textContent.toLowerCase();
     return nombreSala.includes('comedor');
+  },
+  
+  isVehiculo: function(recursoId) {
+    // Verificar si el recurso seleccionado es un vehículo
+    const recursoSelect = document.getElementById('recurso');
+    if (!recursoSelect) return false;
+    
+    const option = recursoSelect.querySelector(`option[value="${recursoId}"]`);
+    if (!option) return false;
+    
+    const tipo = option.getAttribute('data-tipo');
+    return tipo === 'vehiculo';
   },
   
   updateTimeOptionsForSala: function() {

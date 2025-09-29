@@ -126,7 +126,8 @@ class ReservaService:
     
     @staticmethod
     def crear_reserva(usuario, recurso: Recurso, titulo: str, descripcion: str,
-                     fecha_inicio: datetime, fecha_fin: datetime) -> Reserva:
+                     fecha_inicio: datetime, fecha_fin: datetime, 
+                     responsable: str = '', destino: str = '') -> Reserva:
         """
         Crear una nueva reserva con validación completa
         """
@@ -144,6 +145,8 @@ class ReservaService:
                 descripcion=descripcion,
                 fecha_inicio=fecha_inicio,
                 fecha_fin=fecha_fin,
+                responsable=responsable,
+                destino=destino,
                 estado='confirmada'
             )
             

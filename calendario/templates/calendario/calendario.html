@@ -391,7 +391,7 @@
             horaFinSelect.innerHTML = '<option value="">Seleccionar hora</option>';
             
             if (tipo === '24/7') {
-                // Generar opciones para 24 horas
+                // Generar opciones para 24 horas (00:00 a 23:30)
                 for (let hora = 0; hora < 24; hora++) {
                     for (let minuto = 0; minuto < 60; minuto += 30) {
                         const horaStr = hora.toString().padStart(2, '0');
@@ -403,8 +403,8 @@
                         horaFinSelect.innerHTML += `<option value="${valor}">${texto}</option>`;
                     }
                 }
-                // Agregar 00:00 como opción final para hora fin (representa el final del día)
-                horaFinSelect.innerHTML += `<option value="00:00">00:00 (fin del día)</option>`;
+                // Agregar 00:00 como opción final para hora fin (representa el final del día siguiente)
+                horaFinSelect.innerHTML += `<option value="00:00">00:00 (fin del día siguiente)</option>`;
             } else {
                 // Generar opciones para horario laboral de salas
                 // Verificar si es el comedor

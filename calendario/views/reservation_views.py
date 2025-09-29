@@ -53,8 +53,10 @@ def crear_reserva(request):
         try:
             # Extraer datos del POST (ya validados por el decorador)
             recurso_id = request.POST.get('recurso')
-            titulo = request.POST.get('titulo')
+            titulo = request.POST.get('titulo', '')
             descripcion = request.POST.get('descripcion', '')
+            responsable = request.POST.get('responsable', '')
+            destino = request.POST.get('destino', '')
             fecha = request.POST.get('fecha')
             hora_inicio = request.POST.get('hora_inicio')
             hora_fin = request.POST.get('hora_fin')
@@ -99,7 +101,9 @@ def crear_reserva(request):
                 titulo=titulo,
                 descripcion=descripcion,
                 fecha_inicio=fecha_inicio,
-                fecha_fin=fecha_fin
+                fecha_fin=fecha_fin,
+                responsable=responsable,
+                destino=destino
             )
             
             success_msg = SuccessMessages.RESERVA_CREATED.format(recurso=recurso.nombre)
