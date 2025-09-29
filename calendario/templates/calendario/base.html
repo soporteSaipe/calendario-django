@@ -148,8 +148,16 @@
         window.logoutUrl = '{% url "logout" %}';
     </script>
     
-           <!-- JavaScript consolidado -->
-           <script src="{% static 'js/app-consolidated.js' %}"></script>
+    <!-- CONTROLADOR CENTRALIZADO (debe cargar primero) -->
+    <script src="{% static 'js/calendario-controller.js' %}"></script>
+    
+    <!-- SISTEMAS MODULARES - ARQUITECTURA NUEVA -->
+    <script src="{% static 'js/calendario-core.js' %}"></script>
+    <script src="{% static 'js/calendario-state.js' %}"></script>
+    <script src="{% static 'js/calendario-modals.js' %}"></script>
+    <script src="{% static 'js/calendario-errors.js' %}"></script>
+    <script src="{% static 'js/calendario-integration.js' %}"></script>
+    <script src="{% static 'js/calendario-main.js' %}"></script>
            <script src="{% static 'js/calendar-views.js' %}"></script>
            <!-- <script src="{% static 'js/calendar-views-debug.js' %}"></script> -->
            <!-- <script src="{% static 'js/realtime-notifications.js' %}"></script> -->
@@ -163,8 +171,9 @@
            <!-- <script src="{% static 'js/fallingPetals-integration.js' %}"></script> -->
     
     {% if debug %}
-    <script src="{% static 'js/notification-demo.js' %}"></script>
     {% endif %}
+    <!-- SCRIPT DE PRUEBA SIMPLE -->
+    <script src="{% static 'js/simple-test.js' %}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

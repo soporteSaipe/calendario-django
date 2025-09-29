@@ -1,0 +1,66 @@
+/**
+ * OPTIMIZATION.CSS
+ * Estilos para optimización de performance y carga
+ */
+
+/* Optimizaciones de rendering */
+.optimized-render {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Optimización de animaciones */
+.optimized-animation {
+    animation-fill-mode: both;
+    animation-timing-function: ease-out;
+}
+
+/* Lazy loading */
+.lazy-load {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lazy-load.loaded {
+    opacity: 1;
+}
+
+/* Optimización de imágenes */
+.optimized-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Optimización de scroll */
+.optimized-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Optimización de layout */
+.optimized-layout {
+    contain: layout style paint;
+}
+
+/* Optimización de fuentes */
+.optimized-font {
+    font-display: swap;
+    text-rendering: optimizeLegibility;
+}
+
+/* Optimización de performance */
+.performance-optimized {
+    contain: layout style paint;
+    will-change: auto;
+}
+
+/* Reducir motion para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

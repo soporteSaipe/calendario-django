@@ -6,7 +6,7 @@
 CalendarioApp.CalendarViews = {
   // Configuración
   config: {
-    defaultView: 'dayGridMonth',
+    defaultView: 'timeGridWeek',
     availableViews: [
       { value: 'timeGridDay', label: 'Día', icon: 'fas fa-calendar-day' },
       { value: 'timeGridWeek', label: 'Semana', icon: 'fas fa-calendar-week' },
@@ -17,7 +17,7 @@ CalendarioApp.CalendarViews = {
 
   // Estado actual
   state: {
-    currentView: 'dayGridMonth',
+    currentView: 'timeGridWeek',
     currentDate: new Date(),
     calendarInstance: null
   },
@@ -34,7 +34,7 @@ CalendarioApp.CalendarViews = {
   // Esperar a que el calendario esté listo
   waitForCalendar: function() {
     let attempts = 0;
-    const maxAttempts = 20; // Reducido a 2 segundos máximo
+    const maxAttempts = 20;
     
     const checkCalendar = () => {
       attempts++;
@@ -420,9 +420,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// También inicializar después de un delay para asegurar que el calendario esté listo
+// Inicialización de respaldo con delay reducido para evitar conflictos
 setTimeout(() => {
   if (document.getElementById('calendar') && !CalendarioApp.CalendarViews.state.calendarInstance) {
     CalendarioApp.CalendarViews.init();
   }
-}, 1000);
+}, 500);

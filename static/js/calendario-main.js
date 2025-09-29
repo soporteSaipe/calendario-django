@@ -1,452 +1,9 @@
 /**
- * SISTEMA JAVASCRIPT CONSOLIDADO
- * Todas las funcionalidades principales en un solo archivo optimizado
+ * CALENDARIO MAIN - Sistema principal del calendario
+ * Funcionalidad esencial del calendario FullCalendar
  */
 
-// ===== CONFIGURACIÓN GLOBAL =====
-window.CalendarioApp = window.CalendarioApp || {};
-
-// Configuración de la aplicación
-CalendarioApp.config = {
-  version: '1.0.0',
-  debug: false,
-  animationDuration: 300,
-  notificationDuration: 5000,
-  apiEndpoints: {
-    reservas: null,
-    crearReserva: null,
-    horariosOcupados: null,
-    logout: null
-  }
-};
-
-// ===== SISTEMA DE NOTIFICACIONES =====
-CalendarioApp.Notifications = {
-  container: null,
-  
-  init: function() {
-    this.createContainer();
-  },
-  
-  createContainer: function() {
-    if (!this.container) {
-      this.container = document.createElement('div');
-      this.container.id = 'notifications-container';
-      this.container.className = 'notifications-container';
-      document.body.appendChild(this.container);
-    }
-  },
-  
-  show: function(message, type = 'info', duration = 5000, options = {}) {
-    const notification = this.createNotification(message, type, options);
-    this.displayNotification(notification, duration);
-    return notification;
-  },
-  
-  createNotification: function(message, type, options = {}) {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.setAttribute('role', 'alert');
-    notification.setAttribute('aria-live', 'polite');
-    
-    const icons = {
-      success: 'fas fa-check-circle',
-      error: 'fas fa-exclamation-circle',
-      warning: 'fas fa-exclamation-triangle',
-      info: 'fas fa-info-circle',
-      loading: 'fas fa-spinner fa-spin'
-    };
-    
-    const icon = options.icon || icons[type] || icons.info;
-    
-    notification.innerHTML = `
-      <div class="notification-content">
-        <div class="notification-icon">
-          <i class="${icon}" aria-hidden="true"></i>
-        </div>
-        <div class="notification-message">
-          <div class="notification-title">${options.title || this.getDefaultTitle(type)}</div>
-          <div class="notification-text">${message}</div>
-        </div>
-        ${options.closable !== false ? `
-          <button class="notification-close" aria-label="Cerrar notificación">
-            <i class="fas fa-times" aria-hidden="true"></i>
-          </button>
-        ` : ''}
-      </div>
-      ${options.progress !== false ? '<div class="notification-progress"></div>' : ''}
-    `;
-    
-    const closeBtn = notification.querySelector('.notification-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.hide(notification));
-    }
-    
-    return notification;
-  },
-  
-  displayNotification: function(notification, duration) {
-    this.init();
-    this.container.appendChild(notification);
-    
-    this.announceToScreenReader(notification.textContent);
-    
-    if (duration > 0) {
-      setTimeout(() => this.hide(notification), duration);
-    }
-  },
-  
-  hide: function(notification) {
-    if (!notification || !notification.parentNode) return;
-    
-    notification.classList.add('notification-hiding');
-    
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 300);
-  },
-  
-  getDefaultTitle: function(type) {
-    const titles = {
-      success: 'Éxito',
-      error: 'Error',
-      warning: 'Advertencia',
-      info: 'Información',
-      loading: 'Procesando...'
-    };
-    return titles[type] || 'Notificación';
-  },
-  
-  announceToScreenReader: function(message) {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    
-    document.body.appendChild(announcement);
-    
-    setTimeout(() => {
-      if (announcement.parentNode) {
-        document.body.removeChild(announcement);
-      }
-    }, 1000);
-  },
-  
-  // Métodos de conveniencia
-  success: function(message, options = {}) {
-    return this.show(message, 'success', 4000, options);
-  },
-  
-  error: function(message, options = {}) {
-    return this.show(message, 'error', 6000, options);
-  },
-  
-  warning: function(message, options = {}) {
-    return this.show(message, 'warning', 5000, options);
-  },
-  
-  info: function(message, options = {}) {
-    return this.show(message, 'info', 4000, options);
-  },
-  
-  confirm: function(message, options = {}) {
-    return new Promise((resolve) => {
-      const modal = document.createElement('div');
-      modal.className = 'modal fade';
-      modal.innerHTML = `
-        <div class="modal-dialog">
-          <div class="modal-content modal-content-modern">
-            <div class="modal-header modal-header-modern">
-              <h5 class="modal-title modal-title-modern">
-                <i class="fas fa-question-circle me-2"></i>
-                ${options.title || 'Confirmar acción'}
-              </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <p>${message}</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
-                <i class="fas fa-times me-2"></i>${options.cancelText || 'Cancelar'}
-              </button>
-              <button type="button" class="btn-modern btn-danger-modern" id="confirmBtn">
-                <i class="fas fa-check me-2"></i>${options.confirmText || 'Confirmar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      const bsModal = new bootstrap.Modal(modal);
-      
-      modal.querySelector('#confirmBtn').addEventListener('click', () => {
-        bsModal.hide();
-        resolve(true);
-      });
-      
-      modal.addEventListener('hidden.bs.modal', () => {
-        document.body.removeChild(modal);
-        resolve(false);
-      });
-      
-      bsModal.show();
-    });
-  }
-};
-
-// ===== SISTEMA DE ACCESIBILIDAD =====
-CalendarioApp.Accessibility = {
-  init: function() {
-    this.setupKeyboardNavigation();
-    this.setupButtonLoadingStates();
-    this.setupFormValidation();
-    this.setupAutoAnnouncements();
-  },
-  
-  setupKeyboardNavigation: function() {
-    // Navegación por teclado en modales
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        const openModal = document.querySelector('.modal.show');
-        if (openModal) {
-          const modal = bootstrap.Modal.getInstance(openModal);
-          if (modal) {
-            modal.hide();
-          }
-        }
-      }
-    });
-
-    // Navegación por teclado en formularios
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && e.target.classList.contains('form-control-modern')) {
-        const form = e.target.closest('form');
-        if (form) {
-          const submitBtn = form.querySelector('button[type="submit"]');
-          if (submitBtn && !submitBtn.disabled) {
-            submitBtn.click();
-          }
-        }
-      }
-    });
-  },
-  
-  setupButtonLoadingStates: function() {
-    document.addEventListener('click', function(e) {
-      const button = e.target.closest('button[type="submit"]');
-      if (button && button.form) {
-        CalendarioApp.Accessibility.setButtonLoading(button, true);
-        
-        setTimeout(() => {
-          CalendarioApp.Accessibility.setButtonLoading(button, false);
-        }, 2000);
-      }
-    });
-  },
-  
-  setButtonLoading: function(button, loading) {
-    if (loading) {
-      button.classList.add('loading');
-      button.disabled = true;
-      button.setAttribute('aria-disabled', 'true');
-      
-      const originalText = button.innerHTML;
-      button.setAttribute('data-original-text', originalText);
-      
-      button.innerHTML = '<span class="sr-only">Procesando...</span>';
-    } else {
-      button.classList.remove('loading');
-      button.disabled = false;
-      button.removeAttribute('aria-disabled');
-      
-      const originalText = button.getAttribute('data-original-text');
-      if (originalText) {
-        button.innerHTML = originalText;
-        button.removeAttribute('data-original-text');
-      }
-    }
-  },
-  
-  setupFormValidation: function() {
-    // Validación en tiempo real para campos requeridos
-    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
-      field.addEventListener('blur', function() {
-        CalendarioApp.Accessibility.validateField(this);
-      });
-
-      field.addEventListener('input', function() {
-        if (this.classList.contains('is-invalid')) {
-          this.classList.remove('is-invalid');
-          CalendarioApp.Accessibility.hideValidationMessage(this.id);
-        }
-      });
-    });
-
-    // Validación de formularios al enviar
-    const forms = document.querySelectorAll('form:not([action*="login"])');
-    
-    forms.forEach((form, index) => {
-      form.addEventListener('submit', function(e) {
-        const requiredFields = this.querySelectorAll('input[required], select[required], textarea[required]');
-        
-        let isValid = true;
-        
-        requiredFields.forEach(field => {
-          if (!field.value.trim()) {
-            field.classList.add('is-invalid');
-            isValid = false;
-          } else {
-            field.classList.remove('is-invalid');
-            field.classList.add('is-valid');
-          }
-        });
-        
-        if (!isValid) {
-          e.preventDefault();
-        }
-      });
-    });
-  },
-  
-  validateField: function(field) {
-    const isValid = field.checkValidity();
-    const fieldId = field.id;
-    
-    if (isValid) {
-      field.classList.remove('is-invalid');
-      field.classList.add('is-valid');
-      this.hideValidationMessage(fieldId);
-    } else {
-      field.classList.remove('is-valid');
-      field.classList.add('is-invalid');
-      
-      let message = field.validationMessage;
-      if (field.validity.valueMissing) {
-        message = 'Este campo es obligatorio';
-      } else if (field.validity.typeMismatch) {
-        message = 'Por favor, ingresa un formato válido';
-      }
-      
-      this.showValidationMessage(fieldId, message, 'error');
-    }
-    
-    return isValid;
-  },
-  
-  showValidationMessage: function(elementId, message, type = 'error') {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    const validationDiv = element.querySelector('.validation-message') || 
-                         element.parentElement.querySelector('.validation-message');
-    
-    if (validationDiv) {
-      validationDiv.className = `validation-message ${type}`;
-      validationDiv.innerHTML = `
-        <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}" aria-hidden="true"></i>
-        <span>${message}</span>
-      `;
-      validationDiv.style.display = 'flex';
-      
-      validationDiv.setAttribute('aria-live', 'polite');
-    }
-  },
-  
-  hideValidationMessage: function(elementId) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    const validationDiv = element.querySelector('.validation-message') || 
-                         element.parentElement.querySelector('.validation-message');
-    
-    if (validationDiv) {
-      validationDiv.style.display = 'none';
-      validationDiv.removeAttribute('aria-live');
-    }
-  },
-  
-  setupAutoAnnouncements: function() {
-    // Anunciar cuando se muestre un modal
-    document.addEventListener('shown.bs.modal', function(e) {
-      const modalTitle = e.target.querySelector('.modal-title');
-      if (modalTitle) {
-        CalendarioApp.Accessibility.announceToScreenReader(
-          `Modal abierto: ${modalTitle.textContent}`
-        );
-      }
-    });
-
-    // Anunciar cuando se oculte un modal
-    document.addEventListener('hidden.bs.modal', function(e) {
-      CalendarioApp.Accessibility.announceToScreenReader('Modal cerrado');
-    });
-  },
-  
-  announceToScreenReader: function(message, priority = 'polite') {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', priority);
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    
-    document.body.appendChild(announcement);
-    
-    setTimeout(() => {
-      if (announcement.parentNode) {
-        document.body.removeChild(announcement);
-      }
-    }, 1000);
-  },
-  
-  showGlobalLoading: function(message = 'Procesando solicitud...', subtext = '') {
-    // Crear overlay de carga global
-    let loadingOverlay = document.getElementById('globalLoadingOverlay');
-    
-    if (!loadingOverlay) {
-      loadingOverlay = document.createElement('div');
-      loadingOverlay.id = 'globalLoadingOverlay';
-      loadingOverlay.className = 'loading-overlay';
-      document.body.appendChild(loadingOverlay);
-    }
-    
-    loadingOverlay.innerHTML = `
-      <div class="loading-content">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">${message}</div>
-        ${subtext ? `<div class="loading-subtext">${subtext}</div>` : ''}
-        <div class="loading-progress">
-          <div class="loading-progress-bar"></div>
-        </div>
-      </div>
-    `;
-    
-    loadingOverlay.classList.add('show');
-    loadingOverlay.setAttribute('aria-hidden', 'false');
-    
-    // Animar la barra de progreso
-    setTimeout(() => {
-      const progressBar = loadingOverlay.querySelector('.loading-progress-bar');
-      if (progressBar) {
-        progressBar.style.width = '100%';
-      }
-    }, 100);
-  },
-  
-  hideGlobalLoading: function() {
-    const loadingOverlay = document.getElementById('globalLoadingOverlay');
-    if (loadingOverlay) {
-      loadingOverlay.classList.remove('show');
-      setTimeout(() => {
-        loadingOverlay.setAttribute('aria-hidden', 'true');
-      }, 300);
-    }
-  }
-};
+// CalendarioApp ya está inicializado en calendario-core.js
 
 // ===== SISTEMA DE CALENDARIO =====
 CalendarioApp.Calendar = {
@@ -475,16 +32,13 @@ CalendarioApp.Calendar = {
     if (window.CalendarioApp && CalendarioApp.CalendarViews) {
       CalendarioApp.CalendarViews.integrateWithCalendar(this.calendar);
     }
-    
-    // Establecer vista semanal por defecto
-    this.calendar.changeView('timeGridWeek');
   },
   
   initializeSalasData: function() {
     this.salasData = {};
     const salaOptions = document.querySelectorAll('#salaFilter option');
     
-    console.log('Inicializando datos de salas. Opciones encontradas:', salaOptions.length);
+    CalendarioApp.Core.Logger.debug('Inicializando datos de salas. Opciones encontradas:', salaOptions.length);
     
     salaOptions.forEach(function(option) {
       if (option.value) {
@@ -500,11 +54,11 @@ CalendarioApp.Calendar = {
         };
         
         this.salasData[option.value] = salaData;
-        console.log('Sala agregada:', option.value, salaData);
+        CalendarioApp.Core.Logger.debug('Sala agregada:', option.value, salaData);
       }
     }.bind(this));
     
-    console.log('salasData final:', this.salasData);
+    CalendarioApp.Core.Logger.debug('salasData final:', this.salasData);
   },
   
   setInitialSala: function() {
@@ -614,16 +168,18 @@ CalendarioApp.Calendar = {
     }
     
     // Usar la URL global si está disponible, sino usar la del config
-    const apiUrl = window.calendarioApiUrl || CalendarioApp.config.apiEndpoints.reservas;
+    const apiUrl = window.calendarioApiUrl || CalendarioApp.Core?.urls?.api?.reservas;
     
     if (!apiUrl) {
       console.error('URL de API no configurada');
-      CalendarioApp.Notifications.error('Error de configuración: URL de API no encontrada');
+      if (window.CalendarioApp?.ModalFactory) {
+        CalendarioApp.ModalFactory.utils.alert('Error de configuración: URL de API no encontrada', { type: 'error' });
+      }
       return [];
     }
     
     const url = apiUrl + '?sala=' + this.currentSalaFilter;
-    console.log('Cargando eventos desde URL:', url);
+    CalendarioApp.Core.Logger.debug('Cargando eventos desde URL:', url);
     
     return fetch(url)
       .then(response => {
@@ -637,7 +193,9 @@ CalendarioApp.Calendar = {
       })
       .catch(error => {
         console.error('Error al cargar eventos:', error);
-        CalendarioApp.Notifications.error('Error al cargar eventos del calendario');
+        if (window.CalendarioApp?.ModalFactory) {
+          CalendarioApp.ModalFactory.utils.alert('Error al cargar eventos del calendario', { type: 'error' });
+        }
         return [];
       });
   },
@@ -658,10 +216,8 @@ CalendarioApp.Calendar = {
     // Mostrar detalles de la reserva
     this.showReservaDetails(event);
     
-    
     modal.show();
   },
-  
   
   showReservaDetails: function(event) {
     const detailsContent = document.getElementById('reservaDetailsContent');
@@ -818,13 +374,15 @@ CalendarioApp.Calendar = {
     }
     
     const fecha = info.dateStr;
-    const crearReservaUrl = window.crearReservaUrl || CalendarioApp.config.apiEndpoints.crearReserva;
+    const crearReservaUrl = window.crearReservaUrl || CalendarioApp.Core?.urls?.api?.crearReserva;
     
     if (crearReservaUrl) {
       const url = crearReservaUrl + '?fecha=' + fecha;
       window.location.href = url;
     } else {
-      CalendarioApp.Notifications.warning('URL de creación de reserva no configurada');
+      if (window.CalendarioApp?.ModalFactory) {
+        CalendarioApp.ModalFactory.utils.alert('URL de creación de reserva no configurada', { type: 'warning' });
+      }
     }
   },
   
@@ -855,7 +413,9 @@ CalendarioApp.Calendar = {
     const horaFinSelect = document.getElementById('hora_fin');
     
     if (horaInicioSelect && horaFinSelect) {
-      this.generateTimeOptions(horaInicioSelect, horaFinSelect);
+      if (window.CalendarioApp?.Core?.TimeUtils) {
+        CalendarioApp.Core.TimeUtils.generateTimeOptions('hora_inicio', 'hora_fin');
+      }
       this.setupTimeValidation(horaInicioSelect, horaFinSelect);
     }
     
@@ -871,7 +431,6 @@ CalendarioApp.Calendar = {
         this.crearReserva();
       });
     }
-    
     
     // Configurar selector de sala en el modal
     const recursoSelect = document.getElementById('recurso');
@@ -936,7 +495,6 @@ CalendarioApp.Calendar = {
       salaSelectedInfo.style.display = 'none';
     }
     
-    
     // Resetear título
     const modalTitle = document.getElementById('reservaModalCrearLabel');
     if (modalTitle) {
@@ -962,13 +520,17 @@ CalendarioApp.Calendar = {
     const horaFin = form.querySelector('#hora_fin').value;
     
     if (!recurso || !titulo || !fecha || !horaInicio || !horaFin) {
-      CalendarioApp.Notifications.error('Por favor, completa todos los campos obligatorios');
+      if (window.CalendarioApp?.ModalFactory) {
+        CalendarioApp.ModalFactory.utils.alert('Por favor, completa todos los campos obligatorios', { type: 'error' });
+      }
       return;
     }
     
     // Validar que la hora de fin sea posterior a la de inicio
     if (horaInicio >= horaFin) {
-      CalendarioApp.Notifications.error('La hora de fin debe ser posterior a la hora de inicio');
+      if (window.CalendarioApp?.ModalFactory) {
+        CalendarioApp.ModalFactory.utils.alert('La hora de fin debe ser posterior a la hora de inicio', { type: 'error' });
+      }
       return;
     }
     
@@ -977,7 +539,9 @@ CalendarioApp.Calendar = {
       .then(conflictos => {
         if (conflictos.length > 0) {
           const mensaje = conflictos.map(c => c.message).join('\n');
-          CalendarioApp.Notifications.error(`Conflictos encontrados:\n${mensaje}`);
+          if (window.CalendarioApp?.ModalFactory) {
+            CalendarioApp.ModalFactory.utils.alert(`Conflictos encontrados:\n${mensaje}`, { type: 'error' });
+          }
           return;
         }
         
@@ -1006,14 +570,16 @@ CalendarioApp.Calendar = {
   
   enviarReserva: function(form) {
     // Mostrar loading global
-    CalendarioApp.Accessibility.showGlobalLoading(
-      'Creando reserva...', 
-      'Esto puede tomar unos segundos'
-    );
+    if (window.CalendarioApp?.StateManager) {
+      CalendarioApp.StateManager.actions.setGlobalLoading(true);
+    }
     
     // Mostrar loading en botón
     const btnCrear = document.getElementById('btnCrearReserva');
-    CalendarioApp.Accessibility.setButtonLoading(btnCrear, true);
+    if (btnCrear) {
+      btnCrear.disabled = true;
+      btnCrear.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+    }
     
     // Obtener datos del formulario
     const formData = new FormData(form);
@@ -1029,11 +595,19 @@ CalendarioApp.Calendar = {
     })
     .then(response => response.json())
     .then(data => {
-      CalendarioApp.Accessibility.setButtonLoading(btnCrear, false);
-      CalendarioApp.Accessibility.hideGlobalLoading();
+      if (btnCrear) {
+        btnCrear.disabled = false;
+        btnCrear.innerHTML = '<i class="fas fa-plus me-2"></i>Crear Reserva';
+      }
+      
+      if (window.CalendarioApp?.StateManager) {
+        CalendarioApp.StateManager.actions.setGlobalLoading(false);
+      }
       
       if (data.success) {
-        CalendarioApp.Notifications.success(data.message);
+        if (window.CalendarioApp?.ModalFactory) {
+          CalendarioApp.ModalFactory.utils.alert(data.message, { type: 'success' });
+        }
         
         // Cerrar modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('reservaModalCrear'));
@@ -1044,57 +618,26 @@ CalendarioApp.Calendar = {
         // Actualizar calendario
         this.updateMainCalendar();
       } else {
-        CalendarioApp.Notifications.error(data.error || 'Error al crear la reserva');
+        if (window.CalendarioApp?.ModalFactory) {
+          CalendarioApp.ModalFactory.utils.alert(data.error || 'Error al crear la reserva', { type: 'error' });
+        }
       }
     })
     .catch(error => {
       console.error('Error al crear reserva:', error);
-      CalendarioApp.Accessibility.setButtonLoading(btnCrear, false);
-      CalendarioApp.Accessibility.hideGlobalLoading();
-      CalendarioApp.Notifications.error('Error de conexión al crear la reserva');
+      if (btnCrear) {
+        btnCrear.disabled = false;
+        btnCrear.innerHTML = '<i class="fas fa-plus me-2"></i>Crear Reserva';
+      }
+      
+      if (window.CalendarioApp?.StateManager) {
+        CalendarioApp.StateManager.actions.setGlobalLoading(false);
+      }
+      
+      if (window.CalendarioApp?.ModalFactory) {
+        CalendarioApp.ModalFactory.utils.alert('Error de conexión al crear la reserva', { type: 'error' });
+      }
     });
-  },
-  
-  
-  
-  generateTimeOptions: function(horaInicioSelect, horaFinSelect) {
-    horaInicioSelect.innerHTML = '<option value="">Seleccionar hora</option>';
-    horaFinSelect.innerHTML = '<option value="">Seleccionar hora</option>';
-    
-    // Generar opciones de hora de inicio (7:00 a 15:30)
-    for (let hora = 7; hora <= 15; hora++) {
-      for (let minuto = 0; minuto < 60; minuto += 30) {
-        if (hora === 15 && minuto > 30) break;
-        
-        const horaStr = hora.toString().padStart(2, '0');
-        const minutoStr = minuto.toString().padStart(2, '0');
-        const horaCompleta = `${horaStr}:${minutoStr}`;
-        
-        const optionInicio = new Option(horaCompleta, horaCompleta);
-        horaInicioSelect.add(optionInicio);
-      }
-    }
-    
-    // Generar opciones de hora de fin (7:30 a 16:00)
-    for (let hora = 7; hora <= 16; hora++) {
-      for (let minuto = 0; minuto < 60; minuto += 30) {
-        if (hora === 7 && minuto < 30) continue; // Empezar desde 7:30
-        if (hora === 16 && minuto > 0) break; // Terminar en 16:00
-        
-        const horaStr = hora.toString().padStart(2, '0');
-        const minutoStr = minuto.toString().padStart(2, '0');
-        const horaCompleta = `${horaStr}:${minutoStr}`;
-        
-        const optionFin = new Option(horaCompleta, horaCompleta);
-        horaFinSelect.add(optionFin);
-      }
-    }
-    
-    const fechaInput = document.getElementById('fecha');
-    if (fechaInput) {
-      const today = new Date();
-      fechaInput.min = today.toISOString().split('T')[0];
-    }
   },
   
   setupTimeValidation: function(horaInicioSelect, horaFinSelect) {
@@ -1209,9 +752,6 @@ CalendarioApp.Calendar = {
   },
   
   setupMicroInteractions: function() {
-    // Efectos hover en cards
-    // Efectos de hover removidos - no más transformaciones en hover
-    
     // Configurar acciones rápidas del selector de sala
     this.setupQuickActions();
   },
@@ -1226,14 +766,13 @@ CalendarioApp.Calendar = {
     }
   },
   
-  
   showRoomDetailsModal: function() {
-    console.log('currentSalaFilter:', this.currentSalaFilter);
-    console.log('salasData:', this.salasData);
+    CalendarioApp.Core.Logger.debug('currentSalaFilter:', this.currentSalaFilter);
+    CalendarioApp.Core.Logger.debug('salasData:', this.salasData);
     
     if (this.currentSalaFilter && this.salasData[this.currentSalaFilter]) {
       const salaData = this.salasData[this.currentSalaFilter];
-      console.log('salaData encontrado:', salaData);
+      CalendarioApp.Core.Logger.debug('salaData encontrado:', salaData);
       
       const modal = new bootstrap.Modal(document.getElementById('salaDetailsModal'));
       
@@ -1246,7 +785,9 @@ CalendarioApp.Calendar = {
       modal.show();
     } else {
       console.error('No se encontró salaData para:', this.currentSalaFilter);
-      CalendarioApp.Notifications.warning('Selecciona una sala para ver sus detalles');
+      if (window.CalendarioApp?.ModalFactory) {
+        CalendarioApp.ModalFactory.utils.alert('Selecciona una sala para ver sus detalles', { type: 'warning' });
+      }
     }
   },
   
@@ -1254,7 +795,7 @@ CalendarioApp.Calendar = {
     const content = document.getElementById('salaDetailsContent');
     
     // Debug: verificar que salaData tenga id
-    console.log('salaData recibido:', salaData);
+    CalendarioApp.Core.Logger.debug('salaData recibido:', salaData);
     
     if (!salaData || !salaData.id) {
       console.error('salaData no tiene id:', salaData);
@@ -1436,89 +977,30 @@ CalendarioApp.Calendar = {
   }
 };
 
-// ===== FUNCIONES DE UTILIDAD =====
-CalendarioApp.Utils = {
-  debounce: function(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  },
-  
-  throttle: function(func, limit) {
-    let inThrottle;
-    return function() {
-      const args = arguments;
-      const context = this;
-      if (!inThrottle) {
-        func.apply(context, args);
-        inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
-      }
-    };
-  },
-  
-  formatDate: function(date, format = 'es-ES') {
-    return new Date(date).toLocaleDateString(format);
-  },
-  
-  formatTime: function(date, format = 'es-ES') {
-    return new Date(date).toLocaleTimeString(format, {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-};
-
-// ===== MEJORAS DE MODALES =====
-function improveModals() {
-  const modals = document.querySelectorAll('.modal');
-  
-  modals.forEach(modal => {
-    // Limpiar scroll al cerrar
-    modal.addEventListener('hidden.bs.modal', function() {
-      const modalBody = modal.querySelector('.modal-body');
-      if (modalBody) {
-        modalBody.scrollTop = 0;
-      }
-    });
-
-    // Aplicar comportamiento general a todos los modales
-    modal.addEventListener('shown.bs.modal', function() {
-      // Forzar que no aparezca scrollbar externa
-      modal.style.paddingRight = '0px';
-    });
-  });
-}
-
 // ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', function() {
-  // Inicializar sistemas básicos
-  CalendarioApp.Notifications.init();
-  CalendarioApp.Accessibility.init();
-  
-  // Mejorar modales
-  improveModals();
-  
   // Esperar a que se configuren las URLs antes de inicializar el calendario
   const initCalendar = () => {
     // Configurar URLs de API si están disponibles
     if (window.calendarioApiUrl) {
-      CalendarioApp.config.apiEndpoints.reservas = window.calendarioApiUrl;
+      if (window.CalendarioApp?.Core) {
+        CalendarioApp.Core.urls.api.reservas = window.calendarioApiUrl;
+      }
     }
     if (window.crearReservaUrl) {
-      CalendarioApp.config.apiEndpoints.crearReserva = window.crearReservaUrl;
+      if (window.CalendarioApp?.Core) {
+        CalendarioApp.Core.urls.api.crearReserva = window.crearReservaUrl;
+      }
     }
     if (window.horariosOcupadosUrl) {
-      CalendarioApp.config.apiEndpoints.horariosOcupados = window.horariosOcupadosUrl;
+      if (window.CalendarioApp?.Core) {
+        CalendarioApp.Core.urls.api.horariosOcupados = window.horariosOcupadosUrl;
+      }
     }
     if (window.logoutUrl) {
-      CalendarioApp.config.apiEndpoints.logout = window.logoutUrl;
+      if (window.CalendarioApp?.Core) {
+        CalendarioApp.Core.urls.views.logout = window.logoutUrl;
+      }
     }
     
     // Inicializar calendario si existe
@@ -1526,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', function() {
       CalendarioApp.Calendar.init();
     }
     
-    console.log('CalendarioApp inicializado correctamente');
+    CalendarioApp.Core.Logger.debug('CalendarioApp.Calendar inicializado correctamente');
   };
   
   // Si las URLs ya están configuradas, inicializar inmediatamente
@@ -1538,51 +1020,12 @@ document.addEventListener('DOMContentLoaded', function() {
       if (window.calendarioApiUrl) {
         initCalendar();
       } else {
-        console.warn('URLs de API no configuradas, inicializando sin calendario');
+        CalendarioApp.Core.Logger.warn('URLs de API no configuradas, inicializando sin calendario');
         initCalendar();
       }
     }, 100);
   }
 });
 
-// ===== FUNCIONES GLOBALES PARA COMPATIBILIDAD =====
-window.handleLogout = function() {
-  // Mostrar confirmación
-  CalendarioApp.Notifications.confirm(
-    '¿Estás seguro de que quieres cerrar sesión?',
-    {
-      title: 'Confirmar cierre de sesión',
-      icon: 'fas fa-sign-out-alt',
-      confirmText: 'Sí, cerrar sesión',
-      cancelText: 'Cancelar'
-    }
-  ).then(function(confirmed) {
-    if (confirmed) {
-      // Mostrar notificación de procesamiento
-      CalendarioApp.Notifications.show('Cerrando sesión...', 'loading', 0, {
-        title: 'Procesando',
-        icon: 'fas fa-spinner fa-spin',
-        closable: false
-      });
-      
-      // Crear y enviar formulario de logout
-      const form = document.createElement('form');
-      form.method = 'post';
-      form.action = window.logoutUrl || CalendarioApp.config.apiEndpoints.logout || '/logout/';
-      
-      const csrfToken = document.createElement('input');
-      csrfToken.type = 'hidden';
-      csrfToken.name = 'csrfmiddlewaretoken';
-      csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
-      
-      form.appendChild(csrfToken);
-      document.body.appendChild(form);
-      form.submit();
-    }
-  });
-};
-
-window.crearReserva = function() {
-  // Implementar lógica de creación de reserva
-  CalendarioApp.Notifications.info('Funcionalidad de creación de reserva en desarrollo');
-};
+// Hacer disponible globalmente
+window.CalendarioMain = CalendarioApp.Calendar;
