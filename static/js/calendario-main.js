@@ -43,18 +43,34 @@ CalendarioApp.Calendar = {
     salaOptions.forEach(function(option) {
       if (option.value) {
         const textContent = option.textContent.trim();
-        const match = textContent.match(/capacidad: (\d+)/);
-        const capacidad = match ? parseInt(match[1]) : 1;
+        const tipo = option.getAttribute('data-tipo');
+        
+        let capacidad = 1;
+        let nombre = textContent;
+        
+        if (tipo === 'vehiculo') {
+          // Para vehículos: "Auto de la Empresa - ABC123 (5 pasajeros)"
+          const match = textContent.match(/\((\d+) pasajeros\)/);
+          capacidad = match ? parseInt(match[1]) : 1;
+          // Extraer nombre sin la patente
+          nombre = textContent.split(' - ')[0].trim();
+        } else {
+          // Para salas: "Sala1 (capacidad: 10)"
+          const match = textContent.match(/capacidad: (\d+)/);
+          capacidad = match ? parseInt(match[1]) : 1;
+          nombre = textContent.split(' (')[0].trim();
+        }
         
         const salaData = {
           id: option.value,
-          nombre: textContent.split(' (')[0].trim(),
+          nombre: nombre,
           color: option.getAttribute('data-color') || '#64748B',
-          capacidad: capacidad
+          capacidad: capacidad,
+          tipo: tipo
         };
         
         this.salasData[option.value] = salaData;
-        CalendarioApp.Core.Logger.debug('Sala agregada:', option.value, salaData);
+        CalendarioApp.Core.Logger.debug('Recurso agregado:', option.value, salaData);
       }
     }.bind(this));
     
