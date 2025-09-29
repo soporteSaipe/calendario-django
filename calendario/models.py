@@ -6,11 +6,22 @@ from django.core.cache import cache
 
 class Recurso(models.Model):
     """Modelo para representar los recursos que se pueden reservar"""
+    TIPOS = [
+        ('sala', 'Sala de Reunión'),
+        ('vehiculo', 'Vehículo'),
+    ]
+    
     nombre = models.CharField(max_length=100, verbose_name="Nombre del recurso")
+    tipo = models.CharField(max_length=20, choices=TIPOS, default='sala', verbose_name="Tipo de recurso")
     descripcion = models.TextField(blank=True, verbose_name="Descripción")
     capacidad = models.PositiveIntegerField(default=1, verbose_name="Capacidad")
     activo = models.BooleanField(default=True, verbose_name="Activo")
     color = models.CharField(max_length=7, default="#007bff", verbose_name="Color")
+    
+    # Campos específicos para vehículos
+    marca = models.CharField(max_length=50, blank=True, verbose_name="Marca")
+    modelo = models.CharField(max_length=50, blank=True, verbose_name="Modelo")
+    patente = models.CharField(max_length=10, blank=True, unique=True, null=True, verbose_name="Patente")
     
     # Campos adicionales para características detalladas
     descripcion_detallada = models.TextField(
@@ -37,11 +48,17 @@ class Recurso(models.Model):
         ordering = ['nombre']
     
     def __str__(self):
+        if self.tipo == 'vehiculo' and self.patente:
+            return f"{self.nombre} - {self.patente}"
         return self.nombre
     
     def get_horarios_restringidos(self):
         """Obtener horarios restringidos específicos para este recurso"""
         horarios_restringidos = []
+        
+        # Los vehículos no tienen restricciones de horario (24/7)
+        if self.es_vehiculo():
+            return horarios_restringidos
         
         # Restricción especial para la sala Comedor
         if self.nombre.lower() == 'comedor':
@@ -73,13 +90,48 @@ class Recurso(models.Model):
         return caracteristicas
     
     def get_descripcion_completa(self):
-        """Obtener descripción completa de la sala"""
+        """Obtener descripción completa del recurso"""
         if self.descripcion_detallada:
             return self.descripcion_detallada
         elif self.descripcion:
             return self.descripcion
         else:
-            return 'Sala de reunión equipada con proyector, pizarra y sistema de videoconferencia. Ideal para reuniones de equipo y presentaciones.'
+            if self.tipo == 'vehiculo':
+                return f'Vehículo {self.marca} {self.modelo} - {self.patente}. Capacidad para {self.capacidad} pasajeros.'
+            else:
+                return 'Sala de reunión equipada con proyector, pizarra y sistema de videoconferencia. Ideal para reuniones de equipo y presentaciones.'
+    
+    def es_vehiculo(self):
+        """Verificar si el recurso es un vehículo"""
+        return self.tipo == 'vehiculo'
+    
+    def es_sala(self):
+        """Verificar si el recurso es una sala"""
+        return self.tipo == 'sala'
+    
+    def get_horario_disponible(self):
+        """Obtener el rango de horarios disponibles según el tipo de recurso"""
+        if self.es_vehiculo():
+            # Vehículos disponibles 24/7 (hasta 00:00 del día siguiente)
+            return {
+                'hora_inicio': '00:00',
+                'hora_fin': '00:00',
+                'descripcion': 'Disponible 24/7 (hasta 00:00 del día siguiente)'
+            }
+        else:
+            # Salas con horario laboral
+            if self.nombre.lower() == 'comedor':
+                return {
+                    'hora_inicio': '07:00',
+                    'hora_fin': '16:00',
+                    'descripcion': 'Horario laboral (excepto 12:00-14:30 para almuerzo)'
+                }
+            else:
+                return {
+                    'hora_inicio': '07:00',
+                    'hora_fin': '16:00',
+                    'descripcion': 'Horario laboral'
+                }
 
 class Reserva(models.Model):
     """Modelo para representar las reservas"""
@@ -97,6 +149,11 @@ class Reserva(models.Model):
     fecha_inicio = models.DateTimeField(verbose_name="Fecha de inicio")
     fecha_fin = models.DateTimeField(verbose_name="Fecha de fin")
     estado = models.CharField(max_length=20, choices=ESTADOS, default='confirmada', verbose_name="Estado")
+    
+    # Campos específicos para vehículos
+    responsable = models.CharField(max_length=200, blank=True, verbose_name="Responsable")
+    destino = models.CharField(max_length=300, blank=True, verbose_name="Destino")
+    
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
     
@@ -111,6 +168,8 @@ class Reserva(models.Model):
         ]
     
     def __str__(self):
+        if self.recurso.es_vehiculo():
+            return f"{self.responsable} - {self.recurso.nombre} ({self.destino})"
         return f"{self.titulo} - {self.recurso.nombre}"
     
     def clean(self):

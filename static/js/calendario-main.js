@@ -108,12 +108,12 @@ CalendarioApp.Calendar = {
       views: {
         timeGridDay: {
           slotMinTime: '07:00:00',
-          slotMaxTime: '18:00:00',
+          slotMaxTime: '16:00:00',
           slotDuration: '00:30:00'
         },
         timeGridWeek: {
           slotMinTime: '07:00:00',
-          slotMaxTime: '18:00:00',
+          slotMaxTime: '16:00:00',
           slotDuration: '00:30:00'
         },
         dayGridMonth: {
@@ -657,35 +657,41 @@ CalendarioApp.Calendar = {
         const salaSeleccionada = recursoSelect ? recursoSelect.value : null;
         const esComedor = salaSeleccionada && self.isComedor(salaSeleccionada);
         
-        // Generar opciones de hora de fin (7:30 a 16:00)
-        for (let h = 7; h <= 16; h++) {
-          for (let m = 0; m < 60; m += 30) {
-            if (h === 7 && m < 30) continue; // Empezar desde 7:30
-            if (h === 16 && m > 0) break; // Terminar en 16:00
-            
+        if (esComedor) {
+          // Horarios especiales para el comedor
+          const horariosFinComedor = [
+            '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00',
+            '15:00', '15:30', '16:00'
+          ];
+          
+          horariosFinComedor.forEach(horario => {
+            const [h, m] = horario.split(':').map(Number);
             const horaActualMinutos = h * 60 + m;
             
             // Solo agregar si es posterior a la hora de inicio
             if (horaActualMinutos > horaInicioMinutos) {
-              // Aplicar restricciones del comedor
-              if (esComedor) {
-                // No permitir reservas que se extiendan durante el horario de comida (12:00-14:30)
-                const horaFinMinutos = horaActualMinutos;
-                const inicioComida = 12 * 60; // 12:00
-                const finComida = 14 * 60 + 30; // 14:30
-                
-                // Si la reserva se extiende durante el horario de comida, no permitir
-                if (horaInicioMinutos < finComida && horaFinMinutos > inicioComida) {
-                  continue;
-                }
-              }
-              
-              const horaStr = h.toString().padStart(2, '0');
-              const minutoStr = m.toString().padStart(2, '0');
-              const horaCompleta = `${horaStr}:${minutoStr}`;
-              
-              const option = new Option(horaCompleta, horaCompleta);
+              const option = new Option(horario, horario);
               horaFinSelect.add(option);
+            }
+          });
+        } else {
+          // Generar opciones de hora de fin para otras salas (7:30 a 16:00)
+          for (let h = 7; h <= 16; h++) {
+            for (let m = 0; m < 60; m += 30) {
+              if (h === 7 && m < 30) continue; // Empezar desde 7:30
+              if (h === 16 && m > 0) break; // Terminar en 16:00
+              
+              const horaActualMinutos = h * 60 + m;
+              
+              // Solo agregar si es posterior a la hora de inicio
+              if (horaActualMinutos > horaInicioMinutos) {
+                const horaStr = h.toString().padStart(2, '0');
+                const minutoStr = m.toString().padStart(2, '0');
+                const horaCompleta = `${horaStr}:${minutoStr}`;
+                
+                const option = new Option(horaCompleta, horaCompleta);
+                horaFinSelect.add(option);
+              }
             }
           }
         }
@@ -721,19 +727,16 @@ CalendarioApp.Calendar = {
     
     // Generar opciones de hora de inicio según la sala
     if (esComedor) {
-      // Comedor: 7:00 a 11:30
-      for (let hora = 7; hora <= 11; hora++) {
-        for (let minuto = 0; minuto < 60; minuto += 30) {
-          if (hora === 11 && minuto > 30) break;
-          
-          const horaStr = hora.toString().padStart(2, '0');
-          const minutoStr = minuto.toString().padStart(2, '0');
-          const horaCompleta = `${horaStr}:${minutoStr}`;
-          
-          const option = new Option(horaCompleta, horaCompleta);
-          horaInicioSelect.add(option);
-        }
-      }
+      // Comedor: 7:00 a 11:30 y 14:30 a 15:30
+      const horariosInicioComedor = [
+        '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+        '14:30', '15:00', '15:30'
+      ];
+      
+      horariosInicioComedor.forEach(horario => {
+        const option = new Option(horario, horario);
+        horaInicioSelect.add(option);
+      });
     } else {
       // Otras salas: 7:00 a 15:30
       for (let hora = 7; hora <= 15; hora++) {

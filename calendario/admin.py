@@ -8,15 +8,20 @@ from .models import Recurso, Reserva
 
 @admin.register(Recurso)
 class RecursoAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'capacidad', 'activo', 'reservas_count', 'reservas_hoy', 'color_preview', 'color']
-    list_filter = ['activo', 'capacidad']
-    search_fields = ['nombre', 'descripcion']
+    list_display = ['nombre', 'tipo', 'capacidad', 'activo', 'reservas_count', 'reservas_hoy', 'color_preview', 'color']
+    list_filter = ['activo', 'tipo', 'capacidad']
+    search_fields = ['nombre', 'descripcion', 'marca', 'modelo', 'patente']
     list_editable = ['activo', 'color']
     list_per_page = 20  # Paginación para móviles
     save_on_top = True  # Botones de guardar arriba
     fieldsets = (
         ('Información Básica', {
-            'fields': ('nombre', 'descripcion', 'capacidad')
+            'fields': ('nombre', 'tipo', 'descripcion', 'capacidad')
+        }),
+        ('Información de Vehículo', {
+            'fields': ('marca', 'modelo', 'patente'),
+            'classes': ('collapse',),
+            'description': 'Solo para vehículos'
         }),
         ('Descripción Detallada', {
             'fields': ('descripcion_detallada', 'horario_uso'),
@@ -24,7 +29,8 @@ class RecursoAdmin(admin.ModelAdmin):
         }),
         ('Características y Equipamiento', {
             'fields': ('tiene_proyector', 'tiene_pizarra', 'tiene_audio', 'tiene_videoconferencia', 'tiene_wifi', 'tiene_climatizacion'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
+            'description': 'Solo para salas'
         }),
         ('Configuración', {
             'fields': ('activo', 'color'),
@@ -69,9 +75,9 @@ class RecursoAdmin(admin.ModelAdmin):
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display = ['titulo', 'recurso', 'usuario', 'fecha_inicio', 'fecha_fin', 'estado']
-    list_filter = ['estado', 'recurso', 'fecha_inicio', 'fecha_creacion']
-    search_fields = ['titulo', 'descripcion', 'usuario__username', 'usuario__first_name', 'usuario__last_name']
+    list_display = ['get_titulo_display', 'recurso', 'usuario', 'fecha_inicio', 'fecha_fin', 'estado']
+    list_filter = ['estado', 'recurso', 'recurso__tipo', 'fecha_inicio', 'fecha_creacion']
+    search_fields = ['titulo', 'descripcion', 'responsable', 'destino', 'usuario__username', 'usuario__first_name', 'usuario__last_name']
     date_hierarchy = 'fecha_inicio'
     list_editable = ['estado']
     list_per_page = 25  # Paginación para móviles
@@ -79,7 +85,12 @@ class ReservaAdmin(admin.ModelAdmin):
     readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
     fieldsets = (
         ('Información de la Reserva', {
-            'fields': ('titulo', 'descripcion', 'recurso', 'usuario')
+            'fields': ('recurso', 'usuario', 'titulo', 'descripcion')
+        }),
+        ('Información de Vehículo', {
+            'fields': ('responsable', 'destino'),
+            'classes': ('collapse',),
+            'description': 'Solo para vehículos'
         }),
         ('Horarios', {
             'fields': ('fecha_inicio', 'fecha_fin', 'estado')
@@ -89,6 +100,13 @@ class ReservaAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def get_titulo_display(self, obj):
+        """Mostrar título apropiado según el tipo de recurso"""
+        if obj.recurso.es_vehiculo():
+            return f"{obj.responsable} - {obj.destino}"
+        return obj.titulo
+    get_titulo_display.short_description = 'Título/Responsable'
 
 # Configuración personalizada para el modelo User
 class UserAdmin(BaseUserAdmin):

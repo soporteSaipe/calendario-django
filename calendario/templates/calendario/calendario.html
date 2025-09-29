@@ -20,7 +20,8 @@
         <div class="card-modern sala-selector-enhanced animate-on-load">
             <div class="card-header-modern">
                 <h5 class="mb-0">
-                    <i class="fas fa-door-open me-2"></i>Seleccionar Sala de Reunión
+                    <i class="fas fa-door-open me-2" id="selectorIcon"></i>
+                    <span id="selectorTitle">Seleccionar Sala de Reunión</span>
                 </h5>
             </div>
             <div class="card-body-modern">
@@ -28,13 +29,18 @@
                     <div class="sala-selector-main">
                         <div class="sala-selector-dropdown">
                             <label for="salaFilter" class="form-label-modern">
-                                <i class="fas fa-building me-2"></i>Sala de reunión
+                                <i class="fas fa-building me-2" id="filterIcon"></i>
+                                <span id="filterLabel">Sala de reunión</span>
                             </label>
                             <select id="salaFilter" class="form-select form-select-modern sala-selector-select">
                                 {% for recurso in recursos %}
-                                <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" 
+                                <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" data-tipo="{{ recurso.tipo }}"
                                         {% if sala_activa and recurso.id == sala_activa.id %}selected{% elif not sala_activa and forloop.first %}selected{% endif %}>
-                                    {{ recurso.nombre }} (capacidad: {{ recurso.capacidad }})
+                                    {% if recurso.tipo == 'vehiculo' %}
+                                        {{ recurso.nombre }} - {{ recurso.patente }} ({{ recurso.capacidad }} pasajeros)
+                                    {% else %}
+                                        {{ recurso.nombre }} (capacidad: {{ recurso.capacidad }})
+                                    {% endif %}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -88,7 +94,7 @@
                                    </div>
                                    <div class="btn-reserva-text">
                                        <span class="btn-reserva-title">Crear Reserva</span>
-                                       <span class="btn-reserva-subtitle">Nueva reserva de sala</span>
+                                       <span class="btn-reserva-subtitle" id="btnReservaSubtitle">Nueva reserva</span>
                                    </div>
                                </div>
                            </button>
@@ -109,7 +115,8 @@
         <div class="modal-content modal-content-modern">
             <div class="modal-header modal-header-modern">
                 <h5 class="modal-title modal-title-modern" id="reservaModalCrearLabel">
-                    <i class="fas fa-calendar-plus me-2"></i>Crear Nueva Reserva
+                    <i class="fas fa-calendar-plus me-2" id="modalIcon"></i>
+                    <span id="modalTitle">Crear Nueva Reserva</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
@@ -120,25 +127,39 @@
                         <div class="col-md-6">
                             <div class="form-group-modern">
                                 <label for="recurso" class="form-label-modern">
-                                    <i class="fas fa-door-open me-2"></i>Sala *
+                                    <i class="fas fa-door-open me-2" id="recursoIcon"></i>
+                                    <span id="recursoLabel">Sala *</span>
                                 </label>
                                 <select name="recurso" id="recurso" class="form-select-modern" required>
-                                    <option value="">Selecciona una sala</option>
+                                    <option value="">Selecciona un recurso</option>
                                     {% for recurso in recursos %}
-                                    <option value="{{ recurso.id }}" data-color="{{ recurso.color }}">
-                                        {{ recurso.nombre }} ({{ recurso.capacidad }} personas)
+                                    <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" data-tipo="{{ recurso.tipo }}">
+                                        {% if recurso.tipo == 'vehiculo' %}
+                                            {{ recurso.nombre }} - {{ recurso.patente }} ({{ recurso.capacidad }} pasajeros)
+                                        {% else %}
+                                            {{ recurso.nombre }} ({{ recurso.capacidad }} personas)
+                                        {% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="tituloField">
                             <div class="form-group-modern">
                                 <label for="titulo" class="form-label-modern">
                                     <i class="fas fa-heading me-2"></i>Título *
                                 </label>
                                 <input type="text" name="titulo" id="titulo" class="form-control-modern" 
                                        placeholder="Ej: Reunión de equipo" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="responsableField" style="display: none;">
+                            <div class="form-group-modern">
+                                <label for="responsable" class="form-label-modern">
+                                    <i class="fas fa-user me-2"></i>Responsable *
+                                </label>
+                                <input type="text" name="responsable" id="responsable" class="form-control-modern" 
+                                       placeholder="Nombre del responsable">
                             </div>
                         </div>
                     </div>
@@ -174,6 +195,18 @@
                         </div>
                     </div>
                     
+                    <div class="row" id="destinoField" style="display: none;">
+                        <div class="col-12">
+                            <div class="form-group-modern">
+                                <label for="destino" class="form-label-modern">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Destino *
+                                </label>
+                                <input type="text" name="destino" id="destino" class="form-control-modern" 
+                                       placeholder="Destino del viaje">
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group-modern">
                         <label for="descripcion" class="form-label-modern">
                             <i class="fas fa-align-left me-2"></i>Descripción
@@ -182,12 +215,12 @@
                                   placeholder="Descripción opcional de la reserva..."></textarea>
                     </div>
                     
-                    <!-- Información de la sala seleccionada -->
+                    <!-- Información del recurso seleccionado -->
                     <div class="sala-selected-info" id="salaSelectedInfo" style="display: none;">
                         <div class="alert alert-info-modern">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Sala seleccionada:</strong> <span id="salaSelectedName"></span> 
-                            - Capacidad: <span id="salaSelectedCapacity"></span> personas
+                            <strong id="recursoSelectedLabel">Sala seleccionada:</strong> <span id="salaSelectedName"></span> 
+                            - <span id="recursoSelectedCapacity">Capacidad: <span id="salaSelectedCapacity"></span> personas</span>
                         </div>
                     </div>
                 </form>
@@ -270,6 +303,318 @@
         crearReservaUrl: '{% url "calendario:crear_reserva" %}',
         horariosOcupadosUrl: '{% url "calendario:api_horarios_ocupados" %}',
         logoutUrl: '{% url "logout" %}'
+    });
+    
+    // Configurar adaptación dinámica del modal según el tipo de recurso
+    document.addEventListener('DOMContentLoaded', function() {
+        const recursoSelect = document.getElementById('recurso');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const recursoIcon = document.getElementById('recursoIcon');
+        const recursoLabel = document.getElementById('recursoLabel');
+        const tituloField = document.getElementById('tituloField');
+        const responsableField = document.getElementById('responsableField');
+        const destinoField = document.getElementById('destinoField');
+        const tituloInput = document.getElementById('titulo');
+        const responsableInput = document.getElementById('responsable');
+        const destinoInput = document.getElementById('destino');
+        const btnReservaSubtitle = document.getElementById('btnReservaSubtitle');
+        const recursoSelectedLabel = document.getElementById('recursoSelectedLabel');
+        const recursoSelectedCapacity = document.getElementById('recursoSelectedCapacity');
+        
+        function adaptarModalParaTipoRecurso(tipo) {
+            if (tipo === 'vehiculo') {
+                // Configurar para vehículo
+                modalIcon.className = 'fas fa-car me-2';
+                modalTitle.textContent = 'Crear Reserva de Vehículo';
+                recursoIcon.className = 'fas fa-car me-2';
+                recursoLabel.textContent = 'Vehículo *';
+                btnReservaSubtitle.textContent = 'Nueva reserva de vehículo';
+                recursoSelectedLabel.textContent = 'Vehículo seleccionado:';
+                
+                // Mostrar campos de vehículo
+                tituloField.style.display = 'none';
+                responsableField.style.display = 'block';
+                destinoField.style.display = 'block';
+                
+                // Configurar campos obligatorios
+                tituloInput.required = false;
+                responsableInput.required = true;
+                destinoInput.required = true;
+                
+                // Cambiar placeholder
+                tituloInput.placeholder = 'Título opcional';
+                responsableInput.placeholder = 'Nombre del responsable';
+                destinoInput.placeholder = 'Destino del viaje';
+                
+                // Configurar horarios 24/7 para vehículos
+                configurarHorariosSelectores('24/7');
+                
+            } else {
+                // Configurar para sala (por defecto)
+                modalIcon.className = 'fas fa-calendar-plus me-2';
+                modalTitle.textContent = 'Crear Nueva Reserva';
+                recursoIcon.className = 'fas fa-door-open me-2';
+                recursoLabel.textContent = 'Sala *';
+                btnReservaSubtitle.textContent = 'Nueva reserva de sala';
+                recursoSelectedLabel.textContent = 'Sala seleccionada:';
+                
+                // Mostrar campos de sala
+                tituloField.style.display = 'block';
+                responsableField.style.display = 'none';
+                destinoField.style.display = 'none';
+                
+                // Configurar campos obligatorios
+                tituloInput.required = true;
+                responsableInput.required = false;
+                destinoInput.required = false;
+                
+                // Cambiar placeholder
+                tituloInput.placeholder = 'Ej: Reunión de equipo';
+                responsableInput.placeholder = 'Nombre del responsable';
+                destinoInput.placeholder = 'Destino del viaje';
+                
+                // Configurar horarios laborales para salas
+                configurarHorariosSelectores('laboral');
+            }
+        }
+        
+        // Función para configurar los selectores de hora según el tipo de recurso
+        function configurarHorariosSelectores(tipo) {
+            const horaInicioSelect = document.getElementById('hora_inicio');
+            const horaFinSelect = document.getElementById('hora_fin');
+            
+            if (!horaInicioSelect || !horaFinSelect) return;
+            
+            // Limpiar opciones existentes
+            horaInicioSelect.innerHTML = '<option value="">Seleccionar hora</option>';
+            horaFinSelect.innerHTML = '<option value="">Seleccionar hora</option>';
+            
+            if (tipo === '24/7') {
+                // Generar opciones para 24 horas
+                for (let hora = 0; hora < 24; hora++) {
+                    for (let minuto = 0; minuto < 60; minuto += 30) {
+                        const horaStr = hora.toString().padStart(2, '0');
+                        const minutoStr = minuto.toString().padStart(2, '0');
+                        const valor = `${horaStr}:${minutoStr}`;
+                        const texto = `${horaStr}:${minutoStr}`;
+                        
+                        horaInicioSelect.innerHTML += `<option value="${valor}">${texto}</option>`;
+                        horaFinSelect.innerHTML += `<option value="${valor}">${texto}</option>`;
+                    }
+                }
+                // Agregar 00:00 como opción final para hora fin (representa el final del día)
+                horaFinSelect.innerHTML += `<option value="00:00">00:00 (fin del día)</option>`;
+            } else {
+                // Generar opciones para horario laboral de salas
+                // Verificar si es el comedor
+                const recursoSelect = document.getElementById('recurso');
+                const selectedOption = recursoSelect.options[recursoSelect.selectedIndex];
+                const esComedor = selectedOption && selectedOption.textContent.toLowerCase().includes('comedor');
+                
+                if (esComedor) {
+                    // Horarios especiales para el comedor
+                    // Hora inicio: 7:00-11:30 y 14:30-15:30
+                    const horariosInicioComedor = [
+                        '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+                        '14:30', '15:00', '15:30'
+                    ];
+                    
+                    // Hora fin: 7:30-12:00 y 15:00-16:00
+                    const horariosFinComedor = [
+                        '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00',
+                        '15:00', '15:30', '16:00'
+                    ];
+                    
+                    horariosInicioComedor.forEach(horario => {
+                        horaInicioSelect.innerHTML += `<option value="${horario}">${horario}</option>`;
+                    });
+                    
+                    horariosFinComedor.forEach(horario => {
+                        horaFinSelect.innerHTML += `<option value="${horario}">${horario}</option>`;
+                    });
+                } else {
+                    // Horarios normales para otras salas
+                    // Hora inicio: 7:00-15:30
+                    for (let hora = 7; hora <= 15; hora++) {
+                        for (let minuto = 0; minuto < 60; minuto += 30) {
+                            if (hora === 15 && minuto > 30) break; // No pasar de 15:30
+                            
+                            const horaStr = hora.toString().padStart(2, '0');
+                            const minutoStr = minuto.toString().padStart(2, '0');
+                            const valor = `${horaStr}:${minutoStr}`;
+                            const texto = `${horaStr}:${minutoStr}`;
+                            
+                            horaInicioSelect.innerHTML += `<option value="${valor}">${texto}</option>`;
+                        }
+                    }
+                    
+                    // Hora fin: 7:30-16:00
+                    for (let hora = 7; hora <= 16; hora++) {
+                        for (let minuto = 0; minuto < 60; minuto += 30) {
+                            if (hora === 7 && minuto === 0) continue; // Saltar 7:00 para hora fin
+                            if (hora === 16 && minuto > 0) break; // No pasar de 16:00
+                            
+                            const horaStr = hora.toString().padStart(2, '0');
+                            const minutoStr = minuto.toString().padStart(2, '0');
+                            const valor = `${horaStr}:${minutoStr}`;
+                            const texto = `${horaStr}:${minutoStr}`;
+                            
+                            horaFinSelect.innerHTML += `<option value="${valor}">${texto}</option>`;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Event listener para cambio de recurso
+        recursoSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const tipo = selectedOption.getAttribute('data-tipo');
+            
+            if (tipo) {
+                adaptarModalParaTipoRecurso(tipo);
+                
+                // Actualizar información del recurso seleccionado
+                const recursoName = selectedOption.textContent;
+                const salaSelectedInfo = document.getElementById('salaSelectedInfo');
+                const salaSelectedName = document.getElementById('salaSelectedName');
+                const salaSelectedCapacity = document.getElementById('salaSelectedCapacity');
+                
+                if (tipo === 'vehiculo') {
+                    // Extraer capacidad para vehículo
+                    const match = recursoName.match(/\((\d+) pasajeros\)/);
+                    if (match) {
+                        recursoSelectedCapacity.innerHTML = `Capacidad: <span id="salaSelectedCapacity">${match[1]}</span> pasajeros`;
+                    }
+                } else {
+                    // Extraer capacidad para sala
+                    const match = recursoName.match(/\((\d+) personas\)/);
+                    if (match) {
+                        recursoSelectedCapacity.innerHTML = `Capacidad: <span id="salaSelectedCapacity">${match[1]}</span> personas`;
+                    }
+                }
+                
+                salaSelectedName.textContent = recursoName;
+                salaSelectedInfo.style.display = 'block';
+            } else {
+                // Limpiar campos si no hay selección
+                document.getElementById('salaSelectedInfo').style.display = 'none';
+                adaptarModalParaTipoRecurso('sala'); // Volver a configuración por defecto
+            }
+        });
+        
+        // Configurar modal al abrir
+        document.getElementById('abrirModalCrearReserva').addEventListener('click', function() {
+            // Limpiar formulario
+            document.getElementById('formCrearReserva').reset();
+            document.getElementById('salaSelectedInfo').style.display = 'none';
+            
+            // Configurar por defecto para sala
+            adaptarModalParaTipoRecurso('sala');
+        });
+        
+        // Configurar selector superior
+        const salaFilter = document.getElementById('salaFilter');
+        const selectorIcon = document.getElementById('selectorIcon');
+        const selectorTitle = document.getElementById('selectorTitle');
+        const filterIcon = document.getElementById('filterIcon');
+        const filterLabel = document.getElementById('filterLabel');
+        const salaTitulo = document.getElementById('salaTitulo');
+        
+        function adaptarSelectorParaTipoRecurso(tipo) {
+            if (tipo === 'vehiculo') {
+                selectorIcon.className = 'fas fa-car me-2';
+                selectorTitle.textContent = 'Seleccionar Vehículo';
+                filterIcon.className = 'fas fa-car me-2';
+                filterLabel.textContent = 'Vehículo';
+                salaTitulo.textContent = 'Calendario de vehículo';
+            } else {
+                selectorIcon.className = 'fas fa-door-open me-2';
+                selectorTitle.textContent = 'Seleccionar Sala de Reunión';
+                filterIcon.className = 'fas fa-building me-2';
+                filterLabel.textContent = 'Sala de reunión';
+                salaTitulo.textContent = 'Calendario de sala';
+            }
+        }
+        
+        // Event listener para el selector superior
+        salaFilter.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const tipo = selectedOption.getAttribute('data-tipo');
+            
+            if (tipo) {
+                adaptarSelectorParaTipoRecurso(tipo);
+                adaptarHorariosCalendario(tipo);
+            } else {
+                adaptarSelectorParaTipoRecurso('sala');
+                adaptarHorariosCalendario('sala');
+            }
+        });
+        
+        // Función para adaptar horarios del calendario según el tipo de recurso
+        function adaptarHorariosCalendario(tipo) {
+            // Verificar si el calendario está disponible
+            if (typeof CalendarioApp !== 'undefined' && CalendarioApp.Calendar && CalendarioApp.Calendar.calendar) {
+                const calendar = CalendarioApp.Calendar.calendar;
+                
+                if (tipo === 'vehiculo') {
+                    // Configurar horarios 24/7 para vehículos (incluyendo 00:00 del día siguiente)
+                    calendar.setOption('slotMinTime', '00:00:00');
+                    calendar.setOption('slotMaxTime', '24:00:00');
+                    calendar.setOption('views', {
+                        timeGridDay: {
+                            slotMinTime: '00:00:00',
+                            slotMaxTime: '24:00:00',
+                            slotDuration: '01:00:00'
+                        },
+                        timeGridWeek: {
+                            slotMinTime: '00:00:00',
+                            slotMaxTime: '24:00:00',
+                            slotDuration: '01:00:00'
+                        },
+                        dayGridMonth: {
+                            dayMaxEvents: 3
+                        }
+                    });
+                    console.log('Horarios configurados para vehículo: 24/7 (hasta 00:00 del día siguiente)');
+                } else {
+                    // Configurar horarios laborales para salas
+                    calendar.setOption('slotMinTime', '07:00:00');
+                    calendar.setOption('slotMaxTime', '16:00:00');
+                    calendar.setOption('views', {
+                        timeGridDay: {
+                            slotMinTime: '07:00:00',
+                            slotMaxTime: '16:00:00',
+                            slotDuration: '00:30:00'
+                        },
+                        timeGridWeek: {
+                            slotMinTime: '07:00:00',
+                            slotMaxTime: '16:00:00',
+                            slotDuration: '00:30:00'
+                        },
+                        dayGridMonth: {
+                            dayMaxEvents: 3
+                        }
+                    });
+                    console.log('Horarios configurados para sala: 07:00-16:00');
+                }
+                
+                // Refrescar el calendario para aplicar los cambios
+                calendar.render();
+            }
+        }
+        
+        // Configurar al cargar la página
+        const initialOption = salaFilter.options[salaFilter.selectedIndex];
+        const initialTipo = initialOption.getAttribute('data-tipo');
+        if (initialTipo) {
+            adaptarSelectorParaTipoRecurso(initialTipo);
+            // Esperar a que el calendario esté inicializado antes de configurar horarios
+            setTimeout(() => {
+                adaptarHorariosCalendario(initialTipo);
+            }, 1000);
+        }
     });
 </script>
 {% endblock %}
