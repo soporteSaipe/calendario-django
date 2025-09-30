@@ -7,7 +7,6 @@ class DarkModeManager {
     constructor() {
         this.themeKey = 'calendario-theme';
         this.themeToggle = null;
-        this.themeIndicator = null;
         
         this.init();
     }
@@ -15,7 +14,6 @@ class DarkModeManager {
     init() {
         // Crear elementos del toggle si no existen
         this.createThemeToggle();
-        this.createThemeIndicator();
         
         // Aplicar tema inicial
         this.applyInitialTheme();
@@ -26,7 +24,7 @@ class DarkModeManager {
         // Detectar cambios en preferencias del sistema
         this.setupSystemThemeDetection();
         
-        console.log('🌙 Dark Mode Manager inicializado');
+        console.log('Dark Mode Manager inicializado');
     }
     
     createThemeToggle() {
@@ -49,26 +47,17 @@ class DarkModeManager {
             this.themeToggle.appendChild(sunIcon);
             this.themeToggle.appendChild(moonIcon);
             
-            // Insertar en la navbar
-            const navbar = document.querySelector('.navbar-nav');
-            if (navbar) {
+            // Insertar en la navbar de la derecha (junto al dropdown del usuario)
+            const navbarRight = document.querySelector('.navbar-nav:last-child');
+            if (navbarRight) {
                 const li = document.createElement('li');
                 li.className = 'nav-item';
                 li.appendChild(this.themeToggle);
-                navbar.appendChild(li);
+                navbarRight.appendChild(li);
             }
         }
     }
     
-    createThemeIndicator() {
-        // Crear indicador visual del tema activo
-        this.themeIndicator = document.createElement('div');
-        this.themeIndicator.className = 'theme-indicator';
-        this.themeIndicator.setAttribute('aria-hidden', 'true');
-        
-        // Agregar al body
-        document.body.appendChild(this.themeIndicator);
-    }
     
     applyInitialTheme() {
         const savedTheme = localStorage.getItem(this.themeKey);
@@ -85,7 +74,6 @@ class DarkModeManager {
         }
         
         this.setTheme(theme);
-        this.updateIndicator();
     }
     
     setTheme(theme) {
@@ -103,7 +91,7 @@ class DarkModeManager {
             detail: { theme: theme }
         }));
         
-        console.log(`🎨 Tema cambiado a: ${theme}`);
+        console.log(`Tema cambiado a: ${theme}`);
     }
     
     updateToggle(theme) {
@@ -117,13 +105,6 @@ class DarkModeManager {
         }
     }
     
-    updateIndicator() {
-        if (this.themeIndicator) {
-            const currentTheme = this.getCurrentTheme();
-            const icon = currentTheme === 'dark' ? '🌙' : '☀️';
-            this.themeIndicator.textContent = icon;
-        }
-    }
     
     getCurrentTheme() {
         return document.documentElement.getAttribute('data-theme') || 'light';
@@ -133,7 +114,6 @@ class DarkModeManager {
         const currentTheme = this.getCurrentTheme();
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         this.setTheme(newTheme);
-        this.updateIndicator();
         
         // Animación de feedback removida - no más transformaciones
     }
@@ -156,12 +136,6 @@ class DarkModeManager {
             });
         }
         
-        // Indicador click para toggle rápido
-        if (this.themeIndicator) {
-            this.themeIndicator.addEventListener('click', () => {
-                this.toggleTheme();
-            });
-        }
     }
     
     setupSystemThemeDetection() {
@@ -174,8 +148,7 @@ class DarkModeManager {
             if (!savedTheme) {
                 const newTheme = e.matches ? 'dark' : 'light';
                 this.setTheme(newTheme);
-                this.updateIndicator();
-                console.log('🔄 Tema del sistema cambiado, aplicando:', newTheme);
+                console.log('Tema del sistema cambiado, aplicando:', newTheme);
             }
         });
     }
@@ -183,18 +156,16 @@ class DarkModeManager {
     // Métodos públicos para control externo
     setLightMode() {
         this.setTheme('light');
-        this.updateIndicator();
     }
     
     setDarkMode() {
         this.setTheme('dark');
-        this.updateIndicator();
     }
     
     resetToSystem() {
         localStorage.removeItem(this.themeKey);
         this.applyInitialTheme();
-        console.log('🔄 Tema reseteado a preferencias del sistema');
+        console.log('Tema reseteado a preferencias del sistema');
     }
     
     getThemeInfo() {
@@ -202,8 +173,7 @@ class DarkModeManager {
             current: this.getCurrentTheme(),
             saved: localStorage.getItem(this.themeKey),
             systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
-            toggle: this.themeToggle ? 'created' : 'not found',
-            indicator: this.themeIndicator ? 'created' : 'not found'
+            toggle: this.themeToggle ? 'created' : 'not found'
         };
     }
 }
@@ -219,8 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.setDarkMode = () => window.darkModeManager.setDarkMode();
     window.resetTheme = () => window.darkModeManager.resetToSystem();
     
-    console.log('🌙 Dark Mode Manager cargado');
-    console.log('📊 Info del tema:', window.darkModeManager.getThemeInfo());
+    console.log('Dark Mode Manager cargado');
+    console.log('Info del tema:', window.darkModeManager.getThemeInfo());
 });
 
 // Exportar para uso en módulos

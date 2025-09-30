@@ -296,8 +296,15 @@ class DateTimeService:
         try:
             import pytz
             
+            # Validar que los parámetros no estén vacíos
+            if not fecha_str or not fecha_str.strip():
+                raise ValueError("La fecha no puede estar vacía")
+            
+            if not hora_str or not hora_str.strip():
+                raise ValueError("La hora no puede estar vacía")
+            
             # Crear datetime naive
-            fecha_inicio_naive = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
+            fecha_inicio_naive = datetime.strptime(f"{fecha_str.strip()} {hora_str.strip()}", "%Y-%m-%d %H:%M")
             
             # Localizar en zona horaria configurada
             timezone_tz = pytz.timezone(TimezoneConfig.DEFAULT_TIMEZONE)
@@ -306,7 +313,7 @@ class DateTimeService:
             return fecha_inicio
             
         except ValueError as e:
-            logger.error(f'❌ DateTimeService - Error parseando fecha: {str(e)}')
+            logger.error(f'DateTimeService - Error parseando fecha: {str(e)}')
             raise ValidationError(f'Error en el formato de fecha: {str(e)}')
 
 

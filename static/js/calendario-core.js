@@ -648,7 +648,7 @@ CalendarioApp.Core = {
 
   // Inicialización
   init: function() {
-    console.log('🚀 CalendarioApp.Core inicializado v' + this.config.version);
+    console.log('CalendarioApp.Core inicializado v' + this.config.version);
     
     // Aplicar colores dinámicos
     this.ColorUtils.applyDynamicColors();

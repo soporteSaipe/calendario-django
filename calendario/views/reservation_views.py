@@ -80,19 +80,44 @@ def crear_reserva(request):
                 messages.error(request, error_msg)
                 return redirect('calendario:calendario')
             
+            # Validar que los campos de fecha y hora no estén vacíos
+            if not fecha or not fecha.strip():
+                error_msg = "La fecha es requerida"
+                logger.warning(f'Fecha vacía en reserva: usuario={request.user.username}')
+                if is_ajax:
+                    return HTTP.bad_request(message=error_msg, request=request)
+                messages.error(request, error_msg)
+                return redirect('calendario:calendario')
+            
+            if not hora_inicio or not hora_inicio.strip():
+                error_msg = "La hora de inicio es requerida"
+                logger.warning(f'Hora inicio vacía en reserva: usuario={request.user.username}')
+                if is_ajax:
+                    return HTTP.bad_request(message=error_msg, request=request)
+                messages.error(request, error_msg)
+                return redirect('calendario:calendario')
+            
+            if not hora_fin or not hora_fin.strip():
+                error_msg = "La hora de fin es requerida"
+                logger.warning(f'Hora fin vacía en reserva: usuario={request.user.username}')
+                if is_ajax:
+                    return HTTP.bad_request(message=error_msg, request=request)
+                messages.error(request, error_msg)
+                return redirect('calendario:calendario')
+            
             # Crear fechas usando el servicio
             try:
                 fecha_inicio = DateTimeService.parse_datetime_from_form(fecha, hora_inicio)
                 
-                # Para vehículos, usar fecha_vuelta si está disponible
-                if recurso.es_vehiculo() and fecha_vuelta:
+                # Para vehículos, usar fecha_vuelta si está disponible y no está vacío
+                if recurso.es_vehiculo() and fecha_vuelta and fecha_vuelta.strip():
                     fecha_fin = DateTimeService.parse_datetime_from_form(fecha_vuelta, hora_fin)
                 else:
                     # Para salas o vehículos sin fecha_vuelta (compatibilidad)
                     fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
                 
             except Exception as e:
-                logger.error(f'❌ Vista - Error parseando fechas: {str(e)}')
+                logger.error(f'Error parseando fechas: {str(e)}')
                 if is_ajax:
                     return HTTP.bad_request(
                         message=str(e),
@@ -103,6 +128,8 @@ def crear_reserva(request):
                 return redirect('calendario:calendario')
             
             # Usar el servicio para crear la reserva
+            fecha_vuelta_final = fecha_vuelta if fecha_vuelta and fecha_vuelta.strip() else None
+            
             reserva = ReservaService.crear_reserva(
                 usuario=request.user,
                 recurso=recurso,
@@ -112,7 +139,7 @@ def crear_reserva(request):
                 fecha_fin=fecha_fin,
                 responsable=responsable,
                 destino=destino,
-                fecha_vuelta=fecha_vuelta
+                fecha_vuelta=fecha_vuelta_final
             )
             
             success_msg = SuccessMessages.RESERVA_CREATED.format(recurso=recurso.nombre)

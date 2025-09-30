@@ -180,12 +180,16 @@ class Reserva(models.Model):
         
         # Para vehículos, usar fecha_vuelta para validación
         if self.recurso and self.recurso.es_vehiculo():
-            if self.fecha_vuelta:
+            if self.fecha_vuelta and str(self.fecha_vuelta).strip():
                 # Si hay fecha_vuelta, debe ser posterior o igual a fecha_inicio
                 # Convertir fecha_vuelta a date si es string
                 if isinstance(self.fecha_vuelta, str):
                     from datetime import datetime
-                    fecha_vuelta_date = datetime.strptime(self.fecha_vuelta, "%Y-%m-%d").date()
+                    fecha_vuelta_str = self.fecha_vuelta.strip()
+                    if fecha_vuelta_str:  # Verificar que no esté vacío después del strip
+                        fecha_vuelta_date = datetime.strptime(fecha_vuelta_str, "%Y-%m-%d").date()
+                    else:
+                        return  # Si está vacío, no validar
                 else:
                     fecha_vuelta_date = self.fecha_vuelta
                 

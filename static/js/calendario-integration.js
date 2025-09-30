@@ -37,7 +37,7 @@ CalendarioApp.Integration = {
     // Marcar como inicializado
     this.isInitialized = true;
     
-    CalendarioApp.Core.Logger.debug('✅ Integración completada');
+    CalendarioApp.Core.Logger.debug('Integración completada');
     this.logIntegrationStatus();
   },
 
@@ -71,7 +71,7 @@ CalendarioApp.Integration = {
       }
     });
 
-    CalendarioApp.Core.Logger.debug('✅ Todas las dependencias están disponibles');
+    CalendarioApp.Core.Logger.debug('Todas las dependencias están disponibles');
   },
 
   /**
@@ -425,7 +425,7 @@ CalendarioApp.Integration = {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     CalendarioApp.StateManager.actions.setTheme(currentTheme);
 
-    CalendarioApp.Core.Logger.debug('🔄 Funcionalidades existentes migradas');
+    CalendarioApp.Core.Logger.debug('Funcionalidades existentes migradas');
   },
 
   /**
@@ -514,7 +514,7 @@ CalendarioApp.Integration = {
    * Log del estado de integración
    */
   logIntegrationStatus: function() {
-    CalendarioApp.Core.Logger.debug('📊 Estado de integración:', this.getIntegrationStatus());
+    CalendarioApp.Core.Logger.debug('Estado de integración:', this.getIntegrationStatus());
   },
 
   /**
