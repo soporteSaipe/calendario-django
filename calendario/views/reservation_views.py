@@ -36,7 +36,7 @@ logger = logging.getLogger('calendario')
 
 @login_required
 @rate_limit(requests_per_minute=RateLimitConfig.CREATE_RESERVA)
-@validate_request_data(['recurso', 'titulo', 'fecha', 'hora_inicio', 'hora_fin'])
+@validate_request_data(['recurso', 'fecha', 'hora_inicio', 'hora_fin'])
 @log_view_access
 def crear_reserva(request):
     """
@@ -60,6 +60,7 @@ def crear_reserva(request):
             fecha = request.POST.get('fecha')
             hora_inicio = request.POST.get('hora_inicio')
             hora_fin = request.POST.get('hora_fin')
+            fecha_vuelta = request.POST.get('fecha_vuelta')
             
             logger.info(f'Creando reserva: usuario={request.user.username}, recurso={recurso_id}, fecha={fecha}')
             
@@ -82,9 +83,16 @@ def crear_reserva(request):
             # Crear fechas usando el servicio
             try:
                 fecha_inicio = DateTimeService.parse_datetime_from_form(fecha, hora_inicio)
-                fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
+                
+                # Para vehículos, usar fecha_vuelta si está disponible
+                if recurso.es_vehiculo() and fecha_vuelta:
+                    fecha_fin = DateTimeService.parse_datetime_from_form(fecha_vuelta, hora_fin)
+                else:
+                    # Para salas o vehículos sin fecha_vuelta (compatibilidad)
+                    fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
+                
             except Exception as e:
-                logger.error(f'Error parseando fechas: {str(e)}')
+                logger.error(f'❌ Vista - Error parseando fechas: {str(e)}')
                 if is_ajax:
                     return HTTP.bad_request(
                         message=str(e),
@@ -103,7 +111,8 @@ def crear_reserva(request):
                 fecha_inicio=fecha_inicio,
                 fecha_fin=fecha_fin,
                 responsable=responsable,
-                destino=destino
+                destino=destino,
+                fecha_vuelta=fecha_vuelta
             )
             
             success_msg = SuccessMessages.RESERVA_CREATED.format(recurso=recurso.nombre)

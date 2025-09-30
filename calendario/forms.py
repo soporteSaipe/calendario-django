@@ -5,7 +5,7 @@ from .models import Recurso, Reserva
 class ReservaForm(forms.ModelForm):
     class Meta:
         model = Reserva
-        fields = ['recurso', 'titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'responsable', 'destino']
+        fields = ['recurso', 'titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'fecha_vuelta', 'responsable', 'destino']
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'class': 'form-control-modern',
@@ -32,6 +32,11 @@ class ReservaForm(forms.ModelForm):
                 'min': '07:00',
                 'max': '16:00',
                 'data-validation': 'datetime'
+            }),
+            'fecha_vuelta': forms.DateInput(attrs={
+                'class': 'form-control-modern',
+                'type': 'date',
+                'data-validation': 'date'
             }),
             'recurso': forms.Select(attrs={
                 'class': 'form-control-modern',
@@ -85,22 +90,29 @@ class ReservaForm(forms.ModelForm):
     def _configure_fields_for_resource_type(self, recurso):
         """Configurar campos según el tipo de recurso"""
         if recurso and recurso.es_vehiculo():
-            # Para vehículos: hacer obligatorios responsable y destino
+            # Para vehículos: hacer obligatorios responsable, destino y fecha_vuelta
             self.fields['responsable'].required = True
             self.fields['destino'].required = True
+            self.fields['fecha_vuelta'].required = True
             self.fields['titulo'].required = False
             self.fields['titulo'].widget.attrs['placeholder'] = 'Título opcional'
+            # Ocultar fecha_fin para vehículos ya que usamos fecha_vuelta
+            self.fields['fecha_fin'].widget = forms.HiddenInput()
         else:
-            # Para salas: hacer obligatorio título
+            # Para salas: hacer obligatorio título, ocultar campos de vehículo
             self.fields['titulo'].required = True
             self.fields['responsable'].required = False
             self.fields['destino'].required = False
+            self.fields['fecha_vuelta'].required = False
             self.fields['titulo'].widget.attrs['placeholder'] = 'Título de la reserva'
+            # Ocultar fecha_vuelta para salas
+            self.fields['fecha_vuelta'].widget = forms.HiddenInput()
     
     def clean(self):
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_fin = cleaned_data.get('fecha_fin')
+        fecha_vuelta = cleaned_data.get('fecha_vuelta')
         recurso = cleaned_data.get('recurso')
         responsable = cleaned_data.get('responsable')
         destino = cleaned_data.get('destino')
@@ -108,8 +120,18 @@ class ReservaForm(forms.ModelForm):
         
         # Validar fechas
         if fecha_inicio and fecha_fin:
-            if fecha_fin <= fecha_inicio:
-                raise forms.ValidationError("La fecha de fin debe ser posterior a la fecha de inicio.")
+            # Para vehículos, usar fecha_vuelta para validación
+            if recurso and recurso.es_vehiculo():
+                if fecha_vuelta:
+                    # Si hay fecha_vuelta, debe ser posterior o igual a fecha_inicio
+                    from datetime import datetime
+                    fecha_vuelta_date = datetime.strptime(fecha_vuelta, "%Y-%m-%d").date()
+                    if fecha_vuelta_date < fecha_inicio.date():
+                        raise forms.ValidationError("La fecha de vuelta debe ser posterior o igual a la fecha de salida.")
+            else:
+                # Para salas, validar que fecha fin sea posterior a fecha inicio
+                if fecha_fin <= fecha_inicio:
+                    raise forms.ValidationError("La fecha de fin debe ser posterior a la fecha de inicio.")
             
             # Verificar conflictos de horarios solo si hay recurso
             if recurso:

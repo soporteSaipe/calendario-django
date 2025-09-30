@@ -46,7 +46,7 @@ class ReservaService:
             raise HorarioTrabajoError(f'Las reservas solo pueden realizarse hasta las {BusinessRules.MAX_HOUR:02d}:00')
     
     @staticmethod
-    def validar_fechas(fecha_inicio: datetime, fecha_fin: datetime) -> None:
+    def validar_fechas(fecha_inicio: datetime, fecha_fin: datetime, recurso=None) -> None:
         """
         Validar fechas de reserva
         """
@@ -62,8 +62,16 @@ class ReservaService:
             raise FechaInvalidaError(f'Las reservas solo pueden realizarse hasta {BusinessRules.MAX_FUTURE_DAYS} días en el futuro')
         
         # Verificar que fecha_fin sea posterior a fecha_inicio
-        if fecha_fin <= fecha_inicio:
-            raise FechaInvalidaError('La fecha de fin debe ser posterior a la fecha de inicio')
+        # Para vehículos, permitir reservas que crucen medianoche
+        if recurso and recurso.es_vehiculo():
+            # Para vehículos, permitir fechas iguales (cruzan medianoche)
+            if fecha_fin == fecha_inicio:
+                # No bloquear aquí, permitir que continúe
+                pass
+        else:
+            # Para salas, validar que fecha fin sea posterior a fecha inicio
+            if fecha_fin <= fecha_inicio:
+                raise FechaInvalidaError('La fecha de fin debe ser posterior a la fecha de inicio')
     
     @staticmethod
     def validar_conflictos_reserva(recurso: Recurso, fecha_inicio: datetime, 
@@ -110,11 +118,12 @@ class ReservaService:
         """
         logger.info(f'Iniciando validación de reserva para {recurso.nombre} desde {fecha_inicio} hasta {fecha_fin}')
         
-        # Validar fechas básicas
-        ReservaService.validar_fechas(fecha_inicio, fecha_fin)
+        # Validar fechas básicas (con lógica específica para vehículos)
+        ReservaService.validar_fechas(fecha_inicio, fecha_fin, recurso)
         
-        # Validar horarios de trabajo
-        ReservaService.validar_horarios_trabajo(fecha_inicio, fecha_fin)
+        # Validar horarios de trabajo solo para salas (no para vehículos)
+        if not recurso.es_vehiculo():
+            ReservaService.validar_horarios_trabajo(fecha_inicio, fecha_fin)
         
         # Validar conflictos con otras reservas
         ReservaService.validar_conflictos_reserva(recurso, fecha_inicio, fecha_fin, reserva_excluir)
@@ -127,7 +136,7 @@ class ReservaService:
     @staticmethod
     def crear_reserva(usuario, recurso: Recurso, titulo: str, descripcion: str,
                      fecha_inicio: datetime, fecha_fin: datetime, 
-                     responsable: str = '', destino: str = '') -> Reserva:
+                     responsable: str = '', destino: str = '', fecha_vuelta=None) -> Reserva:
         """
         Crear una nueva reserva con validación completa
         """
@@ -147,6 +156,7 @@ class ReservaService:
                 fecha_fin=fecha_fin,
                 responsable=responsable,
                 destino=destino,
+                fecha_vuelta=fecha_vuelta,
                 estado='confirmada'
             )
             
@@ -293,12 +303,10 @@ class DateTimeService:
             timezone_tz = pytz.timezone(TimezoneConfig.DEFAULT_TIMEZONE)
             fecha_inicio = timezone_tz.localize(fecha_inicio_naive)
             
-            logger.debug(f'Fecha parseada: {fecha_inicio} (UTC: {fecha_inicio.astimezone(pytz.UTC)})')
-            
             return fecha_inicio
             
         except ValueError as e:
-            logger.error(f'Error parseando fecha: {str(e)}')
+            logger.error(f'❌ DateTimeService - Error parseando fecha: {str(e)}')
             raise ValidationError(f'Error en el formato de fecha: {str(e)}')
 
 

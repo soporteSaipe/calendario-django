@@ -123,13 +123,13 @@ CalendarioApp.Calendar = {
       headerToolbar: false, // Deshabilitamos el header del calendario para usar nuestros controles
       views: {
         timeGridDay: {
-          slotMinTime: '07:00:00',
-          slotMaxTime: '16:00:00',
+          slotMinTime: '00:00:00',
+          slotMaxTime: '24:00:00',
           slotDuration: '00:30:00'
         },
         timeGridWeek: {
-          slotMinTime: '07:00:00',
-          slotMaxTime: '16:00:00',
+          slotMinTime: '00:00:00',
+          slotMaxTime: '24:00:00',
           slotDuration: '00:30:00'
         },
         dayGridMonth: {
@@ -454,7 +454,11 @@ CalendarioApp.Calendar = {
       recursoSelect.addEventListener('change', () => {
         this.updateSalaSelectedInfo();
         this.updateTimeOptionsForSala();
+        this.updateFieldsForResourceType();
       });
+      
+      // Configurar campos por defecto al cargar
+      this.updateFieldsForResourceType();
     }
     
     // Configurar fecha mínima
@@ -497,6 +501,120 @@ CalendarioApp.Calendar = {
       salaSelectedInfo.style.display = 'none';
     }
   },
+
+  updateFieldsForResourceType: function() {
+    const recursoSelect = document.getElementById('recurso');
+    if (!recursoSelect || !recursoSelect.value) {
+      // Si no hay recurso seleccionado, mostrar campos por defecto (salas)
+      this.showSalaFields();
+      return;
+    }
+
+    const selectedOption = recursoSelect.options[recursoSelect.selectedIndex];
+    const tipoRecurso = selectedOption ? selectedOption.getAttribute('data-tipo') : null;
+    
+    if (tipoRecurso === 'vehiculo') {
+      this.showVehiculoFields();
+    } else {
+      this.showSalaFields();
+    }
+  },
+
+  showVehiculoFields: function() {
+    // Ocultar campo título
+    const tituloField = document.getElementById('tituloField');
+    const tituloInput = document.getElementById('titulo');
+    if (tituloField) {
+      tituloField.style.display = 'none';
+    }
+    if (tituloInput) {
+      tituloInput.required = false;
+    }
+
+    // Mostrar campos de vehículo
+    const responsableField = document.getElementById('responsableField');
+    const destinoField = document.getElementById('destinoField');
+    const fechaVueltaRow = document.getElementById('fechaVueltaRow');
+    const responsableInput = document.getElementById('responsable');
+    const destinoInput = document.getElementById('destino');
+    const fechaVueltaInput = document.getElementById('fecha_vuelta');
+    
+    if (responsableField) {
+      responsableField.style.display = 'block';
+    }
+    if (destinoField) {
+      destinoField.style.display = 'block';
+    }
+    if (fechaVueltaRow) {
+      fechaVueltaRow.style.display = 'block';
+    }
+    if (responsableInput) {
+      responsableInput.required = true;
+    }
+    if (destinoInput) {
+      destinoInput.required = true;
+    }
+    if (fechaVueltaInput) {
+      fechaVueltaInput.required = true;
+    }
+
+    // Actualizar etiquetas del modal
+    const modalTitle = document.getElementById('modalTitle');
+    const recursoLabel = document.getElementById('recursoLabel');
+    const recursoIcon = document.getElementById('recursoIcon');
+    
+    if (modalTitle) modalTitle.textContent = 'Crear Reserva de Vehículo';
+    if (recursoLabel) recursoLabel.textContent = 'Vehículo *';
+    if (recursoIcon) recursoIcon.className = 'fas fa-car me-2';
+  },
+
+  showSalaFields: function() {
+    // Mostrar campo título
+    const tituloField = document.getElementById('tituloField');
+    const tituloInput = document.getElementById('titulo');
+    if (tituloField) {
+      tituloField.style.display = 'block';
+    }
+    if (tituloInput) {
+      tituloInput.required = true;
+    }
+
+    // Ocultar campos de vehículo
+    const responsableField = document.getElementById('responsableField');
+    const destinoField = document.getElementById('destinoField');
+    const fechaVueltaRow = document.getElementById('fechaVueltaRow');
+    const responsableInput = document.getElementById('responsable');
+    const destinoInput = document.getElementById('destino');
+    const fechaVueltaInput = document.getElementById('fecha_vuelta');
+    
+    if (responsableField) {
+      responsableField.style.display = 'none';
+    }
+    if (destinoField) {
+      destinoField.style.display = 'none';
+    }
+    if (fechaVueltaRow) {
+      fechaVueltaRow.style.display = 'none';
+    }
+    if (responsableInput) {
+      responsableInput.required = false;
+    }
+    if (destinoInput) {
+      destinoInput.required = false;
+    }
+    if (fechaVueltaInput) {
+      fechaVueltaInput.required = false;
+    }
+
+    // Actualizar etiquetas del modal
+    const modalTitle = document.getElementById('modalTitle');
+    const recursoLabel = document.getElementById('recursoLabel');
+    const recursoIcon = document.getElementById('recursoIcon');
+    
+    if (modalTitle) modalTitle.textContent = 'Crear Nueva Reserva';
+    if (recursoLabel) recursoLabel.textContent = 'Sala *';
+    if (recursoIcon) recursoIcon.className = 'fas fa-door-open me-2';
+  },
   
   resetCrearModal: function() {
     // Resetear formulario
@@ -511,11 +629,8 @@ CalendarioApp.Calendar = {
       salaSelectedInfo.style.display = 'none';
     }
     
-    // Resetear título
-    const modalTitle = document.getElementById('reservaModalCrearLabel');
-    if (modalTitle) {
-      modalTitle.textContent = 'Crear Nueva Reserva';
-    }
+    // Resetear campos a estado por defecto (salas)
+    this.showSalaFields();
   },
   
   crearReserva: function() {
@@ -534,6 +649,7 @@ CalendarioApp.Calendar = {
     const fecha = form.querySelector('#fecha').value;
     const horaInicio = form.querySelector('#hora_inicio').value;
     const horaFin = form.querySelector('#hora_fin').value;
+    const fechaVuelta = form.querySelector('#fecha_vuelta').value;
     const responsable = form.querySelector('#responsable').value.trim();
     const destino = form.querySelector('#destino').value.trim();
     
@@ -552,15 +668,13 @@ CalendarioApp.Calendar = {
     
     // Validar campos específicos según el tipo de recurso
     if (tipoRecurso === 'vehiculo') {
-      // Para vehículos: responsable y destino son obligatorios, título es opcional
-      if (!responsable || !destino) {
+      if (!responsable || !destino || !fechaVuelta) {
         if (window.CalendarioApp?.ModalFactory) {
-          CalendarioApp.ModalFactory.utils.alert('Para vehículos, los campos Responsable y Destino son obligatorios', { type: 'error' });
+          CalendarioApp.ModalFactory.utils.alert('Para vehículos, los campos Responsable, Destino y Fecha de vuelta son obligatorios', { type: 'error' });
         }
         return;
       }
     } else {
-      // Para salas: título es obligatorio
       if (!titulo) {
         if (window.CalendarioApp?.ModalFactory) {
           CalendarioApp.ModalFactory.utils.alert('Para salas, el campo Título es obligatorio', { type: 'error' });
@@ -570,11 +684,26 @@ CalendarioApp.Calendar = {
     }
     
     // Validar que la hora de fin sea posterior a la de inicio
-    if (horaInicio >= horaFin) {
-      if (window.CalendarioApp?.ModalFactory) {
-        CalendarioApp.ModalFactory.utils.alert('La hora de fin debe ser posterior a la hora de inicio', { type: 'error' });
+    if (tipoRecurso === 'vehiculo') {
+      // Para vehículos, validar que fecha_vuelta sea posterior o igual a fecha
+      if (fechaVuelta) {
+        const fechaSalida = new Date(fecha);
+        const fechaVueltaDate = new Date(fechaVuelta);
+        if (fechaVueltaDate < fechaSalida) {
+          if (window.CalendarioApp?.ModalFactory) {
+            CalendarioApp.ModalFactory.utils.alert('La fecha de vuelta debe ser posterior o igual a la fecha de salida', { type: 'error' });
+          }
+          return;
+        }
       }
-      return;
+    } else {
+      // Para salas, validar que hora fin sea posterior a hora inicio
+      if (horaInicio >= horaFin) {
+        if (window.CalendarioApp?.ModalFactory) {
+          CalendarioApp.ModalFactory.utils.alert('La hora de fin debe ser posterior a la hora de inicio', { type: 'error' });
+        }
+        return;
+      }
     }
     
     // Validar conflictos de horarios
@@ -796,13 +925,26 @@ CalendarioApp.Calendar = {
     
     const salaSeleccionada = recursoSelect.value;
     const esComedor = this.isComedor(salaSeleccionada);
+    const esVehiculo = this.isVehiculo(salaSeleccionada);
     
     // Limpiar opciones actuales
     horaInicioSelect.innerHTML = '<option value="">Seleccionar hora</option>';
     horaFinSelect.innerHTML = '<option value="">Seleccionar hora</option>';
     
-    // Generar opciones de hora de inicio según la sala
-    if (esComedor) {
+    // Generar opciones de hora de inicio según el tipo de recurso
+    if (esVehiculo) {
+      // Vehículos: 24/7 (00:00 a 23:30)
+      for (let hora = 0; hora <= 23; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 30) {
+          const horaStr = hora.toString().padStart(2, '0');
+          const minutoStr = minuto.toString().padStart(2, '0');
+          const horaCompleta = `${horaStr}:${minutoStr}`;
+          
+          const option = new Option(horaCompleta, horaCompleta);
+          horaInicioSelect.add(option);
+        }
+      }
+    } else if (esComedor) {
       // Comedor: 7:00 a 11:30 y 14:30 a 15:30
       const horariosInicioComedor = [
         '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -825,6 +967,35 @@ CalendarioApp.Calendar = {
           
           const option = new Option(horaCompleta, horaCompleta);
           horaInicioSelect.add(option);
+        }
+      }
+    }
+    
+    // Generar opciones de hora de fin (siempre 24/7 para vehículos, horarios laborales para salas)
+    if (esVehiculo) {
+      // Para vehículos: 24/7
+      for (let hora = 0; hora <= 23; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 30) {
+          const horaStr = hora.toString().padStart(2, '0');
+          const minutoStr = minuto.toString().padStart(2, '0');
+          const horaCompleta = `${horaStr}:${minutoStr}`;
+          
+          const option = new Option(horaCompleta, horaCompleta);
+          horaFinSelect.add(option);
+        }
+      }
+    } else {
+      // Para salas: horarios laborales
+      for (let hora = 7; hora <= 16; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 30) {
+          if (hora === 16 && minuto > 0) break;
+          
+          const horaStr = hora.toString().padStart(2, '0');
+          const minutoStr = minuto.toString().padStart(2, '0');
+          const horaCompleta = `${horaStr}:${minutoStr}`;
+          
+          const option = new Option(horaCompleta, horaCompleta);
+          horaFinSelect.add(option);
         }
       }
     }

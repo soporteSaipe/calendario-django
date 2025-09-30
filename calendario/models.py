@@ -153,6 +153,7 @@ class Reserva(models.Model):
     # Campos específicos para vehículos
     responsable = models.CharField(max_length=200, blank=True, verbose_name="Responsable")
     destino = models.CharField(max_length=300, blank=True, verbose_name="Destino")
+    fecha_vuelta = models.DateField(null=True, blank=True, verbose_name="Fecha de vuelta")
     
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
@@ -174,8 +175,26 @@ class Reserva(models.Model):
     
     def clean(self):
         from django.core.exceptions import ValidationError
-        if self.fecha_fin <= self.fecha_inicio:
-            raise ValidationError("La fecha de fin debe ser posterior a la fecha de inicio")
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Para vehículos, usar fecha_vuelta para validación
+        if self.recurso and self.recurso.es_vehiculo():
+            if self.fecha_vuelta:
+                # Si hay fecha_vuelta, debe ser posterior o igual a fecha_inicio
+                # Convertir fecha_vuelta a date si es string
+                if isinstance(self.fecha_vuelta, str):
+                    from datetime import datetime
+                    fecha_vuelta_date = datetime.strptime(self.fecha_vuelta, "%Y-%m-%d").date()
+                else:
+                    fecha_vuelta_date = self.fecha_vuelta
+                
+                if fecha_vuelta_date < self.fecha_inicio.date():
+                    raise ValidationError("La fecha de vuelta debe ser posterior o igual a la fecha de salida")
+        else:
+            # Para salas, validar que fecha fin sea posterior a fecha inicio
+            if self.fecha_fin <= self.fecha_inicio:
+                raise ValidationError("La fecha de fin debe ser posterior a la fecha de inicio")
     
     def save(self, *args, **kwargs):
         self.clean()
