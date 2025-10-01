@@ -64,7 +64,7 @@ class PDFExportStrategy(ExportStrategy):
             # Crear buffer para el PDF
             buffer = BytesIO()
             
-            # Crear documento PDF con márgenes optimizados
+            # Crear documento PDF con márgenes
             doc = SimpleDocTemplate(
                 buffer, 
                 pagesize=A4, 
@@ -74,7 +74,7 @@ class PDFExportStrategy(ExportStrategy):
                 bottomMargin=40
             )
             
-            # Estilos mejorados
+            # Estilos
             styles = getSampleStyleSheet()
             title_style = ParagraphStyle(
                 'CustomTitle',

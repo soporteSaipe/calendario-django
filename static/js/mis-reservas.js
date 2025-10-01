@@ -7,6 +7,146 @@
 let modalEditarReserva = null;
 let formEditarReserva = null;
 
+/**
+ * Funciones auxiliares para reemplazar dependencias de CalendarioApp
+ */
+
+// Mostrar indicador de carga
+function showLoadingIndicator(message = 'Cargando...') {
+    // Crear overlay de carga si no existe
+    let loadingOverlay = document.getElementById('loading-overlay');
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'loading-overlay';
+        loadingOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+        `;
+        document.body.appendChild(loadingOverlay);
+    }
+    
+    loadingOverlay.innerHTML = `
+        <div style="text-align: center;">
+            <div style="
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #007bff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 15px;
+            "></div>
+            <div>${message}</div>
+        </div>
+    `;
+    loadingOverlay.style.display = 'flex';
+}
+
+// Ocultar indicador de carga
+function hideLoadingIndicator() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+}
+
+// Mostrar notificación
+function showNotification(message, type = 'info') {
+    // Crear contenedor de notificaciones si no existe
+    let notificationContainer = document.getElementById('notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notification-container';
+        notificationContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+        `;
+        document.body.appendChild(notificationContainer);
+    }
+    
+    // Crear notificación
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        font-weight: 500;
+        position: relative;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                margin-left: auto;
+                padding: 0;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">&times;</button>
+        </div>
+    `;
+    
+    notificationContainer.appendChild(notification);
+    
+    // Animar entrada
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// Agregar animación CSS para el spinner
+if (!document.getElementById('loading-styles')) {
+    const style = document.createElement('style');
+    style.id = 'loading-styles';
+    style.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar modal de edición
     initializeEditModal();
@@ -21,26 +161,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const reservaTitle = this.getAttribute('aria-label').replace('Eliminar reserva: ', '');
             
             // Crear modal de confirmación personalizado
-            const confirmModal = CalendarioApp.Accessibility.createConfirmModal(
-                'Confirmar eliminación',
-                `${confirmMessage}<br><br><strong>Reserva:</strong> ${reservaTitle}`,
-                'Eliminar',
-                'Cancelar'
-            );
-            
-            confirmModal.then(confirmed => {
-                if (confirmed) {
-                    // Mostrar indicador de carga
-                    if (window.CalendarioApp && window.CalendarioApp.Loading) {
-                        CalendarioApp.Loading.show('Eliminando reserva...', {
-                            spinner: 'pulse'
-                        });
-                    }
-                    
-                    // Realizar eliminación real
-                    eliminarReserva(this.href);
-                }
-            });
+            if (confirm(`${confirmMessage}\n\nReserva: ${reservaTitle}`)) {
+                // Mostrar indicador de carga
+                showLoadingIndicator('Eliminando reserva...');
+                
+                // Realizar eliminación real
+                eliminarReserva(this.href);
+            }
         });
     });
     
@@ -218,22 +345,18 @@ function guardarCambiosReserva() {
     }
     
     // Mostrar indicador de carga
-    if (window.CalendarioApp && window.CalendarioApp.Loading) {
-        CalendarioApp.Loading.show('Guardando cambios...', {
-            spinner: 'pulse'
-        });
-    }
+    showLoadingIndicator('Guardando cambios...');
     
     // Preparar datos del formulario
     const formData = new FormData(formEditarReserva);
     const reservaId = formData.get('reserva_id');
     
-    // Combinar fecha y hora para crear fecha_inicio y fecha_fin
+    // Obtener valores del formulario
     const fecha = formData.get('fecha');
     const horaInicio = formData.get('hora_inicio');
     const horaFin = formData.get('hora_fin');
     
-    // Crear fechas completas
+    // Crear fechas completas en formato ISO
     const fechaInicio = `${fecha}T${horaInicio}:00`;
     const fechaFin = `${fecha}T${horaFin}:00`;
     
@@ -241,10 +364,8 @@ function guardarCambiosReserva() {
     formData.set('fecha_inicio', fechaInicio);
     formData.set('fecha_fin', fechaFin);
     
-    // Remover campos separados que no necesita el formulario
-    formData.delete('fecha');
-    formData.delete('hora_inicio');
-    formData.delete('hora_fin');
+    // Mantener campos separados para compatibilidad con el backend
+    // El backend puede usar tanto los campos separados como los combinados
     
     // Configurar URL de edición usando la URL de Django
     const editUrl = `/calendario/editar/${reservaId}/`;
@@ -266,25 +387,33 @@ function guardarCambiosReserva() {
     })
     .then(response => {
         console.log('Respuesta del servidor:', response.status, response.statusText);
-        if (response.ok) {
-            return response.json();
+        
+        // Verificar si la respuesta es JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+                });
+            }
+        } else {
+            // Si no es JSON, manejar como error de servidor
+            if (response.ok) {
+                throw new Error('Respuesta del servidor no válida');
+            } else {
+                throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+            }
         }
-        throw new Error(`Error al guardar cambios: ${response.status} ${response.statusText}`);
     })
     .then(data => {
         console.log('Datos recibidos del servidor:', data);
         
-        if (window.CalendarioApp && window.CalendarioApp.Loading) {
-            CalendarioApp.Loading.hide();
-        }
+        hideLoadingIndicator();
         
         if (data.success) {
-            if (window.CalendarioApp && window.CalendarioApp.Notifications) {
-                CalendarioApp.Notifications.success(data.message || 'Reserva actualizada exitosamente', {
-                    title: 'Cambios guardados',
-                    duration: 3000
-                });
-            }
+            showNotification(data.message || 'Reserva actualizada exitosamente', 'success');
             
             // Cerrar modal y recargar página
             modalEditarReserva.hide();
@@ -296,17 +425,8 @@ function guardarCambiosReserva() {
         }
     })
     .catch(error => {
-        if (window.CalendarioApp && window.CalendarioApp.Loading) {
-            CalendarioApp.Loading.hide();
-        }
-        
-        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
-            CalendarioApp.Notifications.error('Error al guardar cambios: ' + error.message, {
-                title: 'Error',
-                duration: 5000
-            });
-        }
-        
+        hideLoadingIndicator();
+        showNotification('Error al guardar cambios: ' + error.message, 'error');
         console.error('Error al guardar reserva:', error);
     });
 }
@@ -321,33 +441,58 @@ function validarFormularioEdicion() {
     const horaInicio = document.getElementById('editHoraInicio').value;
     const horaFin = document.getElementById('editHoraFin').value;
     
+    const errores = [];
+    
     if (!titulo) {
-        mostrarError('El título es obligatorio');
-        return false;
+        errores.push('El título es obligatorio');
+    } else if (titulo.length < 3) {
+        errores.push('El título debe tener al menos 3 caracteres');
+    } else if (titulo.length > 100) {
+        errores.push('El título no puede exceder 100 caracteres');
     }
     
     if (!recurso) {
-        mostrarError('Debe seleccionar una sala');
-        return false;
+        errores.push('Debe seleccionar una sala');
     }
     
     if (!fecha) {
-        mostrarError('La fecha es obligatoria');
-        return false;
+        errores.push('La fecha es obligatoria');
+    } else {
+        // Validar que la fecha no sea anterior a hoy
+        const fechaSeleccionada = new Date(fecha);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        if (fechaSeleccionada < hoy) {
+            errores.push('No se puede editar una reserva con fecha anterior a hoy');
+        }
     }
     
     if (!horaInicio) {
-        mostrarError('La hora de inicio es obligatoria');
-        return false;
+        errores.push('La hora de inicio es obligatoria');
     }
     
     if (!horaFin) {
-        mostrarError('La hora de fin es obligatoria');
-        return false;
+        errores.push('La hora de fin es obligatoria');
     }
     
-    if (horaInicio >= horaFin) {
-        mostrarError('La hora de fin debe ser posterior a la hora de inicio');
+    if (horaInicio && horaFin) {
+        if (horaInicio >= horaFin) {
+            errores.push('La hora de fin debe ser posterior a la hora de inicio');
+        }
+        
+        // Validar que la diferencia mínima sea de 30 minutos
+        const inicio = new Date(`2000-01-01T${horaInicio}:00`);
+        const fin = new Date(`2000-01-01T${horaFin}:00`);
+        const diferencia = (fin - inicio) / (1000 * 60); // en minutos
+        
+        if (diferencia < 30) {
+            errores.push('La reserva debe durar al menos 30 minutos');
+        }
+    }
+    
+    if (errores.length > 0) {
+        mostrarError(errores.join('<br>'));
         return false;
     }
     
@@ -358,14 +503,7 @@ function validarFormularioEdicion() {
  * Mostrar error en el modal
  */
 function mostrarError(mensaje) {
-    if (window.CalendarioApp && window.CalendarioApp.Notifications) {
-        CalendarioApp.Notifications.error(mensaje, {
-            title: 'Error de validación',
-            duration: 4000
-        });
-    } else {
-        alert('Error: ' + mensaje);
-    }
+    showNotification(mensaje, 'error');
 }
 
 /**
@@ -524,22 +662,28 @@ function eliminarReserva(deleteUrl) {
         }
     })
     .then(response => {
-        if (response.ok) {
-            return response.json();
+        // Verificar si la respuesta es JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || `Error al eliminar la reserva: ${response.status}`);
+                });
+            }
+        } else {
+            if (response.ok) {
+                // Si no es JSON pero está OK, asumir éxito
+                return { success: true, message: 'Reserva eliminada exitosamente' };
+            } else {
+                throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+            }
         }
-        throw new Error('Error al eliminar la reserva');
     })
     .then(data => {
-        if (window.CalendarioApp && window.CalendarioApp.Loading) {
-            CalendarioApp.Loading.hide();
-        }
-        
-        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
-            CalendarioApp.Notifications.success('Reserva eliminada exitosamente', {
-                title: 'Eliminación exitosa',
-                duration: 3000
-            });
-        }
+        hideLoadingIndicator();
+        showNotification('Reserva eliminada exitosamente', 'success');
         
         // Recargar la página para mostrar los cambios
         setTimeout(() => {
@@ -547,17 +691,8 @@ function eliminarReserva(deleteUrl) {
         }, 1000);
     })
     .catch(error => {
-        if (window.CalendarioApp && window.CalendarioApp.Loading) {
-            CalendarioApp.Loading.hide();
-        }
-        
-        if (window.CalendarioApp && window.CalendarioApp.Notifications) {
-            CalendarioApp.Notifications.error('Error al eliminar la reserva: ' + error.message, {
-                title: 'Error',
-                duration: 5000
-            });
-        }
-        
+        hideLoadingIndicator();
+        showNotification('Error al eliminar la reserva: ' + error.message, 'error');
         console.error('Error al eliminar reserva:', error);
     });
 }

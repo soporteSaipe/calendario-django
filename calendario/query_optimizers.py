@@ -74,6 +74,18 @@ class ReservaQueryOptimizer:
         ).order_by('-fecha_inicio')
     
     @staticmethod
+    def get_todas_las_reservas_optimizadas() -> List[Reserva]:
+        """
+        Obtener TODAS las reservas del sistema (solo para staff/superusuarios)
+        
+        Returns:
+            QuerySet optimizado de todas las reservas
+        """
+        return Reserva.objects.select_related(
+            'recurso', 'usuario'
+        ).order_by('-fecha_inicio')
+    
+    @staticmethod
     def get_reservas_por_fecha(fecha: datetime, sala_id: Optional[int] = None) -> List[Reserva]:
         """
         Obtener reservas para una fecha específica

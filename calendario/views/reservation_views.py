@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse
 from django.core.paginator import Paginator
+from django.db import models
 
 from ..models import Recurso, Reserva
 from ..forms import ReservaForm
@@ -177,11 +178,37 @@ def mis_reservas(request):
     """
     Vista para mostrar las reservas del usuario
     
+    - Usuarios normales: Solo ven sus propias reservas
+    - Staff/Superusuarios: Ven TODAS las reservas del sistema
+    
     Incluye paginación y optimización de consultas para evitar N+1 queries.
+    Filtra reservas por estado y fecha para mostrar solo las relevantes.
     """
     
-    # Usar optimizador de consultas
-    reservas_query = ReservaQueryOptimizer.get_reservas_usuario_optimizadas(request.user)
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    # Determinar si el usuario es staff o superusuario
+    es_staff = request.user.is_staff or request.user.is_superuser
+    
+    if es_staff:
+        # Staff/Superusuarios ven TODAS las reservas
+        logger.info(f'Staff/Superusuario {request.user.username} accediendo a todas las reservas')
+        reservas_query = ReservaQueryOptimizer.get_todas_las_reservas_optimizadas()
+    else:
+        # Usuarios normales ven solo sus reservas
+        logger.info(f'Usuario normal {request.user.username} accediendo a sus reservas')
+        reservas_query = ReservaQueryOptimizer.get_reservas_usuario_optimizadas(request.user)
+    
+    # Obtener fecha de hace 30 días para mostrar reservas recientes
+    fecha_limite = timezone.now() - timedelta(days=30)
+    
+    # Filtrar reservas: activas, canceladas recientemente, o futuras
+    reservas_query = reservas_query.filter(
+        models.Q(estado='activa') | 
+        models.Q(estado='cancelada', fecha_inicio__gte=fecha_limite) |
+        models.Q(fecha_inicio__gte=timezone.now())
+    ).order_by('-fecha_inicio')
     
     # Paginación
     paginator = Paginator(reservas_query, PaginationConfig.RESERVAS_PER_PAGE)
@@ -206,7 +233,9 @@ def mis_reservas(request):
     context = {
         'reservas': reservas,
         'recursos': recursos,
-        'salas_json': salas_json
+        'salas_json': salas_json,
+        'es_staff': es_staff,
+        'usuario_actual': request.user
     }
     
     return render(request, 'calendario/mis_reservas.html', context)
@@ -234,8 +263,42 @@ def editar_reserva(request, reserva_id, reserva=None):
             # Extraer datos del formulario
             titulo = form.cleaned_data['titulo']
             descripcion = form.cleaned_data['descripcion']
-            fecha_inicio = form.cleaned_data['fecha_inicio']
-            fecha_fin = form.cleaned_data['fecha_fin']
+            
+            # Manejar fechas - puede venir como campos separados o combinados
+            if 'fecha_inicio' in form.cleaned_data and 'fecha_fin' in form.cleaned_data:
+                fecha_inicio = form.cleaned_data['fecha_inicio']
+                fecha_fin = form.cleaned_data['fecha_fin']
+            else:
+                # Si vienen como campos separados, combinarlos
+                fecha = request.POST.get('fecha')
+                hora_inicio = request.POST.get('hora_inicio')
+                hora_fin = request.POST.get('hora_fin')
+                
+                if fecha and hora_inicio and hora_fin:
+                    try:
+                        fecha_inicio = DateTimeService.parse_datetime_from_form(fecha, hora_inicio)
+                        fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
+                    except Exception as e:
+                        logger.error(f'Error parseando fechas en edición: {str(e)}')
+                        if is_ajax:
+                            return JsonResponse({
+                                'success': False,
+                                'message': 'Error en el formato de fechas.',
+                                'errors': {'fecha': ['Formato de fecha inválido']}
+                            }, status=400)
+                        else:
+                            messages.error(request, 'Error en el formato de fechas.')
+                            return redirect('calendario:mis_reservas')
+                else:
+                    if is_ajax:
+                        return JsonResponse({
+                            'success': False,
+                            'message': 'Fechas y horarios son requeridos.',
+                            'errors': {'fecha': ['Fechas y horarios son requeridos']}
+                        }, status=400)
+                    else:
+                        messages.error(request, 'Fechas y horarios son requeridos.')
+                        return redirect('calendario:mis_reservas')
             
             # Usar el servicio para actualizar la reserva
             reserva_actualizada = ReservaService.actualizar_reserva(
