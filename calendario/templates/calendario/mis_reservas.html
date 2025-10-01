@@ -32,6 +32,9 @@
                 <h4 class="mb-0">
                     {% if es_staff %}
                         <i class="fas fa-clipboard-list me-2 spring-icon"></i>Todas las Reservas del Sistema
+                        <small class="ms-2 text-light opacity-75">
+                            <i class="fas fa-user-shield me-1"></i>Vista Administrativa
+                        </small>
                     {% else %}
                         <i class="fas fa-clipboard-list me-2 spring-icon"></i>Mis Reservas de Salas
                     {% endif %}
@@ -56,7 +59,7 @@
                             </thead>
                             <tbody>
                                 {% for reserva in reservas %}
-                                <tr data-estado="{{ reserva.estado|default:'activa' }}">
+                                <tr data-estado="{{ reserva.estado|default:'confirmada' }}">
                                     <td>
                                         <strong>{{ reserva.titulo }}</strong>
                                         {% if reserva.descripcion %}
@@ -82,7 +85,7 @@
                                     <td>{{ reserva.fecha_inicio|date:"d/m/Y H:i" }}</td>
                                     <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
                                     <td>
-                                        {% if reserva.estado == 'activa' %}
+                                        {% if reserva.estado == 'confirmada' %}
                                             <span class="badge-modern badge-success">
                                                 <i class="fas fa-check-circle me-1"></i>Confirmada
                                             </span>
@@ -160,20 +163,26 @@
                     </div>
                 {% else %}
                     <div class="text-center py-5">
-                        <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No tienes reservas de salas</h5>
-                        <p class="text-muted">Comienza a reservar salas para tus reuniones de equipo.</p>
-                        <a href="{% url 'calendario:calendario' %}" class="btn-reserva-elegant">
-                            <div class="btn-reserva-content">
-                                <div class="btn-reserva-icon">
-                                    <i class="fas fa-calendar-plus"></i>
+                        {% if es_staff %}
+                            <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay reservas en el sistema</h5>
+                            <p class="text-muted">No se encontraron reservas para mostrar en este momento.</p>
+                        {% else %}
+                            <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No tienes reservas de salas</h5>
+                            <p class="text-muted">Comienza a reservar salas para tus reuniones de equipo.</p>
+                            <a href="{% url 'calendario:calendario' %}" class="btn-reserva-elegant">
+                                <div class="btn-reserva-content">
+                                    <div class="btn-reserva-icon">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </div>
+                                    <div class="btn-reserva-text">
+                                        <span class="btn-reserva-title">Hacer Primera Reserva</span>
+                                        <span class="btn-reserva-subtitle">Comenzar ahora</span>
+                                    </div>
                                 </div>
-                                <div class="btn-reserva-text">
-                                    <span class="btn-reserva-title">Hacer Primera Reserva</span>
-                                    <span class="btn-reserva-subtitle">Comenzar ahora</span>
-                                </div>
-                            </div>
-                        </a>
+                            </a>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>

@@ -192,23 +192,29 @@ def mis_reservas(request):
     es_staff = request.user.is_staff or request.user.is_superuser
     
     if es_staff:
-        # Staff/Superusuarios ven TODAS las reservas
+        # Staff/Superusuarios ven TODAS las reservas sin restricciones
         logger.info(f'Staff/Superusuario {request.user.username} accediendo a todas las reservas')
         reservas_query = ReservaQueryOptimizer.get_todas_las_reservas_optimizadas()
+        # Para staff, no aplicamos filtros de estado - ven TODO
+        logger.info(f'Staff: Mostrando todas las reservas sin filtros de estado')
     else:
-        # Usuarios normales ven solo sus reservas
+        # Usuarios normales ven solo sus reservas con filtros de estado
         logger.info(f'Usuario normal {request.user.username} accediendo a sus reservas')
         reservas_query = ReservaQueryOptimizer.get_reservas_usuario_optimizadas(request.user)
+        
+        # Obtener fecha de hace 30 días para mostrar reservas recientes
+        fecha_limite = timezone.now() - timedelta(days=30)
+        
+        # Filtrar reservas: confirmadas, canceladas recientemente, o futuras
+        reservas_query = reservas_query.filter(
+            models.Q(estado='confirmada') | 
+            models.Q(estado='cancelada', fecha_inicio__gte=fecha_limite) |
+            models.Q(fecha_inicio__gte=timezone.now())
+        )
+        logger.info(f'Usuario normal: Aplicando filtros de estado y fecha')
     
-    # Obtener fecha de hace 30 días para mostrar reservas recientes
-    fecha_limite = timezone.now() - timedelta(days=30)
-    
-    # Filtrar reservas: activas, canceladas recientemente, o futuras
-    reservas_query = reservas_query.filter(
-        models.Q(estado='activa') | 
-        models.Q(estado='cancelada', fecha_inicio__gte=fecha_limite) |
-        models.Q(fecha_inicio__gte=timezone.now())
-    ).order_by('-fecha_inicio')
+    # Ordenar por fecha de inicio (más recientes primero)
+    reservas_query = reservas_query.order_by('-fecha_inicio')
     
     # Paginación
     paginator = Paginator(reservas_query, PaginationConfig.RESERVAS_PER_PAGE)
@@ -228,7 +234,25 @@ def mis_reservas(request):
     
     salas_json = json.dumps(salas_data, ensure_ascii=False)
     
-    logger.debug(f'Mostrando página {page_number or 1} con {len(reservas)} reservas para usuario {request.user.username}')
+    # Logging detallado para debugging
+    total_reservas = reservas_query.count()
+    logger.info(f'Total de reservas encontradas: {total_reservas}')
+    logger.info(f'Mostrando página {page_number or 1} con {len(reservas)} reservas para usuario {request.user.username}')
+    logger.info(f'Usuario es staff: {es_staff}')
+    logger.info(f'Usuario is_staff: {request.user.is_staff}')
+    logger.info(f'Usuario is_superuser: {request.user.is_superuser}')
+    
+    # Log de algunas reservas para verificar
+    if reservas:
+        logger.info(f'Primeras 3 reservas: {[(r.id, r.usuario.username, r.titulo, r.estado) for r in reservas[:3]]}')
+    else:
+        logger.warning(f'No se encontraron reservas para mostrar')
+        
+    # Debug adicional: contar reservas por estado
+    if es_staff:
+        from django.db.models import Count
+        estados_count = Reserva.objects.values('estado').annotate(count=Count('id'))
+        logger.info(f'Reservas por estado: {list(estados_count)}')
     
     context = {
         'reservas': reservas,
