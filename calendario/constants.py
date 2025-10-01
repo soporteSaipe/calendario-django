@@ -24,7 +24,7 @@ class RateLimitConfig:
 class BusinessRules:
     """Reglas de negocio del sistema"""
     MIN_HOUR = 7         # Hora mínima para reservas
-    MAX_HOUR = 18        # Hora máxima para reservas
+    MAX_HOUR = 19        # Hora máxima para reservas
     MAX_FUTURE_DAYS = 180  # Máximo 6 meses en el futuro
     MAX_EXPORT_DAYS = 365  # Máximo 1 año para exportaciones
     MIN_RESERVATION_DURATION = 30  # Duración mínima en minutos
@@ -123,7 +123,7 @@ class ValidationMessages:
     INVALID_DATE_RANGE = 'La fecha de fin debe ser posterior a la fecha de inicio'
     PAST_DATE_NOT_ALLOWED = 'No se pueden realizar reservas en fechas pasadas'
     FUTURE_DATE_EXCEEDED = 'Las reservas solo pueden realizarse hasta 6 meses en el futuro'
-    WORKING_HOURS_VIOLATION = 'Las reservas solo pueden realizarse entre las 07:00 y 18:00'
+    WORKING_HOURS_VIOLATION = 'Las reservas solo pueden realizarse entre las 07:00 y 19:00'
     RESOURCE_NOT_FOUND = 'El recurso seleccionado no existe o no está activo'
     CONFLICT_DETECTED = 'Ya existe una reserva para este recurso en el horario seleccionado'
     RATE_LIMIT_EXCEEDED = 'Has alcanzado el límite de solicitudes. Intenta en unos minutos.'

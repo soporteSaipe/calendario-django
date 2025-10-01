@@ -123,13 +123,13 @@ class Recurso(models.Model):
             if self.nombre.lower() == 'comedor':
                 return {
                     'hora_inicio': '07:00',
-                    'hora_fin': '16:00',
+                    'hora_fin': '19:00',
                     'descripcion': 'Horario laboral (excepto 12:00-14:30 para almuerzo)'
                 }
             else:
                 return {
                     'hora_inicio': '07:00',
-                    'hora_fin': '16:00',
+                    'hora_fin': '19:00',
                     'descripcion': 'Horario laboral'
                 }
 

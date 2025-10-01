@@ -89,9 +89,9 @@ CalendarioApp.Core = {
       // Configuración por defecto
       const defaults = {
         horaInicioMin: 7.5, // 7:30
-        horaInicioMax: 15.5, // 15:30
+        horaInicioMax: 18.5, // 18:30
         horaFinMin: 8, // 8:00
-        horaFinMax: 16, // 16:00
+        horaFinMax: 19, // 19:00
         intervalo: 30, // minutos
         esComedor: false
       };

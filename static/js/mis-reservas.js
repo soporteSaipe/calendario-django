@@ -314,10 +314,9 @@ function abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, hora
         document.getElementById('editHoraInicio').value = horaInicio;
         document.getElementById('editHoraFin').value = horaFin;
         
-        // Aplicar filtro de horas fin basado en la hora inicio
-        if (horaInicio) {
-            filtrarHorasFin('editHoraFin', horaInicio);
-        }
+        // NO aplicar filtro automáticamente al abrir el modal
+        // El filtro se aplicará cuando el usuario cambie la hora de inicio
+        // Esto permite ver todas las opciones disponibles al abrir el modal
         
         validarHoraFinEdicion();
     }, 200);
@@ -558,13 +557,13 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
         }
     }
     
-    // Horarios de inicio: 7:30-15:30 (excepto comedor que puede ser 7:00-15:30)
+    // Horarios de inicio: 7:30-18:30 (excepto comedor que puede ser 7:00-18:30)
     const horaInicioMin = esComedor ? 7 : 7.5; // 7:00 para comedor, 7:30 para otros
-    const horaInicioMax = 15.5; // 15:30
+    const horaInicioMax = 18.5; // 18:30
     
-    // Horarios de fin: 8:00-16:00
+    // Horarios de fin: 8:00-19:00
     const horaFinMin = 8; // 8:00
-    const horaFinMax = 16; // 16:00
+    const horaFinMax = 19; // 19:00
     
     // Generar horarios de inicio
     for (let hora = Math.floor(horaInicioMin); hora <= Math.floor(horaInicioMax); hora++) {
@@ -619,9 +618,14 @@ function validarHoraFinEdicion() {
     const horaInicio = document.getElementById('editHoraInicio').value;
     const horaFin = document.getElementById('editHoraFin').value;
     
-    if (horaInicio && horaFin && horaInicio >= horaFin) {
-        // Resetear hora de fin si es inválida
-        document.getElementById('editHoraFin').value = '';
+    if (horaInicio && horaFin) {
+        const horaInicioMinutos = convertirHoraAMinutos(horaInicio);
+        const horaFinMinutos = convertirHoraAMinutos(horaFin);
+        
+        if (horaFinMinutos <= horaInicioMinutos) {
+            // Resetear hora de fin si es inválida
+            document.getElementById('editHoraFin').value = '';
+        }
     }
     
     // Filtrar opciones de hora fin para mostrar solo las posteriores
@@ -644,13 +648,26 @@ function filtrarHorasFin(selectFinId, horaInicio) {
             return;
         }
         
+        // Convertir horarios a minutos para comparación correcta
+        const horaInicioMinutos = convertirHoraAMinutos(horaInicio);
+        const horaOpcionMinutos = convertirHoraAMinutos(opcion.value);
+        
         // Mostrar solo horas posteriores a la hora de inicio
-        if (opcion.value > horaInicio) {
+        if (horaOpcionMinutos > horaInicioMinutos) {
             opcion.style.display = 'block';
         } else {
             opcion.style.display = 'none';
         }
     });
+}
+
+/**
+ * Convertir hora en formato HH:MM a minutos desde medianoche
+ */
+function convertirHoraAMinutos(hora) {
+    if (!hora || hora === '') return 0;
+    const [horas, minutos] = hora.split(':').map(Number);
+    return horas * 60 + minutos;
 }
 
 /**

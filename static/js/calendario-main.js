@@ -147,7 +147,7 @@ CalendarioApp.Calendar = {
       },
       weekends: true,
       slotMinTime: '07:00:00',
-      slotMaxTime: '16:00:00',
+      slotMaxTime: '19:00:00',
       slotDuration: '00:30:00',
       slotLabelInterval: '01:00:00',
       allDaySlot: false,
@@ -854,7 +854,7 @@ CalendarioApp.Calendar = {
           // Horarios especiales para el comedor
           const horariosFinComedor = [
             '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00',
-            '15:00', '15:30', '16:00'
+            '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
           ];
           
           horariosFinComedor.forEach(horario => {
@@ -868,11 +868,11 @@ CalendarioApp.Calendar = {
             }
           });
         } else {
-          // Generar opciones de hora de fin para otras salas (7:30 a 16:00)
+          // Generar opciones de hora de fin para otras salas (7:30 a 19:00)
           for (let h = 7; h <= 16; h++) {
             for (let m = 0; m < 60; m += 30) {
               if (h === 7 && m < 30) continue; // Empezar desde 7:30
-              if (h === 16 && m > 0) break; // Terminar en 16:00
+              if (h === 19 && m > 0) break; // Terminar en 19:00
               
               const horaActualMinutos = h * 60 + m;
               
@@ -945,10 +945,10 @@ CalendarioApp.Calendar = {
         }
       }
     } else if (esComedor) {
-      // Comedor: 7:00 a 11:30 y 14:30 a 15:30
+      // Comedor: 7:00 a 11:30 y 14:30 a 18:30
       const horariosInicioComedor = [
         '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-        '14:30', '15:00', '15:30'
+        '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'
       ];
       
       horariosInicioComedor.forEach(horario => {
@@ -956,7 +956,7 @@ CalendarioApp.Calendar = {
         horaInicioSelect.add(option);
       });
     } else {
-      // Otras salas: 7:00 a 15:30
+      // Otras salas: 7:00 a 18:30
       for (let hora = 7; hora <= 15; hora++) {
         for (let minuto = 0; minuto < 60; minuto += 30) {
           if (hora === 15 && minuto > 30) break;

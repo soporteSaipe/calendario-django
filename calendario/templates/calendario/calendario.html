@@ -432,16 +432,16 @@
                 
                 if (esComedor) {
                     // Horarios especiales para el comedor
-                    // Hora inicio: 7:00-11:30 y 14:30-15:30
+                    // Hora inicio: 7:00-11:30 y 14:30-18:30
                     const horariosInicioComedor = [
                         '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-                        '14:30', '15:00', '15:30'
+                        '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'
                     ];
                     
-                    // Hora fin: 7:30-12:00 y 15:00-16:00
+                    // Hora fin: 7:30-12:00 y 15:00-19:00
                     const horariosFinComedor = [
                         '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00',
-                        '15:00', '15:30', '16:00'
+                        '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
                     ];
                     
                     horariosInicioComedor.forEach(horario => {
@@ -453,10 +453,10 @@
                     });
                 } else {
                     // Horarios normales para otras salas
-                    // Hora inicio: 7:00-15:30
+                    // Hora inicio: 7:00-18:30
                     for (let hora = 7; hora <= 15; hora++) {
                         for (let minuto = 0; minuto < 60; minuto += 30) {
-                            if (hora === 15 && minuto > 30) break; // No pasar de 15:30
+                            if (hora === 18 && minuto > 30) break; // No pasar de 18:30
                             
                             const horaStr = hora.toString().padStart(2, '0');
                             const minutoStr = minuto.toString().padStart(2, '0');
@@ -467,11 +467,11 @@
                         }
                     }
                     
-                    // Hora fin: 7:30-16:00
+                    // Hora fin: 7:30-19:00
                     for (let hora = 7; hora <= 16; hora++) {
                         for (let minuto = 0; minuto < 60; minuto += 30) {
                             if (hora === 7 && minuto === 0) continue; // Saltar 7:00 para hora fin
-                            if (hora === 16 && minuto > 0) break; // No pasar de 16:00
+                            if (hora === 19 && minuto > 0) break; // No pasar de 19:00
                             
                             const horaStr = hora.toString().padStart(2, '0');
                             const minutoStr = minuto.toString().padStart(2, '0');
@@ -599,23 +599,23 @@
                 } else {
                     // Configurar horarios laborales para salas
                     calendar.setOption('slotMinTime', '07:00:00');
-                    calendar.setOption('slotMaxTime', '16:00:00');
+                    calendar.setOption('slotMaxTime', '19:00:00');
                     calendar.setOption('views', {
                         timeGridDay: {
                             slotMinTime: '07:00:00',
-                            slotMaxTime: '16:00:00',
+                            slotMaxTime: '19:00:00',
                             slotDuration: '00:30:00'
                         },
                         timeGridWeek: {
                             slotMinTime: '07:00:00',
-                            slotMaxTime: '16:00:00',
+                            slotMaxTime: '19:00:00',
                             slotDuration: '00:30:00'
                         },
                         dayGridMonth: {
                             dayMaxEvents: 3
                         }
                     });
-                    console.log('Horarios configurados para sala: 07:00-16:00');
+                    console.log('Horarios configurados para sala: 07:00-19:00');
                 }
                 
                 // Refrescar el calendario para aplicar los cambios

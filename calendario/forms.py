@@ -23,14 +23,14 @@ class ReservaForm(forms.ModelForm):
                 'class': 'form-control-modern',
                 'type': 'datetime-local',
                 'min': '07:00',
-                'max': '16:00',
+                'max': '19:00',
                 'data-validation': 'datetime'
             }),
             'fecha_fin': forms.DateTimeInput(attrs={
                 'class': 'form-control-modern',
                 'type': 'datetime-local',
                 'min': '07:00',
-                'max': '16:00',
+                'max': '19:00',
                 'data-validation': 'datetime'
             }),
             'fecha_vuelta': forms.DateInput(attrs={
