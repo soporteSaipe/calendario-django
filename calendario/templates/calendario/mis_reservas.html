@@ -27,7 +27,7 @@
 
 <div class="row">
     <div class="col-12">
-        <div class="card-modern">
+        <div class="card-modern animate-slide-in-up">
             <div class="card-header-modern">
                 <h4 class="mb-0">
                     {% if es_staff %}
@@ -42,8 +42,8 @@
             </div>
             <div class="card-body-modern">
                 {% if reservas %}
-                    <div class="table-responsive">
-                        <table class="table table-modern">
+                    <div class="table-responsive" style="overflow-x: hidden;">
+                        <table class="table table-modern stagger-animation">
                             <thead>
                                 <tr>
                                     <th><i class="fas fa-heading me-2"></i>Título</th>
@@ -59,7 +59,7 @@
                             </thead>
                             <tbody>
                                 {% for reserva in reservas %}
-                                <tr data-estado="{{ reserva.estado|default:'confirmada' }}">
+                                <tr data-estado="{{ reserva.estado|default:'confirmada' }}" class="smooth-transition hover-lift">
                                     <td>
                                         <strong>{{ reserva.titulo }}</strong>
                                         {% if reserva.descripcion %}
@@ -86,23 +86,28 @@
                                     <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
                                     <td>
                                         {% if reserva.estado == 'confirmada' %}
-                                            <span class="badge-modern badge-success">
+                                            <span class="badge-modern badge-success tooltip-modern tooltip-info tooltip-small" 
+                                                  data-tooltip="<i class='fas fa-check-circle tooltip-icon'></i>Lista para usar">
                                                 <i class="fas fa-check-circle me-1"></i>Confirmada
                                             </span>
                                         {% elif reserva.estado == 'cancelada' %}
-                                            <span class="badge-modern badge-danger">
+                                            <span class="badge-modern badge-danger tooltip-modern tooltip-danger tooltip-small" 
+                                                  data-tooltip="<i class='fas fa-times-circle tooltip-icon'></i>No disponible">
                                                 <i class="fas fa-times-circle me-1"></i>Cancelada
                                             </span>
                                         {% elif reserva.estado == 'en_curso' %}
-                                            <span class="badge-modern badge-warning">
+                                            <span class="badge-modern badge-warning tooltip-modern tooltip-warning tooltip-small" 
+                                                  data-tooltip="<i class='fas fa-clock tooltip-icon'></i>Actualmente en uso">
                                                 <i class="fas fa-clock me-1"></i>En Curso
                                             </span>
                                         {% elif reserva.estado == 'terminada' %}
-                                            <span class="badge-modern badge-info">
+                                            <span class="badge-modern badge-info tooltip-modern tooltip-info tooltip-small" 
+                                                  data-tooltip="<i class='fas fa-flag-checkered tooltip-icon'></i>Completada">
                                                 <i class="fas fa-flag-checkered me-1"></i>Terminada
                                             </span>
                                         {% else %}
-                                            <span class="badge-modern badge-success">
+                                            <span class="badge-modern badge-success tooltip-modern tooltip-info tooltip-small" 
+                                                  data-tooltip="<i class='fas fa-check-circle tooltip-icon'></i>Lista para usar">
                                                 <i class="fas fa-check-circle me-1"></i>Confirmada
                                             </span>
                                         {% endif %}
@@ -111,7 +116,7 @@
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Acciones de reserva">
                                             {% if reserva.estado != 'cancelada' %}
                                                 <button type="button" 
-                                                        class="btn-action btn-action-edit edit-reserva-btn" 
+                                                        class="btn-action btn-action-edit edit-reserva-btn hover-scale icon-bounce btn-ripple interactive-element" 
                                                         title="Editar reserva: {{ reserva.titulo }}"
                                                         aria-label="Editar reserva: {{ reserva.titulo }}"
                                                         data-reserva-id="{{ reserva.id }}"
@@ -137,7 +142,7 @@
                                             
                                             {% if reserva.estado != 'cancelada' %}
                                                 <a href="{% url 'calendario:eliminar_reserva' reserva.id %}" 
-                                                   class="btn-action btn-action-delete" 
+                                                   class="btn-action btn-action-delete hover-scale icon-bounce btn-ripple interactive-element" 
                                                    title="Eliminar reserva: {{ reserva.titulo }}"
                                                    aria-label="Eliminar reserva: {{ reserva.titulo }}"
                                                    data-confirm="¿Estás seguro de que quieres eliminar esta reserva?">

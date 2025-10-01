@@ -202,6 +202,9 @@ def validate_resource_access(view_func):
     """
     Decorador para validar acceso a recursos
     
+    - Usuarios normales: Solo pueden acceder a sus propias reservas
+    - Staff/Superusuarios: Pueden acceder a cualquier reserva
+    
     Usage:
         @validate_resource_access
         def editar_reserva(request, reserva_id):
@@ -209,13 +212,25 @@ def validate_resource_access(view_func):
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        # Si hay un reserva_id en los kwargs, validar que pertenece al usuario
+        # Si hay un reserva_id en los kwargs, validar acceso
         if 'reserva_id' in kwargs:
             from .models import Reserva
             from django.shortcuts import get_object_or_404
             
             reserva_id = kwargs['reserva_id']
-            reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+            
+            # Determinar si el usuario es staff o superusuario
+            es_staff = request.user.is_staff or request.user.is_superuser
+            
+            if es_staff:
+                # Staff/Superusuarios pueden acceder a cualquier reserva
+                logger.info(f'Staff/Superusuario {request.user.username} accediendo a reserva {reserva_id}')
+                reserva = get_object_or_404(Reserva, id=reserva_id)
+            else:
+                # Usuarios normales solo pueden acceder a sus propias reservas
+                logger.info(f'Usuario normal {request.user.username} accediendo a reserva {reserva_id}')
+                reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+            
             kwargs['reserva'] = reserva  # Pasar la reserva validada a la vista
         
         return view_func(request, *args, **kwargs)

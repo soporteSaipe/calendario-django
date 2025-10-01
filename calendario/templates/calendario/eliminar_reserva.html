@@ -10,9 +10,26 @@
             <div class="card-header-modern card-header-danger-modern">
                 <h4 class="mb-0">
                     <i class="fas fa-exclamation-triangle me-2 spring-icon"></i>Eliminar Reserva
+                    {% if user.is_staff or user.is_superuser %}
+                        {% if reserva.usuario != user %}
+                            <small class="ms-2 text-light opacity-75">
+                                <i class="fas fa-user-shield me-1"></i>Reserva de: {{ reserva.usuario.username }}
+                            </small>
+                        {% endif %}
+                    {% endif %}
                 </h4>
             </div>
             <div class="card-body-modern">
+                {% if user.is_staff or user.is_superuser %}
+                    {% if reserva.usuario != user %}
+                        <div class="alert alert-info-modern mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Vista Administrativa:</strong> Estás eliminando una reserva que pertenece a 
+                            <strong>{{ reserva.usuario.username }}</strong>.
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
                 <div class="alert alert-warning-modern">
                     <i class="fas fa-warning me-2"></i>
                     <strong>¡Atención!</strong> Esta acción no se puede deshacer.
@@ -43,6 +60,18 @@
                                 </p>
                             </div>
                         </div>
+                        {% if user.is_staff or user.is_superuser %}
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p class="card-text">
+                                        <strong><i class="fas fa-user me-1"></i>Propietario de la reserva:</strong><br>
+                                        <span class="badge-modern badge-info">
+                                            <i class="fas fa-user-circle me-1"></i>{{ reserva.usuario.username }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        {% endif %}
                         <div class="row">
                             <div class="col-md-6">
                                 <p class="card-text">

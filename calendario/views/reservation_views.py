@@ -273,9 +273,15 @@ def editar_reserva(request, reserva_id, reserva=None):
     """
     Vista para editar una reserva existente
     
-    Solo permite editar reservas propias del usuario.
+    - Usuarios normales: Solo pueden editar sus propias reservas
+    - Staff/Superusuarios: Pueden editar cualquier reserva
     """
-    logger.info(f'Edición de reserva ID: {reserva_id} por usuario: {request.user.username}')
+    es_staff = request.user.is_staff or request.user.is_superuser
+    logger.info(f'Edición de reserva ID: {reserva_id} por usuario: {request.user.username} (Staff: {es_staff})')
+    
+    # Log adicional para staff editando reservas de otros usuarios
+    if es_staff and reserva.usuario != request.user:
+        logger.info(f'Staff {request.user.username} editando reserva de usuario {reserva.usuario.username}')
     
     if request.method == 'POST':
         # Verificar si es una petición AJAX
@@ -368,9 +374,15 @@ def eliminar_reserva(request, reserva_id, reserva=None):
     """
     Vista para eliminar una reserva
     
-    Solo permite eliminar reservas propias del usuario.
+    - Usuarios normales: Solo pueden eliminar sus propias reservas
+    - Staff/Superusuarios: Pueden eliminar cualquier reserva
     """
-    logger.info(f'Eliminación de reserva ID: {reserva_id} por usuario: {request.user.username}')
+    es_staff = request.user.is_staff or request.user.is_superuser
+    logger.info(f'Eliminación de reserva ID: {reserva_id} por usuario: {request.user.username} (Staff: {es_staff})')
+    
+    # Log adicional para staff eliminando reservas de otros usuarios
+    if es_staff and reserva.usuario != request.user:
+        logger.info(f'Staff {request.user.username} eliminando reserva de usuario {reserva.usuario.username}')
     
     if request.method == 'POST':
         # Verificar si es una petición AJAX

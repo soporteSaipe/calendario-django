@@ -11,53 +11,51 @@ let formEditarReserva = null;
  * Funciones auxiliares para reemplazar dependencias de CalendarioApp
  */
 
-// Mostrar indicador de carga
+// Mostrar indicador de carga elegante
 function showLoadingIndicator(message = 'Cargando...') {
     // Crear overlay de carga si no existe
     let loadingOverlay = document.getElementById('loading-overlay');
     if (!loadingOverlay) {
         loadingOverlay = document.createElement('div');
         loadingOverlay.id = 'loading-overlay';
-        loadingOverlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-        `;
+        loadingOverlay.className = 'loading-overlay';
         document.body.appendChild(loadingOverlay);
     }
     
     loadingOverlay.innerHTML = `
-        <div style="text-align: center;">
-            <div style="
-                width: 40px;
-                height: 40px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #007bff;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 15px;
-            "></div>
-            <div>${message}</div>
+        <div class="loading-content">
+            <div class="modern-spinner"></div>
+            <div class="loading-message">
+                ${message}
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div class="progress-modern">
+                <div class="progress-bar-modern"></div>
+            </div>
         </div>
     `;
-    loadingOverlay.style.display = 'flex';
+    
+    // Mostrar con animación
+    setTimeout(() => {
+        loadingOverlay.classList.add('show');
+    }, 10);
 }
 
 // Ocultar indicador de carga
 function hideLoadingIndicator() {
     const loadingOverlay = document.getElementById('loading-overlay');
     if (loadingOverlay) {
-        loadingOverlay.style.display = 'none';
+        loadingOverlay.classList.remove('show');
+        // Remover el overlay después de la animación
+        setTimeout(() => {
+            if (loadingOverlay.parentElement) {
+                loadingOverlay.remove();
+            }
+        }, 300);
     }
 }
 
@@ -147,7 +145,27 @@ if (!document.getElementById('loading-styles')) {
     document.head.appendChild(style);
 }
 
+// Inicializar tooltips modernos
+function initializeTooltips() {
+    document.querySelectorAll('.tooltip-modern').forEach(element => {
+        const tooltipText = element.getAttribute('data-tooltip');
+        if (tooltipText) {
+            // Crear elemento de tooltip si no existe
+            if (!element.querySelector('.tooltip-text')) {
+                const tooltipElement = document.createElement('span');
+                tooltipElement.className = 'tooltip-text';
+                tooltipElement.innerHTML = tooltipText;
+                tooltipElement.style.display = 'none'; // Asegurar que esté oculto
+                element.appendChild(tooltipElement);
+            }
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    initializeTooltips();
+    
     // Inicializar modal de edición
     initializeEditModal();
     // Función mejorada para confirmar eliminación
