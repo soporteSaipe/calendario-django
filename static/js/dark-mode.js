@@ -12,19 +12,19 @@ class DarkModeManager {
     }
     
     init() {
-        // Crear elementos del toggle si no existen
-        this.createThemeToggle();
+        // MODO OSCURO DESHABILITADO TEMPORALMENTE
+        // this.createThemeToggle();
         
-        // Aplicar tema inicial
+        // Aplicar tema inicial (solo modo claro)
         this.applyInitialTheme();
         
         // Configurar eventos
-        this.setupEventListeners();
+        // this.setupEventListeners();
         
         // Detectar cambios en preferencias del sistema
-        this.setupSystemThemeDetection();
+        // this.setupSystemThemeDetection();
         
-        console.log('Dark Mode Manager inicializado');
+        console.log('Dark Mode Manager inicializado (modo oscuro deshabilitado)');
     }
     
     createThemeToggle() {
@@ -60,34 +60,28 @@ class DarkModeManager {
     
     
     applyInitialTheme() {
-        const savedTheme = localStorage.getItem(this.themeKey);
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        let theme = 'light'; // Por defecto
-        
-        if (savedTheme) {
-            // Usar preferencia guardada
-            theme = savedTheme;
-        } else if (systemPrefersDark) {
-            // Usar preferencia del sistema
-            theme = 'dark';
-        }
-        
-        this.setTheme(theme);
+        // MODO OSCURO DESHABILITADO - SIEMPRE MODO CLARO
+        this.setTheme('light');
     }
     
     setTheme(theme) {
+        // MODO OSCURO DESHABILITADO - SIEMPRE MODO CLARO
+        if (theme !== 'light') {
+            console.log('Modo oscuro deshabilitado - aplicando modo claro');
+            theme = 'light';
+        }
+        
         // Aplicar tema al documento
         document.documentElement.setAttribute('data-theme', theme);
         
         // Agregar clase de transición para suavizar el cambio
         document.body.classList.add('theme-transition');
         
-        // Guardar preferencia
-        localStorage.setItem(this.themeKey, theme);
+        // Guardar preferencia (siempre modo claro)
+        localStorage.setItem(this.themeKey, 'light');
         
-        // Actualizar toggle
-        this.updateToggle(theme);
+        // Actualizar toggle (deshabilitado)
+        // this.updateToggle(theme);
         
         // Actualizar meta tag para color del navegador
         this.updateMetaThemeColor(theme);
@@ -102,7 +96,7 @@ class DarkModeManager {
             document.body.classList.remove('theme-transition');
         }, 300);
         
-        console.log(`Tema cambiado a: ${theme}`);
+        console.log(`Tema fijado a: ${theme} (modo oscuro deshabilitado)`);
     }
     
   updateMetaThemeColor(theme) {
@@ -137,11 +131,9 @@ class DarkModeManager {
     }
     
     toggleTheme() {
-        const currentTheme = this.getCurrentTheme();
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        this.setTheme(newTheme);
-        
-        // Animación de feedback removida - no más transformaciones
+        // MODO OSCURO DESHABILITADO
+        console.log('Toggle de tema deshabilitado - modo oscuro no disponible');
+        return;
     }
     
     setupEventListeners() {
@@ -185,13 +177,16 @@ class DarkModeManager {
     }
     
     setDarkMode() {
-        this.setTheme('dark');
+        // MODO OSCURO DESHABILITADO
+        console.log('setDarkMode() deshabilitado - modo oscuro no disponible');
+        this.setTheme('light');
     }
     
     resetToSystem() {
-        localStorage.removeItem(this.themeKey);
+        // MODO OSCURO DESHABILITADO - SIEMPRE MODO CLARO
+        localStorage.setItem(this.themeKey, 'light');
         this.applyInitialTheme();
-        console.log('Tema reseteado a preferencias del sistema');
+        console.log('Tema fijado a modo claro (modo oscuro deshabilitado)');
     }
     
     getThemeInfo() {
