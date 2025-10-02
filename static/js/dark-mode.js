@@ -80,19 +80,45 @@ class DarkModeManager {
         // Aplicar tema al documento
         document.documentElement.setAttribute('data-theme', theme);
         
+        // Agregar clase de transición para suavizar el cambio
+        document.body.classList.add('theme-transition');
+        
         // Guardar preferencia
         localStorage.setItem(this.themeKey, theme);
         
         // Actualizar toggle
         this.updateToggle(theme);
         
+        // Actualizar meta tag para color del navegador
+        this.updateMetaThemeColor(theme);
+        
         // Emitir evento personalizado
         window.dispatchEvent(new CustomEvent('themeChanged', {
             detail: { theme: theme }
         }));
         
+        // Remover clase de transición después de un tiempo
+        setTimeout(() => {
+            document.body.classList.remove('theme-transition');
+        }, 300);
+        
         console.log(`Tema cambiado a: ${theme}`);
     }
+    
+  updateMetaThemeColor(theme) {
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.name = 'theme-color';
+      document.head.appendChild(metaThemeColor);
+    }
+
+    if (theme === 'dark') {
+      metaThemeColor.content = '#1A1A1A';
+    } else {
+      metaThemeColor.content = '#FDF2F8';
+    }
+  }
     
     updateToggle(theme) {
         if (this.themeToggle) {

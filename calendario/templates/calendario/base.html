@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FDF2F8">
     <title>{% block title %}Sistema de reservas de salas SAIPE{% endblock %}</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,7 +18,8 @@
     <link href="{% static 'css/effects.css' %}" rel="stylesheet">
     <link href="{% static 'css/pages.css' %}" rel="stylesheet">
     <link href="{% static 'css/optimization.css' %}" rel="stylesheet">
-    <!-- Modo oscuro - archivo no disponible -->
+    <!-- Modo oscuro - paleta profesional -->
+    <link href="{% static 'css/dark-theme.css' %}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -164,6 +166,8 @@
            <script src="{% static 'js/calendar-export.js' %}"></script>
            <!-- Modo oscuro -->
            <script src="{% static 'js/dark-mode.js' %}"></script>
+           <!-- Pruebas del modo oscuro (remover en producción) -->
+           <script src="{% static 'js/dark-mode-test.js' %}"></script>
            
            <!-- Efectos especiales -->
            <!-- <script type="module" src="{% static 'js/fallingPetals.js' %}"></script> -->

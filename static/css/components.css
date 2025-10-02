@@ -2336,8 +2336,10 @@
 /* ===== MODO OSCURO ===== */
 @media (prefers-color-scheme: dark) {
   .modal-content-modern {
-    background: rgba(30, 30, 30, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--bg-card);
+    border-color: var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
   
   .modal-body {
@@ -2346,23 +2348,252 @@
   
   .form-control-modern,
   .form-select-modern {
-    background: rgba(40, 40, 40, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-on-dark);
+    background: var(--surface-light);
+    border-color: var(--border);
+    color: var(--text-primary);
   }
   
   .form-control-modern:focus,
   .form-select-modern:focus {
-    background: rgba(50, 50, 50, 0.9);
+    background: var(--bg-accent);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.3rem rgba(100, 181, 246, 0.25);
+  }
+  
+  .form-control-modern::placeholder {
+    color: var(--text-muted);
   }
   
   .nav-pills {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface-light);
+    border-color: var(--border);
+  }
+  
+  .nav-pills .nav-link {
+    color: var(--text-secondary);
+  }
+  
+  .nav-pills .nav-link:hover {
+    background: rgba(100, 181, 246, 0.1);
+    color: var(--primary);
+  }
+  
+  .nav-pills .nav-link.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: var(--text-primary);
   }
   
   .reserva-details-card {
-    background: rgba(40, 40, 40, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--surface-light);
+    border-color: var(--border);
+  }
+  
+  .reserva-details-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 8px 32px rgba(100, 181, 246, 0.15);
+  }
+  
+  .card-modern {
+    background: var(--bg-card);
+    border-color: var(--border);
+  }
+  
+  .card-modern:hover {
+    border-color: var(--primary);
+  }
+  
+  .table-modern {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  
+  .table-modern th,
+  .table-modern td {
+    border-color: var(--border);
+  }
+  
+  .table-modern thead th {
+    background: var(--surface-light);
+    color: var(--text-primary);
+  }
+  
+  .table-modern tbody tr:hover {
+    background: rgba(100, 181, 246, 0.05);
+  }
+  
+  /* Botones mejorados */
+  .btn-modern {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: var(--primary);
+    color: var(--text-primary);
+  }
+  
+  .btn-modern:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+  }
+  
+  /* Alertas mejoradas */
+  .alert-modern {
+    border-left: 4px solid;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .alert-success-modern {
+    background: linear-gradient(135deg, rgba(102, 187, 106, 0.15) 0%, rgba(102, 187, 106, 0.05) 100%);
+    color: var(--success);
+    border-left-color: var(--success);
+  }
+  
+  .alert-danger-modern {
+    background: linear-gradient(135deg, rgba(239, 83, 80, 0.15) 0%, rgba(239, 83, 80, 0.05) 100%);
+    color: var(--danger);
+    border-left-color: var(--danger);
+  }
+  
+  .alert-warning-modern {
+    background: linear-gradient(135deg, rgba(255, 167, 38, 0.15) 0%, rgba(255, 167, 38, 0.05) 100%);
+    color: var(--warning);
+    border-left-color: var(--warning);
+  }
+  
+  .alert-info-modern {
+    background: linear-gradient(135deg, rgba(66, 165, 245, 0.15) 0%, rgba(66, 165, 245, 0.05) 100%);
+    color: var(--info);
+    border-left-color: var(--info);
+  }
+}
+
+/* ===== MODO OSCURO MANUAL ===== */
+[data-theme="dark"] {
+  .modal-content-modern {
+    background: var(--bg-card);
+    border-color: var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  .modal-body {
+    background: var(--bg-card);
+  }
+  
+  .form-control-modern,
+  .form-select-modern {
+    background: var(--surface-light);
+    border-color: var(--border);
+    color: var(--text-primary);
+  }
+  
+  .form-control-modern:focus,
+  .form-select-modern:focus {
+    background: var(--bg-accent);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.3rem rgba(100, 181, 246, 0.25);
+  }
+  
+  .form-control-modern::placeholder {
+    color: var(--text-muted);
+  }
+  
+  .nav-pills {
+    background: var(--surface-light);
+    border-color: var(--border);
+  }
+  
+  .nav-pills .nav-link {
+    color: var(--text-secondary);
+  }
+  
+  .nav-pills .nav-link:hover {
+    background: rgba(100, 181, 246, 0.1);
+    color: var(--primary);
+  }
+  
+  .nav-pills .nav-link.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: var(--text-primary);
+  }
+  
+  .reserva-details-card {
+    background: var(--surface-light);
+    border-color: var(--border);
+  }
+  
+  .reserva-details-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 8px 32px rgba(100, 181, 246, 0.15);
+  }
+  
+  .card-modern {
+    background: var(--bg-card);
+    border-color: var(--border);
+  }
+  
+  .card-modern:hover {
+    border-color: var(--primary);
+  }
+  
+  .table-modern {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  
+  .table-modern th,
+  .table-modern td {
+    border-color: var(--border);
+  }
+  
+  .table-modern thead th {
+    background: var(--surface-light);
+    color: var(--text-primary);
+  }
+  
+  .table-modern tbody tr:hover {
+    background: rgba(100, 181, 246, 0.05);
+  }
+  
+  /* Botones mejorados */
+  .btn-modern {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: var(--primary);
+    color: var(--text-primary);
+  }
+  
+  .btn-modern:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+  }
+  
+  /* Alertas mejoradas */
+  .alert-modern {
+    border-left: 4px solid;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .alert-success-modern {
+    background: linear-gradient(135deg, rgba(102, 187, 106, 0.15) 0%, rgba(102, 187, 106, 0.05) 100%);
+    color: var(--success);
+    border-left-color: var(--success);
+  }
+  
+  .alert-danger-modern {
+    background: linear-gradient(135deg, rgba(239, 83, 80, 0.15) 0%, rgba(239, 83, 80, 0.05) 100%);
+    color: var(--danger);
+    border-left-color: var(--danger);
+  }
+  
+  .alert-warning-modern {
+    background: linear-gradient(135deg, rgba(255, 167, 38, 0.15) 0%, rgba(255, 167, 38, 0.05) 100%);
+    color: var(--warning);
+    border-left-color: var(--warning);
+  }
+  
+  .alert-info-modern {
+    background: linear-gradient(135deg, rgba(66, 165, 245, 0.15) 0%, rgba(66, 165, 245, 0.05) 100%);
+    color: var(--info);
+    border-left-color: var(--info);
   }
 }
 

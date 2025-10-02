@@ -424,10 +424,10 @@
 /* ===== BOTONES DE EXPORTACIÓN ===== */
 
 .btn-export {
-  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
   border: none;
   border-radius: var(--border-radius-lg);
-  color: white;
+  color: var(--text-primary);
   padding: 0.75rem 1.5rem;
   font-size: 0.9rem;
   font-weight: 600;
@@ -437,7 +437,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -458,43 +458,46 @@
 }
 
 .btn-export:hover {
-  background: linear-gradient(135deg, #1D4ED8 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--info) 100%);
+  box-shadow: 0 6px 20px rgba(100, 181, 246, 0.4);
 }
 
 .btn-export:active {
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
 }
 
 .btn-export-pdf {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
-  color: white;
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: linear-gradient(135deg, var(--danger) 0%, #E53935 100%);
+  box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
+  color: var(--text-primary);
+  border: 1px solid rgba(239, 83, 80, 0.2);
 }
 
 .btn-export-pdf:hover {
-  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
-  border-color: rgba(220, 38, 38, 0.3);
+  background: linear-gradient(135deg, #E53935 0%, #D32F2F 100%);
+  border-color: rgba(239, 83, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(239, 83, 80, 0.4);
 }
 
 .btn-export-pdf:active {
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
+  box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
 }
 
 .btn-export-excel {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
-  color: white;
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  background: linear-gradient(135deg, var(--success) 0%, #4CAF50 100%);
+  box-shadow: 0 2px 8px rgba(102, 187, 106, 0.3);
+  color: var(--text-primary);
+  border: 1px solid rgba(102, 187, 106, 0.2);
 }
 
 .btn-export-excel:hover {
-  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-  border-color: rgba(5, 150, 105, 0.3);
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  border-color: rgba(102, 187, 106, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 187, 106, 0.4);
 }
 
 .btn-export-excel:active {
-  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
+  box-shadow: 0 2px 8px rgba(102, 187, 106, 0.3);
 }
 
 
@@ -508,6 +511,7 @@
 .btn-export-options:hover {
   background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
   border-color: rgba(107, 114, 128, 0.3);
+  box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
 }
 
 .btn-export-options:active {

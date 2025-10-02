@@ -193,33 +193,89 @@ body {
 /* ===== DARK MODE ===== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #2d2d2d;
-    --bg-card: #2d2d2d;
-    --bg-accent: #3a3a3a;
-    --text-primary: #ffffff;
-    --text-secondary: #e0e0e0;
-    --text-muted: #a0a0a0;
-    --surface: #2d2d2d;
-    --surface-light: #3a3a3a;
-    --border: #404040;
-    --border-light: #4a4a4a;
+    /* PALETA PRIMARIA - Azules suaves y profesionales */
+    --primary: #64B5F6;        /* Azul claro suave */
+    --primary-dark: #42A5F5;   /* Azul medio */
+    --primary-light: #90CAF9;  /* Azul muy claro */
+    --secondary: #81C784;      /* Verde suave */
+    --accent: #FFB74D;         /* Naranja suave */
+    
+    /* SISTEMA DE FONDOS - Grises cálidos */
+    --bg-primary: #1A1A1A;     /* Negro suave (más claro) */
+    --bg-secondary: #222222;   /* Gris muy oscuro */
+    --bg-card: #2A2A2A;        /* Gris oscuro */
+    --bg-accent: #333333;      /* Gris medio */
+    --bg-elevated: #3A3A3A;    /* Gris claro */
+    
+    /* SISTEMA DE TEXTO - Grises equilibrados */
+    --text-primary: #FAFAFA;   /* Blanco suave */
+    --text-secondary: #E0E0E0; /* Gris muy claro */
+    --text-muted: #9E9E9E;     /* Gris medio */
+    --text-disabled: #616161;  /* Gris oscuro */
+    
+    /* SUPERFICIES Y BORDES */
+    --surface: #222222;        /* Superficie principal */
+    --surface-light: #2E2E2E;  /* Superficie elevada */
+    --border: #404040;         /* Bordes principales */
+    --border-light: #333333;   /* Bordes sutiles */
+    --border-focus: #64B5F6;   /* Borde de foco */
+    
+    /* COLORES DE ESTADO - Suaves y equilibrados */
+    --success: #66BB6A;        /* Verde suave */
+    --warning: #FFA726;        /* Naranja suave */
+    --danger: #EF5350;         /* Rojo suave */
+    --info: #42A5F5;           /* Azul suave */
+    
+  /* COLORES ESPECÍFICOS PARA NAVBAR */
+  --navbar-bg: #1F1F1F;      /* Fondo navbar */
+  --navbar-border: #64B5F6;  /* Borde inferior navbar */
+  --navbar-text: #FAFAFA;    /* Texto navbar */
+  --navbar-hover: #2E2E2E;   /* Hover navbar */
+  --navbar-active: #64B5F6;  /* Elemento activo navbar */
   }
 }
 
 /* ===== DARK MODE MANUAL ===== */
 [data-theme="dark"] {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --bg-card: #2d2d2d;
-  --bg-accent: #3a3a3a;
-  --text-primary: #ffffff;
-  --text-secondary: #e0e0e0;
-  --text-muted: #a0a0a0;
-  --surface: #2d2d2d;
-  --surface-light: #3a3a3a;
-  --border: #404040;
-  --border-light: #4a4a4a;
+  /* PALETA PRIMARIA - Azules suaves y profesionales */
+  --primary: #64B5F6;        /* Azul claro suave */
+  --primary-dark: #42A5F5;   /* Azul medio */
+  --primary-light: #90CAF9;  /* Azul muy claro */
+  --secondary: #81C784;      /* Verde suave */
+  --accent: #FFB74D;         /* Naranja suave */
+  
+  /* SISTEMA DE FONDOS - Grises cálidos */
+  --bg-primary: #1A1A1A;     /* Negro suave (más claro) */
+  --bg-secondary: #222222;   /* Gris muy oscuro */
+  --bg-card: #2A2A2A;        /* Gris oscuro */
+  --bg-accent: #333333;      /* Gris medio */
+  --bg-elevated: #3A3A3A;    /* Gris claro */
+  
+  /* SISTEMA DE TEXTO - Grises equilibrados */
+  --text-primary: #FAFAFA;   /* Blanco suave */
+  --text-secondary: #E0E0E0; /* Gris muy claro */
+  --text-muted: #9E9E9E;     /* Gris medio */
+  --text-disabled: #616161;  /* Gris oscuro */
+  
+  /* SUPERFICIES Y BORDES */
+  --surface: #222222;        /* Superficie principal */
+  --surface-light: #2E2E2E;  /* Superficie elevada */
+  --border: #404040;         /* Bordes principales */
+  --border-light: #333333;   /* Bordes sutiles */
+  --border-focus: #64B5F6;   /* Borde de foco */
+  
+  /* COLORES DE ESTADO - Suaves y equilibrados */
+  --success: #66BB6A;        /* Verde suave */
+  --warning: #FFA726;        /* Naranja suave */
+  --danger: #EF5350;         /* Rojo suave */
+  --info: #42A5F5;           /* Azul suave */
+  
+  /* COLORES ESPECÍFICOS PARA NAVBAR */
+  --navbar-bg: #1F1F1F;      /* Fondo navbar */
+  --navbar-border: #64B5F6;  /* Borde inferior navbar */
+  --navbar-text: #FAFAFA;    /* Texto navbar */
+  --navbar-hover: #2E2E2E;   /* Hover navbar */
+  --navbar-active: #64B5F6;  /* Elemento activo navbar */
 }
 
 /* ===== REDUCCIÓN DE MOVIMIENTO ===== */
