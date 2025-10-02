@@ -683,6 +683,21 @@ function resetearFiltroHorasFin(selectFinId) {
 }
 
 /**
+ * Actualizar calendario después de cambios
+ */
+function actualizarCalendario() {
+    if (window.CalendarioApp && window.CalendarioApp.Core) {
+        if (window.CalendarioApp.Core.updateMainCalendar) {
+            window.CalendarioApp.Core.updateMainCalendar();
+            console.log('Calendario actualizado');
+        } else if (window.CalendarioApp.Core.calendar && window.CalendarioApp.Core.calendar.refetchEvents) {
+            window.CalendarioApp.Core.calendar.refetchEvents();
+            console.log('Calendario actualizado con refetchEvents');
+        }
+    }
+}
+
+/**
  * Eliminar reserva mediante petición AJAX
  */
 function eliminarReserva(deleteUrl) {
@@ -720,10 +735,15 @@ function eliminarReserva(deleteUrl) {
         hideLoadingIndicator();
         showNotification('Reserva eliminada exitosamente', 'success');
         
-        // Recargar la página para mostrar los cambios
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
+        // Actualizar el calendario si existe
+        actualizarCalendario();
+        
+        // Si estamos en la página de mis reservas, recargar la tabla
+        if (window.location.pathname.includes('mis-reservas')) {
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
     })
     .catch(error => {
         hideLoadingIndicator();
