@@ -1,12 +1,7 @@
-/**
- * CORE.CSS - LIMPIO Y OPTIMIZADO
- * Solo variables y estilos que se usan realmente
- * Generado: 2025-01-27
- */
+/* CORE.CSS - Variables y estilos base */
 
-/* ===== VARIABLES DEL SISTEMA ===== */
+/* VARIABLES DEL SISTEMA */
 :root {
-  /* Colores principales - Solo los que se usan */
   --primary: #F8BBD9;
   --primary-dark: #E91E63;
   --primary-light: #FCE7F3;
@@ -17,7 +12,6 @@
   --info: #2196F3;
   --neutral: #9E9E9E;
   
-  /* Alias para compatibilidad - Solo los que se usan */
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
   --color-primary-light: var(--primary-light);
@@ -28,66 +22,56 @@
   --color-info: var(--info);
   --color-neutral: var(--neutral);
   
-  /* Colores de fondo - Solo los que se usan */
   --bg-primary: #FDF2F8;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-accent: #FCE7F3;
   --bg-dark: #2C2C2C;
   
-  /* Colores de texto - Solo los que se usan */
   --text-primary: #831843;
   --text-secondary: #E91E63;
   --text-muted: #F8BBD9;
   --text-on-dark: #FFFFFF;
   --text-on-light: #2C2C2C;
   
-  /* Sistema de espaciado - Solo los que se usan */
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2rem;
   
-  /* Sistema de sombras - Solo las que se usan */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
   
-  /* Sistema de bordes - Solo los que se usan */
   --border-radius-xs: 4px;
   --border-radius-sm: 8px;
   --border-radius-md: 12px;
   --border-radius-lg: 16px;
   --border-radius-full: 50%;
   
-  /* Transiciones - Solo las que se usan */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   
-  /* Variables RGB para rgba() - Solo las que se usan */
   --primary-rgb: 248, 187, 217;
   --success-rgb: 76, 175, 80;
   --color-success-rgb: 76, 175, 80;
   --color-danger-rgb: 244, 67, 54;
   
-  /* Variables de borde y foco - Solo las que se usan */
   --color-border-light: rgba(248, 187, 217, 0.2);
   --color-border-medium: rgba(248, 187, 217, 0.4);
   --color-border-focus: rgba(248, 187, 217, 0.25);
   
-  /* Variables de superficie - Solo las que se usan */
   --surface: #FFFFFF;
   --surface-light: #F8F9FA;
   --border: #E9ECEF;
   --border-light: #F1F3F4;
   
-  /* Variables de layout - Necesarias para contenedores */
   --container-max-width: 1200px;
   --container-padding: 1rem;
 }
 
-/* ===== RESET Y BASE ===== */
+/* RESET Y BASE */
 * {
   box-sizing: border-box;
 }
@@ -111,7 +95,7 @@ body {
   flex-direction: column;
 }
 
-/* ===== CONTENEDORES ===== */
+/* CONTENEDORES */
 .container {
   max-width: var(--container-max-width);
   margin: 0 auto;
@@ -126,7 +110,7 @@ body {
   flex: 1;
 }
 
-/* ===== FOOTER ===== */
+/* FOOTER */
 .footer {
   margin-top: auto;
   padding: var(--space-lg) 0;
@@ -141,148 +125,136 @@ body {
   border-top: 1px solid var(--border);
 }
 
-/* ===== CLASES DE COLOR UTILITARIAS ===== */
-.text-primary { color: var(--text-primary) !important; }
-.text-secondary { color: var(--text-secondary) !important; }
-.text-muted { color: var(--text-muted) !important; }
-.text-success { color: var(--success) !important; }
-.text-warning { color: var(--warning) !important; }
-.text-danger { color: var(--danger) !important; }
-.text-info { color: var(--info) !important; }
+/* UTILIDADES DE COLOR */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-danger { color: var(--danger); }
+.text-info { color: var(--info); }
 
-.bg-primary { background-color: var(--primary) !important; }
-.bg-secondary { background-color: var(--bg-secondary) !important; }
-.bg-card { background-color: var(--bg-card) !important; }
-.bg-accent { background-color: var(--bg-accent) !important; }
+.bg-primary { background-color: var(--primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-card { background-color: var(--bg-card); }
+.bg-accent { background-color: var(--bg-accent); }
 
-/* ===== CLASES DE ESPACIADO ===== */
-.m-0 { margin: 0 !important; }
-.m-1 { margin: var(--space-sm) !important; }
-.m-2 { margin: var(--space-md) !important; }
-.m-3 { margin: var(--space-lg) !important; }
+/* UTILIDADES DE ESPACIADO */
+.m-0 { margin: 0; }
+.m-1 { margin: var(--space-sm); }
+.m-2 { margin: var(--space-md); }
+.m-3 { margin: var(--space-lg); }
 
-.p-0 { padding: 0 !important; }
-.p-1 { padding: var(--space-sm) !important; }
-.p-2 { padding: var(--space-md) !important; }
-.p-3 { padding: var(--space-lg) !important; }
+.p-0 { padding: 0; }
+.p-1 { padding: var(--space-sm); }
+.p-2 { padding: var(--space-md); }
+.p-3 { padding: var(--space-lg); }
 
-/* ===== CLASES DE BORDES ===== */
-.rounded-sm { border-radius: var(--border-radius-sm) !important; }
-.rounded-md { border-radius: var(--border-radius-md) !important; }
-.rounded-lg { border-radius: var(--border-radius-lg) !important; }
-.rounded-full { border-radius: var(--border-radius-full) !important; }
+/* UTILIDADES DE BORDES */
+.rounded-sm { border-radius: var(--border-radius-sm); }
+.rounded-md { border-radius: var(--border-radius-md); }
+.rounded-lg { border-radius: var(--border-radius-lg); }
+.rounded-full { border-radius: var(--border-radius-full); }
 
-/* ===== CLASES DE SOMBRA ===== */
-.shadow-sm { box-shadow: var(--shadow-sm) !important; }
-.shadow-md { box-shadow: var(--shadow-md) !important; }
+/* UTILIDADES DE SOMBRA */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
 
-/* ===== CLASES DE TRANSICIÓN ===== */
-.transition-fast { transition: all var(--transition-fast) !important; }
-.transition-normal { transition: all var(--transition-normal) !important; }
+/* UTILIDADES DE TRANSICIÓN */
+.transition-fast { transition: all var(--transition-fast); }
+.transition-normal { transition: all var(--transition-normal); }
 
-/* ===== RESPONSIVE ===== */
+/* RESPONSIVE */
 @media (max-width: 768px) {
   html {
     font-size: 14px;
   }
   
-  .p-3 { padding: var(--space-md) !important; }
-  .m-3 { margin: var(--space-md) !important; }
+  .p-3 { padding: var(--space-md); }
+  .m-3 { margin: var(--space-md); }
 }
 
-/* ===== DARK MODE ===== */
+/* DARK MODE */
 @media (prefers-color-scheme: dark) {
   :root {
-    /* PALETA PRIMARIA - Azules suaves y profesionales */
-    --primary: #64B5F6;        /* Azul claro suave */
-    --primary-dark: #42A5F5;   /* Azul medio */
-    --primary-light: #90CAF9;  /* Azul muy claro */
-    --secondary: #81C784;      /* Verde suave */
-    --accent: #FFB74D;         /* Naranja suave */
+    --primary: #64B5F6;
+    --primary-dark: #42A5F5;
+    --primary-light: #90CAF9;
+    --secondary: #81C784;
+    --accent: #FFB74D;
     
-    /* SISTEMA DE FONDOS - Grises cálidos */
-    --bg-primary: #1A1A1A;     /* Negro suave (más claro) */
-    --bg-secondary: #222222;   /* Gris muy oscuro */
-    --bg-card: #2A2A2A;        /* Gris oscuro */
-    --bg-accent: #333333;      /* Gris medio */
-    --bg-elevated: #3A3A3A;    /* Gris claro */
+    --bg-primary: #1A1A1A;
+    --bg-secondary: #222222;
+    --bg-card: #2A2A2A;
+    --bg-accent: #333333;
+    --bg-elevated: #3A3A3A;
     
-    /* SISTEMA DE TEXTO - Grises equilibrados */
-    --text-primary: #FAFAFA;   /* Blanco suave */
-    --text-secondary: #E0E0E0; /* Gris muy claro */
-    --text-muted: #9E9E9E;     /* Gris medio */
-    --text-disabled: #616161;  /* Gris oscuro */
+    --text-primary: #FAFAFA;
+    --text-secondary: #E0E0E0;
+    --text-muted: #9E9E9E;
+    --text-disabled: #616161;
     
-    /* SUPERFICIES Y BORDES */
-    --surface: #222222;        /* Superficie principal */
-    --surface-light: #2E2E2E;  /* Superficie elevada */
-    --border: #404040;         /* Bordes principales */
-    --border-light: #333333;   /* Bordes sutiles */
-    --border-focus: #64B5F6;   /* Borde de foco */
+    --surface: #222222;
+    --surface-light: #2E2E2E;
+    --border: #404040;
+    --border-light: #333333;
+    --border-focus: #64B5F6;
     
-    /* COLORES DE ESTADO - Suaves y equilibrados */
-    --success: #66BB6A;        /* Verde suave */
-    --warning: #FFA726;        /* Naranja suave */
-    --danger: #EF5350;         /* Rojo suave */
-    --info: #42A5F5;           /* Azul suave */
+    --success: #66BB6A;
+    --warning: #FFA726;
+    --danger: #EF5350;
+    --info: #42A5F5;
     
-  /* COLORES ESPECÍFICOS PARA NAVBAR */
-  --navbar-bg: #1F1F1F;      /* Fondo navbar */
-  --navbar-border: #64B5F6;  /* Borde inferior navbar */
-  --navbar-text: #FAFAFA;    /* Texto navbar */
-  --navbar-hover: #2E2E2E;   /* Hover navbar */
-  --navbar-active: #64B5F6;  /* Elemento activo navbar */
+    --navbar-bg: #1F1F1F;
+    --navbar-border: #64B5F6;
+    --navbar-text: #FAFAFA;
+    --navbar-hover: #2E2E2E;
+    --navbar-active: #64B5F6;
   }
 }
 
-/* ===== DARK MODE MANUAL ===== */
+/* DARK MODE MANUAL */
 [data-theme="dark"] {
-  /* PALETA PRIMARIA - Azules suaves y profesionales */
-  --primary: #64B5F6;        /* Azul claro suave */
-  --primary-dark: #42A5F5;   /* Azul medio */
-  --primary-light: #90CAF9;  /* Azul muy claro */
-  --secondary: #81C784;      /* Verde suave */
-  --accent: #FFB74D;         /* Naranja suave */
+  --primary: #64B5F6;
+  --primary-dark: #42A5F5;
+  --primary-light: #90CAF9;
+  --secondary: #81C784;
+  --accent: #FFB74D;
   
-  /* SISTEMA DE FONDOS - Grises cálidos */
-  --bg-primary: #1A1A1A;     /* Negro suave (más claro) */
-  --bg-secondary: #222222;   /* Gris muy oscuro */
-  --bg-card: #2A2A2A;        /* Gris oscuro */
-  --bg-accent: #333333;      /* Gris medio */
-  --bg-elevated: #3A3A3A;    /* Gris claro */
+  --bg-primary: #1A1A1A;
+  --bg-secondary: #222222;
+  --bg-card: #2A2A2A;
+  --bg-accent: #333333;
+  --bg-elevated: #3A3A3A;
   
-  /* SISTEMA DE TEXTO - Grises equilibrados */
-  --text-primary: #FAFAFA;   /* Blanco suave */
-  --text-secondary: #E0E0E0; /* Gris muy claro */
-  --text-muted: #9E9E9E;     /* Gris medio */
-  --text-disabled: #616161;  /* Gris oscuro */
+  --text-primary: #FAFAFA;
+  --text-secondary: #E0E0E0;
+  --text-muted: #9E9E9E;
+  --text-disabled: #616161;
   
-  /* SUPERFICIES Y BORDES */
-  --surface: #222222;        /* Superficie principal */
-  --surface-light: #2E2E2E;  /* Superficie elevada */
-  --border: #404040;         /* Bordes principales */
-  --border-light: #333333;   /* Bordes sutiles */
-  --border-focus: #64B5F6;   /* Borde de foco */
+  --surface: #222222;
+  --surface-light: #2E2E2E;
+  --border: #404040;
+  --border-light: #333333;
+  --border-focus: #64B5F6;
   
-  /* COLORES DE ESTADO - Suaves y equilibrados */
-  --success: #66BB6A;        /* Verde suave */
-  --warning: #FFA726;        /* Naranja suave */
-  --danger: #EF5350;         /* Rojo suave */
-  --info: #42A5F5;           /* Azul suave */
+  --success: #66BB6A;
+  --warning: #FFA726;
+  --danger: #EF5350;
+  --info: #42A5F5;
   
-  /* COLORES ESPECÍFICOS PARA NAVBAR */
-  --navbar-bg: #1F1F1F;      /* Fondo navbar */
-  --navbar-border: #64B5F6;  /* Borde inferior navbar */
-  --navbar-text: #FAFAFA;    /* Texto navbar */
-  --navbar-hover: #2E2E2E;   /* Hover navbar */
-  --navbar-active: #64B5F6;  /* Elemento activo navbar */
+  --navbar-bg: #1F1F1F;
+  --navbar-border: #64B5F6;
+  --navbar-text: #FAFAFA;
+  --navbar-hover: #2E2E2E;
+  --navbar-active: #64B5F6;
 }
 
-/* ===== REDUCCIÓN DE MOVIMIENTO ===== */
+/* REDUCCIÓN DE MOVIMIENTO */
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 }

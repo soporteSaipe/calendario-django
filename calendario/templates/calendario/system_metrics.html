@@ -1,0 +1,132 @@
+{% extends 'calendario/base.html' %}
+{% load static %}
+
+{% block title %}Métricas del Sistema - Sistema SAIPE{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-chart-line me-1"></i>Métricas del Sistema
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h3 class="mb-0">
+                    <i class="fas fa-chart-line me-3"></i>Métricas del Sistema
+                </h3>
+            </div>
+            <div class="card-body-modern">
+                {% if error %}
+                <div class="alert alert-danger-modern">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error al obtener métricas: {{ error }}
+                </div>
+                {% else %}
+                
+                <!-- Estado General -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="mb-3">
+                            <i class="fas fa-heartbeat me-2"></i>Estado General
+                        </h5>
+                        <div class="health-status health-{{ health.overall_status|default:'healthy' }}">
+                            <i class="fas fa-circle"></i>
+                            Sistema {{ health.overall_status|default:'Saludable'|upper }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métricas de Base de Datos -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="mb-3">
+                            <i class="fas fa-database me-2"></i>Base de Datos
+                        </h5>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <div class="metric-value">{{ metrics.database.total_reservas|default:0 }}</div>
+                            <div class="metric-label">Total Reservas</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <div class="metric-value">{{ metrics.database.recursos_activos|default:0 }}</div>
+                            <div class="metric-label">Recursos Activos</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <div class="metric-value">{{ metrics.database.usuarios_activos|default:0 }}</div>
+                            <div class="metric-label">Usuarios Activos</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card text-center">
+                            <div class="metric-value">{{ metrics.database.reservas_hoy|default:0 }}</div>
+                            <div class="metric-label">Reservas Hoy</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métricas de Rendimiento -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="mb-3">
+                            <i class="fas fa-tachometer-alt me-2"></i>Rendimiento
+                        </h5>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card text-center">
+                            <div class="metric-value">{{ performance.avg_response_time|default:'N/A' }}</div>
+                            <div class="metric-label">Tiempo Respuesta Promedio</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card text-center">
+                            <div class="metric-value">{{ metrics.cache.hit_rate|default:'N/A' }}%</div>
+                            <div class="metric-label">Cache Hit Rate</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card text-center">
+                            <div class="metric-value">{{ performance.total_queries|default:'N/A' }}</div>
+                            <div class="metric-label">Consultas DB</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Sistema -->
+                <div class="alert alert-info-modern">
+                    <h6><i class="fas fa-info-circle me-2"></i>Información del Sistema</h6>
+                    <ul class="mb-0">
+                        <li><strong>Django Version:</strong> {{ metrics.system.django_version|default:'N/A' }}</li>
+                        <li><strong>Python Version:</strong> {{ metrics.system.python_version|default:'N/A' }}</li>
+                        <li><strong>Database:</strong> {{ metrics.system.database|default:'PostgreSQL' }}</li>
+                        <li><strong>Última actualización:</strong> {{ health.timestamp|default:'Ahora' }}</li>
+                    </ul>
+                </div>
+
+                {% endif %}
+
+                <!-- Acciones -->
+                <div class="d-flex gap-2 mt-4">
+                    <a href="{% url 'calendario:health_check' %}" class="btn-modern btn-primary-modern" target="_blank">
+                        <i class="fas fa-heartbeat me-2"></i>Health Check (JSON)
+                    </a>
+                    <a href="{% url 'calendario:api_docs_json' %}" class="btn-modern btn-secondary-modern" target="_blank">
+                        <i class="fas fa-file-code me-2"></i>API Docs (JSON)
+                    </a>
+                    <button type="button" class="btn-modern btn-secondary-modern" onclick="location.reload()">
+                        <i class="fas fa-sync me-2"></i>Actualizar Métricas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

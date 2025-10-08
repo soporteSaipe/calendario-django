@@ -1,14 +1,6 @@
-/**
- * COMPONENTS.CSS - CONSOLIDADO
- * Componentes reutilizables
- * Generado automáticamente: 2025-09-22 12:34:30
- * Archivos originales: components.css, modal-unified.css, modal-details.css, phase2-buttons.css
- */
+/* COMPONENTS.CSS - Componentes reutilizables */
 
-/* ===== COMPONENTS.CSS ===== */
-
-
-/* ===== CARDS ===== */
+/* CARDS */
 .card-modern {
   background: var(--bg-card);
   border: none;
@@ -17,10 +9,6 @@
   transition: var(--transition-normal);
   overflow: hidden;
   position: relative;
-}
-
-.card-modern:hover {
-  box-shadow: var(--shadow-md);
 }
 
 .card-modern:not(:has(#calendar)) {
@@ -35,7 +23,6 @@
   background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
   border-color: rgba(255, 255, 255, 0.3);
 }
 
@@ -76,9 +63,9 @@
   border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
 }
 
-/* ===== BOTONES ===== */
+/* BOTONES */
 .btn-modern {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   border: 2px solid var(--primary);
   color: var(--text-on-dark);
   padding: 0.75rem 1.5rem;
@@ -97,9 +84,10 @@
 }
 
 .btn-modern:hover {
-  background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
   color: var(--text-on-dark);
   text-decoration: none;
+  box-shadow: 0 4px 12px rgba(248, 187, 217, 0.4);
 }
 
 .btn-modern:active {
@@ -135,16 +123,23 @@
 
 /* Variantes de botones */
 .btn-primary-modern {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-color: var(--primary);
+}
+
+.btn-primary-modern:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
 .btn-secondary-modern {
-  background: linear-gradient(135deg, var(--secondary) 0%, var(--primary-dark) 100%);
-  border-color: var(--secondary);
+  background: linear-gradient(135deg, #FF7F7F 0%, #FF5757 100%);
+  border-color: #FF7F7F;
+  color: var(--text-on-dark);
 }
 
 .btn-secondary-modern:hover {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, #FF5757 0%, #FF7F7F 100%);
+  box-shadow: 0 4px 12px rgba(255, 127, 127, 0.4);
 }
 
 .btn-danger-modern {
@@ -229,7 +224,7 @@
   font-weight: 400;
 }
 
-/* ===== FORMULARIOS ===== */
+/* FORMULARIOS */
 .form-control-modern,
 .form-select-modern {
   border: 2px solid var(--bg-accent);
@@ -275,7 +270,6 @@
   margin-bottom: 0;
 }
 
-/* Estados de validación */
 .form-control-modern.is-valid {
   border-color: var(--success);
   box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
@@ -286,7 +280,7 @@
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
-/* ===== ALERTAS ===== */
+/* ALERTAS */
 .alert-modern {
   border: none;
   border-radius: var(--border-radius-md);
@@ -323,7 +317,7 @@
   border-left-color: var(--info);
 }
 
-/* ===== MODALES ===== */
+/* MODALES */
 .modal-content-modern {
   border: none;
   border-radius: var(--border-radius-lg);
@@ -380,7 +374,6 @@
   padding: var(--space-lg);
 }
 
-/* Botón de cerrar del modal */
 .btn-close {
   background: none;
   border: none;
@@ -417,7 +410,7 @@
   font-weight: 700;
 }
 
-/* ===== BADGES ===== */
+/* BADGES */
 .badge-modern {
   display: inline-flex;
   align-items: center;
@@ -447,7 +440,7 @@
 .badge-info { background: var(--info); color: var(--text-on-dark); }
 .badge-secondary { background: var(--neutral); color: var(--text-on-dark); }
 
-/* ===== TABLAS ===== */
+/* TABLAS */
 .table-modern {
   width: 100%;
   margin-bottom: var(--space-md);
@@ -480,7 +473,6 @@
   outline-offset: -2px;
 }
 
-/* Responsive design para tablas */
 @media (max-width: 768px) {
   .table-responsive {
     border: none;
@@ -506,7 +498,6 @@
     padding-right: 0.5rem;
   }
   
-  /* Ocultar columnas menos importantes en móviles */
   .table-modern th:nth-child(4),
   .table-modern td:nth-child(4),
   .table-modern th:nth-child(5),
@@ -514,13 +505,11 @@
     display: none;
   }
   
-  /* Ajustar botones de acción en móviles */
   .btn-group-sm .btn-action {
     padding: 4px 8px;
     font-size: 0.75rem;
   }
   
-  /* Hacer badges más pequeños en móviles */
   .badge-modern {
     font-size: 0.65rem;
     padding: 0.25rem 0.5rem;
@@ -537,7 +526,6 @@
     padding: 0.375rem 0.125rem;
   }
   
-  /* Ocultar más columnas en pantallas muy pequeñas */
   .table-modern th:nth-child(2),
   .table-modern td:nth-child(2),
   .table-modern th:nth-child(3),
@@ -545,7 +533,6 @@
     display: none;
   }
   
-  /* Stack botones verticalmente en móviles muy pequeños */
   .btn-group-sm {
     flex-direction: column;
     gap: 2px;
@@ -557,7 +544,7 @@
   }
 }
 
-/* ===== BOTONES DE ACCIÓN ===== */
+/* BOTONES DE ACCIÓN */
 .btn-action {
   border: none;
   border-radius: var(--border-radius-sm);
@@ -601,20 +588,18 @@
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
-/* Estados deshabilitados */
 .btn-action:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-action:disabled:hover {
-  transform: none !important;
-  box-shadow: none !important;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Indicadores de estado en filas de tabla */
 .table-modern tbody tr[data-estado="activa"] {
   border-left: 4px solid var(--success);
 }
@@ -633,15 +618,8 @@
   opacity: 0.8;
 }
 
-/* Animaciones para cambios de estado */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
-/* ===== INDICADORES DE CARGA ELEGANTES ===== */
-
-/* Overlay de carga moderno */
+/* INDICADORES DE CARGA */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -665,7 +643,6 @@
     visibility: visible;
 }
 
-/* Spinner moderno con gradiente */
 .modern-spinner {
     width: 60px;
     height: 60px;
@@ -689,13 +666,11 @@
     animation: modernSpin 1.5s linear infinite reverse;
 }
 
-/* Animación del spinner */
 @keyframes modernSpin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-/* Contenedor de mensaje de carga */
 .loading-content {
     text-align: center;
     color: white;
@@ -709,7 +684,6 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Puntos de carga animados */
 .loading-dots {
     display: inline-block;
     margin-left: 8px;
@@ -740,7 +714,6 @@
     }
 }
 
-/* Spinner para botones */
 .btn-loading {
     position: relative;
     color: transparent !important;
@@ -761,7 +734,6 @@
     animation: modernSpin 1s linear infinite;
 }
 
-/* Indicador de progreso moderno */
 .progress-modern {
     width: 100%;
     height: 6px;
@@ -783,9 +755,7 @@
     100% { transform: translateX(100%); }
 }
 
-/* ===== ANIMACIONES SUAVES Y TRANSICIONES ===== */
-
-/* Animaciones de entrada para elementos */
+/* ANIMACIONES BÁSICAS */
 @keyframes slideInUp {
     from {
         opacity: 0;
@@ -859,7 +829,6 @@
     }
 }
 
-/* Clases de animación */
 .animate-slide-in-up {
     animation: slideInUp 0.6s ease-out;
 }
@@ -884,7 +853,6 @@
     animation: bounceIn 0.6s ease-out;
 }
 
-/* Transiciones suaves para elementos interactivos */
 .smooth-transition {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -897,7 +865,6 @@
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Efectos hover mejorados */
 .hover-lift {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -923,7 +890,6 @@
     box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
 }
 
-/* Animaciones para modales */
 .modal.fade .modal-dialog {
     transition: transform 0.3s ease-out;
     transform: translate(0, -50px);
@@ -933,12 +899,10 @@
     transform: none;
 }
 
-/* Animaciones para alertas */
 .alert {
     animation: slideInDown 0.5s ease-out;
 }
 
-/* Animaciones para botones */
 .btn-modern {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -960,17 +924,7 @@
     left: 100%;
 }
 
-/* Animaciones para tarjetas */
-.card-modern {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.card-modern:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
-/* Animaciones para badges */
 .badge-modern {
     transition: all 0.3s ease;
 }
@@ -979,7 +933,6 @@
     transform: scale(1.1);
 }
 
-/* Animaciones para iconos */
 .icon-bounce {
     transition: transform 0.3s ease;
 }
@@ -988,7 +941,6 @@
     transform: scale(1.2) rotate(5deg);
 }
 
-/* Animaciones para tablas */
 .table-modern tbody tr {
     transition: all 0.3s ease;
 }
@@ -998,7 +950,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Animaciones de entrada escalonadas */
 .stagger-animation > * {
     opacity: 0;
     transform: translateY(20px);
@@ -1012,9 +963,7 @@
 .stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
 .stagger-animation > *:nth-child(6) { animation-delay: 0.6s; }
 
-/* ===== TOOLTIPS INFORMATIVOS ===== */
-
-/* Tooltip base */
+/* TOOLTIPS */
 .tooltip-modern {
     position: relative;
     display: inline-block;
@@ -1025,11 +974,10 @@
     -ms-user-select: none;
 }
 
-/* Tooltip text */
 .tooltip-modern .tooltip-text {
-    visibility: hidden !important;
-    opacity: 0 !important;
-    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+    display: none;
     width: 200px;
     background: linear-gradient(135deg, #2c3e50, #34495e);
     color: white;
@@ -1052,7 +1000,6 @@
     transform: translateY(10px);
 }
 
-/* Tooltip arrow */
 .tooltip-modern .tooltip-text::after {
     content: "";
     position: absolute;
@@ -1064,15 +1011,13 @@
     border-color: #2c3e50 transparent transparent transparent;
 }
 
-/* Tooltip hover */
 .tooltip-modern:hover .tooltip-text {
-    visibility: visible !important;
-    opacity: 1 !important;
-    display: block !important;
+    visibility: visible;
+    opacity: 1;
+    display: block;
     transform: translateY(0);
 }
 
-/* Tooltip positions */
 .tooltip-modern.tooltip-top .tooltip-text {
     bottom: 125%;
     top: auto;
@@ -1116,7 +1061,6 @@
     border-color: transparent #2c3e50 transparent transparent;
 }
 
-/* Tooltip sizes */
 .tooltip-modern.tooltip-small .tooltip-text {
     width: 150px;
     font-size: 0.8rem;
@@ -1129,7 +1073,6 @@
     padding: 16px 20px;
 }
 
-/* Tooltip themes */
 .tooltip-modern.tooltip-success .tooltip-text {
     background: linear-gradient(135deg, #27ae60, #2ecc71);
 }
@@ -1162,13 +1105,11 @@
     border-color: #3498db transparent transparent transparent;
 }
 
-/* Tooltip con iconos */
 .tooltip-modern .tooltip-text .tooltip-icon {
     margin-right: 8px;
     font-size: 1.1em;
 }
 
-/* Tooltip para elementos específicos */
 .btn-action.tooltip-modern {
     cursor: pointer;
 }
@@ -1177,7 +1118,6 @@
     cursor: help;
 }
 
-/* Tooltip responsivo */
 @media (max-width: 768px) {
     .tooltip-modern .tooltip-text {
         width: 180px;
@@ -1198,9 +1138,7 @@
     }
 }
 
-/* ===== FEEDBACK VISUAL MEJORADO ===== */
-
-/* Efectos de click y focus */
+/* FEEDBACK VISUAL */
 .btn-modern:active {
     transform: scale(0.98);
     transition: transform 0.1s ease;
@@ -1211,7 +1149,6 @@
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
-/* Efectos de ripple para botones */
 .btn-ripple {
     position: relative;
     overflow: hidden;
@@ -1235,7 +1172,6 @@
     height: 300px;
 }
 
-/* Estados de éxito y error */
 .success-feedback {
     animation: successPulse 0.6s ease-out;
 }
@@ -1256,7 +1192,6 @@
     20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
-/* Indicadores de estado en tiempo real */
 .status-indicator {
     position: relative;
     display: inline-block;
@@ -1293,7 +1228,6 @@
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* Efectos de hover mejorados para elementos interactivos */
 .interactive-element {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
@@ -1309,10 +1243,9 @@
     transition: transform 0.1s ease;
 }
 
-/* Efectos de carga en botones */
 .btn-loading-state {
     position: relative;
-    color: transparent !important;
+    color: transparent;
     pointer-events: none;
 }
 
@@ -1330,7 +1263,6 @@
     animation: modernSpin 1s linear infinite;
 }
 
-/* Efectos de notificación */
 .notification-slide-in {
     animation: slideInRight 0.5s ease-out;
 }
@@ -1350,7 +1282,6 @@
     }
 }
 
-/* Efectos de highlight para elementos importantes */
 .highlight-element {
     animation: highlightPulse 2s ease-in-out;
 }
@@ -1366,7 +1297,6 @@
     }
 }
 
-/* Efectos de confirmación */
 .confirmation-check {
     animation: checkBounce 0.6s ease-out;
 }
@@ -1377,7 +1307,6 @@
     100% { transform: scale(1); }
 }
 
-/* Efectos de progreso */
 .progress-bar-animated {
     background: linear-gradient(90deg, 
         #007bff 0%, 
@@ -1394,7 +1323,6 @@
     100% { background-position: -200% 0; }
 }
 
-/* Efectos de zoom suave */
 .zoom-on-hover {
     transition: transform 0.3s ease;
 }
@@ -1408,7 +1336,6 @@
     transition: transform 0.1s ease;
 }
 
-/* Efectos de desvanecimiento */
 .fade-in-up {
     animation: fadeInUp 0.6s ease-out;
 }
@@ -1424,7 +1351,6 @@
     }
 }
 
-/* Efectos de rotación */
 .rotate-on-hover {
     transition: transform 0.3s ease;
 }
@@ -1433,7 +1359,6 @@
     transform: rotate(5deg);
 }
 
-/* Efectos de brillo */
 .shine-effect {
     position: relative;
     overflow: hidden;
@@ -1457,9 +1382,7 @@
     left: 100%;
 }
 
-/* ===== DISEÑO DE TARJETAS MEJORADO ===== */
-
-/* Tarjetas con gradientes y efectos modernos */
+/* TARJETAS MEJORADAS */
 .card-modern-enhanced {
     background: linear-gradient(135deg, 
         rgba(255, 255, 255, 0.9) 0%, 
@@ -1498,7 +1421,6 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Headers de tarjetas mejorados */
 .card-header-modern-enhanced {
     background: linear-gradient(135deg, 
         rgba(0, 123, 255, 0.1) 0%, 
@@ -1524,7 +1446,6 @@
     border-radius: 1px;
 }
 
-/* Badges modernos mejorados */
 .badge-modern-enhanced {
     background: linear-gradient(135deg, 
         rgba(255, 255, 255, 0.2) 0%, 
@@ -1551,7 +1472,6 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-/* Botones modernos mejorados */
 .btn-modern-enhanced {
     background: linear-gradient(135deg, 
         #007bff 0%, 
@@ -1602,7 +1522,6 @@
     transition: transform 0.1s ease;
 }
 
-/* Tablas modernas mejoradas */
 .table-modern-enhanced {
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
@@ -1645,7 +1564,6 @@
     vertical-align: middle;
 }
 
-/* Efectos de glassmorphism */
 .glass-effect {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
@@ -1657,7 +1575,6 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Efectos de neumorfismo suave */
 .neumorphism-soft {
     background: #f0f0f0;
     border-radius: 20px;
@@ -1674,7 +1591,6 @@
     transform: translateY(-2px);
 }
 
-/* Efectos de gradiente animado */
 .gradient-animated {
     background: linear-gradient(-45deg, 
         #007bff, 
@@ -1691,7 +1607,6 @@
     100% { background-position: 0% 50%; }
 }
 
-/* Efectos de partículas flotantes */
 .floating-particles {
     position: relative;
     overflow: hidden;
@@ -1722,7 +1637,6 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Indicadores de carga en botones */
 .btn-action.loading {
   position: relative;
   color: transparent;
@@ -1842,10 +1756,7 @@
 }
 
 
-/* ===== MODAL-UNIFIED.CSS ===== */
-
-
-/* ===== MODAL PRINCIPAL ===== */
+/* MODALES UNIFICADOS */
 .modal-content-modern {
   border: none;
   border-radius: var(--border-radius-lg);
@@ -1856,9 +1767,8 @@
   max-height: 90vh;
 }
 
-/* Forzar que no aparezcan scrollbars externas en modales */
 .modal.show {
-  padding-right: 0 !important;
+  padding-right: 0;
 }
 
 .modal-header-modern {
@@ -1914,7 +1824,6 @@
   gap: var(--space-md);
 }
 
-/* ===== PESTAÑAS DE NAVEGACIÓN ===== */
 .nav-pills {
   background: var(--bg-accent);
   border-radius: var(--border-radius-md);
@@ -1959,7 +1868,7 @@
 }
 
 .nav-pills .nav-link.active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: var(--text-on-dark);
   box-shadow: var(--shadow-sm);
 }
@@ -1973,7 +1882,6 @@
   transition: transform var(--transition-fast);
 }
 
-/* ===== CONTENIDO DE PESTAÑAS ===== */
 .tab-content {
   min-height: 400px;
 }
@@ -1986,7 +1894,6 @@
   display: block;
 }
 
-/* ===== FORMULARIOS MEJORADOS ===== */
 .form-group-modern {
   margin-bottom: var(--space-lg);
   position: relative;
@@ -2047,7 +1954,6 @@
   font-style: italic;
 }
 
-/* ===== INFORMACIÓN DE SALA SELECCIONADA ===== */
 .sala-selected-info {
   margin-top: var(--space-lg);
   animation: slideInDown 0.3s ease-out;
@@ -2070,7 +1976,6 @@
   margin-right: var(--space-sm);
 }
 
-/* ===== CONTENIDO DE DETALLES ===== */
 #reservaDetailsContent {
   min-height: 200px;
   max-height: calc(70vh - 200px);
@@ -2151,7 +2056,6 @@
   line-height: 1.6;
 }
 
-/* ===== BOTONES DEL MODAL ===== */
 .modal-footer .btn-modern {
   min-width: 120px;
   padding: 0.75rem 1.5rem;

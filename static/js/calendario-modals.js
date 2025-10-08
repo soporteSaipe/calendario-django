@@ -544,7 +544,6 @@ CalendarioApp.ModalFactory = {
    * Inicializar ModalFactory
    */
   init: function() {
-    console.log('🎭 ModalFactory inicializado');
     this.setupGlobalEvents();
   }
 };

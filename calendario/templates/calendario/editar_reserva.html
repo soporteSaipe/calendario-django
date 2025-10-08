@@ -47,15 +47,65 @@
                     {% endif %}
                 {% endif %}
                 
+                <!-- Resumen de la reserva actual -->
+                <div class="alert alert-modern alert-info-modern mb-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-info-circle me-2"></i>Reserva Actual
+                    </h6>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <strong>Recurso:</strong> {{ reserva.recurso.nombre }}
+                            {% if reserva.recurso.tipo == 'vehiculo' %} - {{ reserva.recurso.patente }}{% endif %}
+                        </div>
+                        {% if reserva.recurso.tipo == 'sala' %}
+                        <div class="col-md-6">
+                            <strong>Título:</strong> {{ reserva.titulo }}
+                        </div>
+                        {% else %}
+                        <div class="col-md-6">
+                            <strong>Responsable:</strong> {{ reserva.responsable }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Destino:</strong> {{ reserva.destino }}
+                        </div>
+                        {% endif %}
+                        <div class="col-md-6">
+                            <strong>Fecha inicio:</strong> {{ reserva.fecha_inicio|date:"d/m/Y H:i" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>
+                                {% if reserva.recurso.tipo == 'vehiculo' %}
+                                    Fecha vuelta: {{ reserva.fecha_vuelta|date:"d/m/Y"|default:"No especificada" }}
+                                {% else %}
+                                    Fecha fin: {{ reserva.fecha_fin|date:"d/m/Y H:i" }}
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+                
                 <form method="post">
                     {% csrf_token %}
                     
                     <div class="row">
-                        <div class="col-md-6 form-group-modern">
+                        <div class="col-md-12 form-group-modern">
                             <label for="{{ form.recurso.id_for_label }}" class="form-label-modern">
+                                <i class="fas fa-{% if reserva.recurso.tipo == 'vehiculo' %}car{% else %}door-open{% endif %} me-2"></i>
                                 {{ form.recurso.label }}
                             </label>
-                            {{ form.recurso }}
+                            <select name="recurso" id="id_recurso" class="form-control-modern" required>
+                                {% for recurso in form.fields.recurso.queryset %}
+                                <option value="{{ recurso.id }}" 
+                                        data-tipo="{{ recurso.tipo }}"
+                                        {% if form.instance.recurso.id == recurso.id %}selected{% endif %}>
+                                    {% if recurso.tipo == 'vehiculo' %}
+                                        {{ recurso.nombre }} - {{ recurso.patente }}
+                                    {% else %}
+                                        {{ recurso.nombre }}
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
                             {% if form.recurso.errors %}
                                 <div class="text-danger small mt-1">
                                     {% for error in form.recurso.errors %}
@@ -64,21 +114,57 @@
                                 </div>
                             {% endif %}
                         </div>
+                    </div>
+                    
+                    <!-- Campos para SALAS -->
+                    {% if reserva.recurso.tipo == 'sala' %}
+                    <div class="form-group-modern" id="tituloField">
+                        <label for="{{ form.titulo.id_for_label }}" class="form-label-modern">
+                            <i class="fas fa-heading me-2"></i>{{ form.titulo.label }}
+                        </label>
+                        {{ form.titulo }}
+                        {% if form.titulo.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.titulo.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Campos para VEHÍCULOS -->
+                    {% if reserva.recurso.tipo == 'vehiculo' %}
+                    <div class="row">
+                        <div class="col-md-6 form-group-modern">
+                            <label for="{{ form.responsable.id_for_label }}" class="form-label-modern">
+                                <i class="fas fa-user me-2"></i>{{ form.responsable.label }}
+                            </label>
+                            {{ form.responsable }}
+                            {% if form.responsable.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.responsable.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
                         
                         <div class="col-md-6 form-group-modern">
-                            <label for="{{ form.titulo.id_for_label }}" class="form-label-modern">
-                                {{ form.titulo.label }}
+                            <label for="{{ form.destino.id_for_label }}" class="form-label-modern">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ form.destino.label }}
                             </label>
-                            {{ form.titulo }}
-                            {% if form.titulo.errors %}
+                            {{ form.destino }}
+                            {% if form.destino.errors %}
                                 <div class="text-danger small mt-1">
-                                    {% for error in form.titulo.errors %}
+                                    {% for error in form.destino.errors %}
                                         <div>{{ error }}</div>
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
                     </div>
+                    {% endif %}
                     
                     <div class="form-group-modern">
                         <label for="{{ form.descripcion.id_for_label }}" class="form-label-modern">
@@ -97,7 +183,8 @@
                     <div class="row">
                         <div class="col-md-6 form-group-modern">
                             <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label-modern">
-                                {{ form.fecha_inicio.label }}
+                                <i class="fas fa-calendar me-2"></i>
+                                {% if reserva.recurso.tipo == 'vehiculo' %}Fecha de Salida{% else %}{{ form.fecha_inicio.label }}{% endif %}
                             </label>
                             {{ form.fecha_inicio }}
                             {% if form.fecha_inicio.errors %}
@@ -111,7 +198,8 @@
                         
                         <div class="col-md-6 form-group-modern">
                             <label for="{{ form.fecha_fin.id_for_label }}" class="form-label-modern">
-                                {{ form.fecha_fin.label }}
+                                <i class="fas fa-clock me-2"></i>
+                                {% if reserva.recurso.tipo == 'vehiculo' %}Hora de Salida{% else %}{{ form.fecha_fin.label }}{% endif %}
                             </label>
                             {{ form.fecha_fin }}
                             {% if form.fecha_fin.errors %}
@@ -123,6 +211,23 @@
                             {% endif %}
                         </div>
                     </div>
+                    
+                    <!-- Campo fecha_vuelta solo para VEHÍCULOS -->
+                    {% if reserva.recurso.tipo == 'vehiculo' %}
+                    <div class="form-group-modern">
+                        <label for="{{ form.fecha_vuelta.id_for_label }}" class="form-label-modern">
+                            <i class="fas fa-calendar-check me-2"></i>{{ form.fecha_vuelta.label }}
+                        </label>
+                        {{ form.fecha_vuelta }}
+                        {% if form.fecha_vuelta.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.fecha_vuelta.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                     
                     {% if form.non_field_errors %}
                         <div class="alert alert-danger-modern">

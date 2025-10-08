@@ -67,6 +67,13 @@ class ReservaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['recurso'].queryset = Recurso.objects.filter(activo=True)
         
+        # Hacer todos los campos opcionales por defecto
+        # La validación real se hará en clean() según el tipo de recurso
+        self.fields['titulo'].required = False
+        self.fields['responsable'].required = False
+        self.fields['destino'].required = False
+        self.fields['fecha_vuelta'].required = False
+        
         # Configurar campos según el tipo de recurso
         if self.instance and self.instance.pk:
             recurso = self.instance.recurso
@@ -88,22 +95,14 @@ class ReservaForm(forms.ModelForm):
             self._configure_fields_for_resource_type(None)
     
     def _configure_fields_for_resource_type(self, recurso):
-        """Configurar campos según el tipo de recurso"""
+        """Configurar campos según el tipo de recurso - solo para UI, validación en clean()"""
         if recurso and recurso.es_vehiculo():
-            # Para vehículos: hacer obligatorios responsable, destino y fecha_vuelta
-            self.fields['responsable'].required = True
-            self.fields['destino'].required = True
-            self.fields['fecha_vuelta'].required = True
-            self.fields['titulo'].required = False
+            # Para vehículos: configurar placeholders y widgets
             self.fields['titulo'].widget.attrs['placeholder'] = 'Título opcional'
             # Ocultar fecha_fin para vehículos ya que usamos fecha_vuelta
             self.fields['fecha_fin'].widget = forms.HiddenInput()
         else:
-            # Para salas: hacer obligatorio título, ocultar campos de vehículo
-            self.fields['titulo'].required = True
-            self.fields['responsable'].required = False
-            self.fields['destino'].required = False
-            self.fields['fecha_vuelta'].required = False
+            # Para salas: configurar placeholders y widgets
             self.fields['titulo'].widget.attrs['placeholder'] = 'Título de la reserva'
             # Ocultar fecha_vuelta para salas
             self.fields['fecha_vuelta'].widget = forms.HiddenInput()
@@ -124,8 +123,14 @@ class ReservaForm(forms.ModelForm):
             if recurso and recurso.es_vehiculo():
                 if fecha_vuelta:
                     # Si hay fecha_vuelta, debe ser posterior o igual a fecha_inicio
-                    from datetime import datetime
-                    fecha_vuelta_date = datetime.strptime(fecha_vuelta, "%Y-%m-%d").date()
+                    # fecha_vuelta ya es un objeto date del formulario
+                    from datetime import date
+                    if isinstance(fecha_vuelta, str):
+                        from datetime import datetime
+                        fecha_vuelta_date = datetime.strptime(fecha_vuelta, "%Y-%m-%d").date()
+                    else:
+                        fecha_vuelta_date = fecha_vuelta
+                    
                     if fecha_vuelta_date < fecha_inicio.date():
                         raise forms.ValidationError("La fecha de vuelta debe ser posterior o igual a la fecha de salida.")
             else:
@@ -140,20 +145,34 @@ class ReservaForm(forms.ModelForm):
         # Validaciones específicas por tipo de recurso
         if recurso:
             if recurso.es_vehiculo():
+                # Validaciones para VEHÍCULOS
                 if not responsable:
                     raise forms.ValidationError("El campo 'Responsable' es obligatorio para vehículos.")
+                if not responsable.strip():
+                    raise forms.ValidationError("El campo 'Responsable' no puede estar vacío.")
+                    
                 if not destino:
                     raise forms.ValidationError("El campo 'Destino' es obligatorio para vehículos.")
-                # Para vehículos, el título es opcional, pero si se proporciona debe ser válido
-                if titulo and len(titulo.strip()) == 0:
-                    cleaned_data['titulo'] = ''  # Limpiar título vacío
+                if not destino.strip():
+                    raise forms.ValidationError("El campo 'Destino' no puede estar vacío.")
+                    
+                if not fecha_vuelta:
+                    raise forms.ValidationError("El campo 'Fecha de Vuelta' es obligatorio para vehículos.")
+                    
+                # Para vehículos, el título es OPCIONAL
+                # Si está vacío, generar automáticamente
+                if not titulo or not titulo.strip():
+                    cleaned_data['titulo'] = f"{responsable.strip()} - {destino.strip()}"
+                    
             else:
+                # Validaciones para SALAS
                 if not titulo:
                     raise forms.ValidationError("El campo 'Título' es obligatorio para salas.")
+                if not titulo.strip():
+                    raise forms.ValidationError("El campo 'Título' no puede estar vacío.")
         else:
-            # Si no hay recurso seleccionado, validar que al menos se proporcione un título
-            if not titulo:
-                raise forms.ValidationError("Debe seleccionar un recurso y completar los campos obligatorios.")
+            # Si no hay recurso seleccionado
+            raise forms.ValidationError("Debe seleccionar un recurso.")
         
         return cleaned_data
     

@@ -6,6 +6,7 @@ import json
 import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse
@@ -223,12 +224,13 @@ def mis_reservas(request):
     
     recursos = CacheQueryOptimizer.get_recursos_activos_cached()
     
-    # Crear JSON de salas para JavaScript
+    # Crear JSON de recursos para JavaScript
     salas_data = []
     for recurso in recursos:
         salas_data.append({
             'id': recurso.id,
             'nombre': recurso.nombre,
+            'tipo': recurso.tipo,  # ¡CRÍTICO! Agregar tipo de recurso
             'esComedor': 'comedor' in recurso.nombre.lower()
         })
     
@@ -413,3 +415,121 @@ def eliminar_reserva(request, reserva_id, reserva=None):
                 return redirect('calendario:mis_reservas')
     
     return render(request, 'calendario/eliminar_reserva.html', {'reserva': reserva})
+
+
+@login_required
+@log_view_access
+def buscar_reservas(request):
+    """
+    Vista para buscar y filtrar reservas con criterios avanzados
+    
+    Permite filtrar por:
+    - Rango de fechas
+    - Recurso/Sala específica
+    - Usuario
+    - Estado de la reserva
+    """
+    from django.db.models import Q
+    from datetime import datetime, timedelta
+    
+    logger.info(f'Búsqueda de reservas por usuario: {request.user.username}')
+    
+    # Determinar si el usuario es staff
+    es_staff = request.user.is_staff or request.user.is_superuser
+    
+    # Obtener parámetros de búsqueda
+    fecha_desde = request.GET.get('fecha_desde')
+    fecha_hasta = request.GET.get('fecha_hasta')
+    recurso_id = request.GET.get('recurso')
+    usuario_id = request.GET.get('usuario')
+    estado = request.GET.get('estado')
+    busqueda_texto = request.GET.get('q', '').strip()
+    
+    # Comenzar con todas las reservas o solo las del usuario
+    if es_staff:
+        reservas_query = ReservaQueryOptimizer.get_todas_las_reservas_optimizadas()
+    else:
+        reservas_query = ReservaQueryOptimizer.get_reservas_usuario_optimizadas(request.user)
+    
+    # Aplicar filtros
+    if fecha_desde:
+        try:
+            fecha_desde_dt = datetime.strptime(fecha_desde, '%Y-%m-%d')
+            reservas_query = reservas_query.filter(fecha_inicio__gte=fecha_desde_dt)
+            logger.debug(f'Filtro aplicado: fecha_desde={fecha_desde}')
+        except ValueError:
+            logger.warning(f'Formato de fecha inválido: {fecha_desde}')
+            messages.warning(request, 'Formato de fecha desde inválido')
+    
+    if fecha_hasta:
+        try:
+            fecha_hasta_dt = datetime.strptime(fecha_hasta, '%Y-%m-%d')
+            # Agregar 1 día para incluir todo el día hasta
+            fecha_hasta_dt = fecha_hasta_dt + timedelta(days=1)
+            reservas_query = reservas_query.filter(fecha_inicio__lt=fecha_hasta_dt)
+            logger.debug(f'Filtro aplicado: fecha_hasta={fecha_hasta}')
+        except ValueError:
+            logger.warning(f'Formato de fecha inválido: {fecha_hasta}')
+            messages.warning(request, 'Formato de fecha hasta inválido')
+    
+    if recurso_id and recurso_id != 'todos':
+        try:
+            reservas_query = reservas_query.filter(recurso_id=int(recurso_id))
+            logger.debug(f'Filtro aplicado: recurso_id={recurso_id}')
+        except ValueError:
+            logger.warning(f'ID de recurso inválido: {recurso_id}')
+    
+    if usuario_id and usuario_id != 'todos' and es_staff:
+        try:
+            reservas_query = reservas_query.filter(usuario_id=int(usuario_id))
+            logger.debug(f'Filtro aplicado: usuario_id={usuario_id}')
+        except ValueError:
+            logger.warning(f'ID de usuario inválido: {usuario_id}')
+    
+    if estado and estado != 'todos':
+        reservas_query = reservas_query.filter(estado=estado)
+        logger.debug(f'Filtro aplicado: estado={estado}')
+    
+    if busqueda_texto:
+        reservas_query = reservas_query.filter(
+            Q(titulo__icontains=busqueda_texto) |
+            Q(descripcion__icontains=busqueda_texto) |
+            Q(recurso__nombre__icontains=busqueda_texto)
+        )
+        logger.debug(f'Búsqueda de texto aplicada: {busqueda_texto}')
+    
+    # Ordenar resultados
+    reservas_query = reservas_query.order_by('-fecha_inicio')
+    
+    # Paginación
+    from django.core.paginator import Paginator
+    paginator = Paginator(reservas_query, PaginationConfig.RESERVAS_PER_PAGE)
+    page_number = request.GET.get('page')
+    reservas = paginator.get_page(page_number)
+    
+    # Obtener recursos y usuarios para los filtros
+    recursos = CacheService.get_recursos_activos()
+    usuarios = User.objects.filter(is_active=True).order_by('username') if es_staff else []
+    
+    # Contar resultados
+    total_resultados = reservas_query.count()
+    logger.info(f'Búsqueda completada: {total_resultados} resultados encontrados')
+    
+    context = {
+        'reservas': reservas,
+        'recursos': recursos,
+        'usuarios': usuarios,
+        'es_staff': es_staff,
+        'total_resultados': total_resultados,
+        # Mantener filtros aplicados
+        'filtros': {
+            'fecha_desde': fecha_desde or '',
+            'fecha_hasta': fecha_hasta or '',
+            'recurso': recurso_id or 'todos',
+            'usuario': usuario_id or 'todos',
+            'estado': estado or 'todos',
+            'q': busqueda_texto
+        }
+    }
+    
+    return render(request, 'calendario/buscar_reservas.html', context)

@@ -46,13 +46,13 @@
                         <table class="table table-modern stagger-animation">
                             <thead>
                                 <tr>
-                                    <th><i class="fas fa-heading me-2"></i>Título</th>
-                                    <th><i class="fas fa-door-open me-2"></i>Sala</th>
+                                    <th><i class="fas fa-heading me-2"></i>Título / Responsable</th>
+                                    <th><i class="fas fa-door-open me-2"></i>Recurso</th>
                                     {% if es_staff %}
                                     <th><i class="fas fa-user me-2"></i>Usuario</th>
                                     {% endif %}
-                                    <th><i class="fas fa-clock me-2"></i>Fecha de Inicio</th>
-                                    <th><i class="fas fa-clock me-2"></i>Fecha de Fin</th>
+                                    <th><i class="fas fa-calendar me-2"></i>Inicio / Salida</th>
+                                    <th><i class="fas fa-calendar-check me-2"></i>Fin / Vuelta</th>
                                     <th><i class="fas fa-info-circle me-2"></i>Estado</th>
                                     <th><i class="fas fa-cogs me-2"></i>Acciones</th>
                                 </tr>
@@ -61,13 +61,25 @@
                                 {% for reserva in reservas %}
                                 <tr data-estado="{{ reserva.estado|default:'confirmada' }}" class="smooth-transition hover-lift">
                                     <td>
-                                        <strong>{{ reserva.titulo }}</strong>
-                                        {% if reserva.descripcion %}
-                                            <br><small class="text-muted">{{ reserva.descripcion|truncatechars:50 }}</small>
+                                        {% if reserva.recurso.tipo == 'vehiculo' %}
+                                            <strong>{{ reserva.responsable|default:"Responsable no especificado" }}</strong>
+                                            {% if reserva.destino %}
+                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ reserva.destino|truncatechars:50 }}</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <strong>{{ reserva.titulo }}</strong>
+                                            {% if reserva.descripcion %}
+                                                <br><small class="text-muted">{{ reserva.descripcion|truncatechars:50 }}</small>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                     <td>
                                         <span class="badge-modern" data-color="{{ reserva.recurso.color|default:'#64748B' }}">
+                                            {% if reserva.recurso.tipo == 'vehiculo' %}
+                                                <i class="fas fa-car me-1"></i>
+                                            {% else %}
+                                                <i class="fas fa-door-open me-1"></i>
+                                            {% endif %}
                                             {{ reserva.recurso.nombre }}
                                         </span>
                                     </td>
@@ -82,8 +94,20 @@
                                         </div>
                                     </td>
                                     {% endif %}
-                                    <td>{{ reserva.fecha_inicio|date:"d/m/Y H:i" }}</td>
-                                    <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {{ reserva.fecha_inicio|date:"d/m/Y H:i" }}
+                                        {% if reserva.recurso.tipo == 'vehiculo' %}
+                                            <br><small class="text-muted"><i class="fas fa-plane-departure me-1"></i>Salida</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reserva.recurso.tipo == 'vehiculo' %}
+                                            {{ reserva.fecha_vuelta|date:"d/m/Y"|default:"N/A" }}
+                                            <br><small class="text-muted"><i class="fas fa-plane-arrival me-1"></i>Vuelta</small>
+                                        {% else %}
+                                            {{ reserva.fecha_fin|date:"d/m/Y H:i" }}
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {% if reserva.estado == 'confirmada' %}
                                             <span class="badge-modern badge-success tooltip-modern tooltip-info tooltip-small" 
@@ -117,15 +141,19 @@
                                             {% if reserva.estado != 'cancelada' %}
                                                 <button type="button" 
                                                         class="btn-action btn-action-edit edit-reserva-btn hover-scale icon-bounce btn-ripple interactive-element" 
-                                                        title="Editar reserva: {{ reserva.titulo }}"
-                                                        aria-label="Editar reserva: {{ reserva.titulo }}"
+                                                        title="Editar reserva: {{ reserva.titulo|default:reserva.responsable }}"
+                                                        aria-label="Editar reserva: {{ reserva.titulo|default:reserva.responsable }}"
                                                         data-reserva-id="{{ reserva.id }}"
                                                         data-titulo="{{ reserva.titulo|escapejs }}"
                                                         data-recurso-id="{{ reserva.recurso.id }}"
+                                                        data-recurso-tipo="{{ reserva.recurso.tipo }}"
                                                         data-fecha="{{ reserva.fecha_inicio|date:'Y-m-d' }}"
                                                         data-hora-inicio="{{ reserva.fecha_inicio|date:'H:i' }}"
                                                         data-hora-fin="{{ reserva.fecha_fin|date:'H:i' }}"
-                                                        data-descripcion="{{ reserva.descripcion|escapejs }}">
+                                                        data-descripcion="{{ reserva.descripcion|escapejs }}"
+                                                        data-responsable="{{ reserva.responsable|escapejs }}"
+                                                        data-destino="{{ reserva.destino|escapejs }}"
+                                                        data-fecha-vuelta="{{ reserva.fecha_vuelta|date:'Y-m-d'|default:'' }}">
                                                     <i class="fas fa-edit" aria-hidden="true"></i>
                                                     <span class="sr-only">Editar</span>
                                                 </button>
@@ -197,59 +225,120 @@
 
 <!-- Modal de Edición de Reserva -->
 <div class="modal fade" id="modalEditarReserva" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Reserva</h5>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title modal-title-modern" id="modalEditarReservaTitle">
+                    <i class="fas fa-edit me-2"></i>Editar Reserva
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="formEditarReserva" method="post">
                     {% csrf_token %}
                     <input type="hidden" id="reservaId" name="reserva_id">
-                    <div class="mb-3">
-                        <label for="editRecurso" class="form-label">Sala *</label>
-                        <select name="recurso" id="editRecurso" class="form-select" required>
-                            <option value="">Selecciona una sala</option>
+                    
+                    <!-- Recurso -->
+                    <div class="form-group-modern">
+                        <label for="editRecurso" class="form-label-modern">
+                            <i class="fas fa-door-open me-2" id="editRecursoIcon"></i>
+                            <span id="editRecursoLabel">Recurso *</span>
+                        </label>
+                        <select name="recurso" id="editRecurso" class="form-select-modern" required>
+                            <option value="">Selecciona un recurso</option>
                             {% for recurso in recursos %}
-                            <option value="{{ recurso.id }}">{{ recurso.nombre }}</option>
+                            <option value="{{ recurso.id }}" data-tipo="{{ recurso.tipo }}">
+                                {% if recurso.tipo == 'vehiculo' %}
+                                    {{ recurso.nombre }} - {{ recurso.patente }}
+                                {% else %}
+                                    {{ recurso.nombre }}
+                                {% endif %}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="editTitulo" class="form-label">Título *</label>
-                        <input type="text" name="titulo" id="editTitulo" class="form-control" required>
+                    
+                    <!-- Campos para SALAS -->
+                    <div class="form-group-modern" id="editTituloField">
+                        <label for="editTitulo" class="form-label-modern">
+                            <i class="fas fa-heading me-2"></i>Título *
+                        </label>
+                        <input type="text" name="titulo" id="editTitulo" class="form-control-modern" placeholder="Título de la reserva">
                     </div>
-                    <div class="mb-3">
-                        <label for="editFecha" class="form-label">Fecha *</label>
-                        <input type="date" name="fecha" id="editFecha" class="form-control" required>
+                    
+                    <!-- Campos para VEHÍCULOS -->
+                    <div class="form-group-modern" id="editResponsableField" style="display: none;">
+                        <label for="editResponsable" class="form-label-modern">
+                            <i class="fas fa-user me-2"></i>Responsable *
+                        </label>
+                        <input type="text" name="responsable" id="editResponsable" class="form-control-modern" placeholder="Nombre del responsable">
                     </div>
-                    <div class="mb-3">
-                        <label for="editHoraInicio" class="form-label">Hora inicio *</label>
-                        <select name="hora_inicio" id="editHoraInicio" class="form-select" required>
-                            <option value="">Seleccionar hora</option>
-                        </select>
+                    
+                    <div class="form-group-modern" id="editDestinoField" style="display: none;">
+                        <label for="editDestino" class="form-label-modern">
+                            <i class="fas fa-map-marker-alt me-2"></i>Destino *
+                        </label>
+                        <input type="text" name="destino" id="editDestino" class="form-control-modern" placeholder="Destino del viaje">
                     </div>
-                    <div class="mb-3">
-                        <label for="editHoraFin" class="form-label">Hora fin *</label>
-                        <select name="hora_fin" id="editHoraFin" class="form-select" required>
-                            <option value="">Seleccionar hora</option>
-                        </select>
+                    
+                    <!-- Fecha y horas -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group-modern">
+                                <label for="editFecha" class="form-label-modern">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    <span id="editFechaLabel">Fecha *</span>
+                                </label>
+                                <input type="date" name="fecha" id="editFecha" class="form-control-modern" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group-modern">
+                                <label for="editHoraInicio" class="form-label-modern">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <span id="editHoraInicioLabel">Hora inicio *</span>
+                                </label>
+                                <select name="hora_inicio" id="editHoraInicio" class="form-select-modern" required>
+                                    <option value="">Seleccionar hora</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group-modern">
+                                <label for="editHoraFin" class="form-label-modern">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <span id="editHoraFinLabel">Hora fin *</span>
+                                </label>
+                                <select name="hora_fin" id="editHoraFin" class="form-select-modern" required>
+                                    <option value="">Seleccionar hora</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="editDescripcion" class="form-label">Descripción</label>
-                        <textarea name="descripcion" id="editDescripcion" class="form-control" rows="3" placeholder="Descripción opcional de la reserva"></textarea>
+                    
+                    <!-- Fecha de vuelta para VEHÍCULOS -->
+                    <div class="form-group-modern" id="editFechaVueltaField" style="display: none;">
+                        <label for="editFechaVuelta" class="form-label-modern">
+                            <i class="fas fa-calendar-check me-2"></i>Fecha de Vuelta *
+                        </label>
+                        <input type="date" name="fecha_vuelta" id="editFechaVuelta" class="form-control-modern">
+                    </div>
+                    
+                    <!-- Descripción -->
+                    <div class="form-group-modern">
+                        <label for="editDescripcion" class="form-label-modern">
+                            <i class="fas fa-align-left me-2"></i>Descripción
+                        </label>
+                        <textarea name="descripcion" id="editDescripcion" class="form-control-modern" rows="3" placeholder="Descripción opcional"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-modal btn-modal-cancel" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i>
-                    <span>Cancelar</span>
+                <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
                 </button>
-                <button type="button" class="btn-modal btn-modal-primary" id="btnEditarReserva">
-                    <i class="fas fa-save"></i>
-                    <span>Guardar Cambios</span>
+                <button type="button" class="btn-modern btn-primary-modern" id="btnEditarReserva">
+                    <i class="fas fa-save me-2"></i>Guardar Cambios
                 </button>
             </div>
         </div>

@@ -3,259 +3,272 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+</li>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <!-- Encabezado -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">
-                    <i class="fas fa-tachometer-alt me-2"></i>
-                    Dashboard
-                </h2>
-                <div class="btn-group">
-                    <a href="{% url 'calendario:calendario' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-calendar"></i> Calendario
-                    </a>
-                    <a href="{% url 'calendario:buscar_reservas' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-search"></i> Buscar
-                    </a>
-                </div>
+<div class="accounting-header animate-on-load">
+    <h1><i class="fas fa-tachometer-alt me-3"></i>Dashboard Administrativo</h1>
+    <p>Vista general del sistema de reservas y métricas en tiempo real</p>
+</div>
+
+<div class="d-flex justify-content-end gap-2 mb-4">
+    <a href="{% url 'calendario:calendario' %}" class="btn-modern btn-primary-modern">
+        <i class="fas fa-calendar me-2"></i>Calendario
+    </a>
+    <a href="{% url 'calendario:buscar_reservas' %}" class="btn-modern btn-secondary-modern">
+        <i class="fas fa-search me-2"></i>Buscar
+    </a>
+</div>
+
+<!-- Métricas principales -->
+<div class="row mb-4 stagger-animation">
+    <div class="col-md-3 mb-3">
+        <div class="metric-card text-center">
+            <div class="metric-value">{{ reservas_hoy }}</div>
+            <div class="metric-label">
+                <i class="fas fa-calendar-day me-1"></i>Reservas Hoy
             </div>
         </div>
     </div>
-
-    <!-- Métricas principales -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ reservas_hoy }}</h4>
-                            <p class="card-text">Reservas Hoy</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-calendar-day fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ reservas_semana }}</h4>
-                            <p class="card-text">Esta Semana</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-calendar-week fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ reservas_mes }}</h4>
-                            <p class="card-text">Este Mes</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-calendar-alt fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ recursos_activos }}</h4>
-                            <p class="card-text">Salas Activas</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-door-open fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="metric-card text-center">
+            <div class="metric-value">{{ reservas_semana }}</div>
+            <div class="metric-label">
+                <i class="fas fa-calendar-week me-1"></i>Esta Semana
             </div>
         </div>
     </div>
-
-    <div class="row">
-        <!-- Próxima reserva -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-clock me-2"></i>
-                        Próxima Reserva
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if proxima_reserva %}
-                        <div class="alert alert-info">
-                            <h6 class="alert-heading">{{ proxima_reserva.titulo }}</h6>
-                            <p class="mb-1">
-                                <i class="fas fa-door-open me-1"></i>
-                                {{ proxima_reserva.recurso.nombre }}
-                            </p>
-                            <p class="mb-1">
-                                <i class="fas fa-calendar me-1"></i>
-                                {{ proxima_reserva.fecha_inicio|date:"d/m/Y" }}
-                            </p>
-                            <p class="mb-0">
-                                <i class="fas fa-clock me-1"></i>
-                                {{ proxima_reserva.fecha_inicio|time:"H:i" }} - {{ proxima_reserva.fecha_fin|time:"H:i" }}
-                            </p>
-                        </div>
-                        <div class="text-center">
-                            <a href="{% url 'calendario:editar_reserva' proxima_reserva.id %}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-edit"></i> Editar
-                            </a>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-3">
-                            <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
-                            <p class="text-muted mb-0">No tienes reservas próximas</p>
-                        </div>
-                    {% endif %}
-                </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="metric-card text-center">
+            <div class="metric-value">{{ reservas_mes }}</div>
+            <div class="metric-label">
+                <i class="fas fa-calendar-alt me-1"></i>Este Mes
             </div>
         </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="metric-card text-center">
+            <div class="metric-value">{{ recursos_activos }}</div>
+            <div class="metric-label">
+                <i class="fas fa-door-open me-1"></i>Recursos Activos
+            </div>
+        </div>
+    </div>
+</div>
 
-        <!-- Sala más usada -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-users me-2"></i>
-                        Usuarios Más Activos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if usuarios_mas_activos %}
-                        <div class="list-group list-group-flush">
-                            {% for usuario in usuarios_mas_activos %}
-                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+<div class="row">
+    <!-- Próxima reserva -->
+    <div class="col-md-6 mb-4">
+        <div class="card-modern animate-slide-in-left">
+            <div class="card-header-modern">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Próxima Reserva
+                </h5>
+            </div>
+            <div class="card-body-modern">
+                {% if proxima_reserva %}
+                    <div class="alert-modern alert-info-modern mb-0">
+                        <h6 class="mb-3 fw-bold">
+                            {% if proxima_reserva.recurso.tipo == 'vehiculo' %}
+                                <i class="fas fa-car me-2"></i>{{ proxima_reserva.responsable }}
+                            {% else %}
+                                <i class="fas fa-calendar-check me-2"></i>{{ proxima_reserva.titulo }}
+                            {% endif %}
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-{% if proxima_reserva.recurso.tipo == 'vehiculo' %}car{% else %}door-open{% endif %} me-2"></i>
                                     <div>
-                                        <strong>{{ usuario.usuario__first_name }} {{ usuario.usuario__last_name }}</strong>
-                                        <br><small class="text-muted">@{{ usuario.usuario__username }}</small>
+                                        <small class="text-muted d-block">Recurso</small>
+                                        <strong>{{ proxima_reserva.recurso.nombre }}</strong>
                                     </div>
-                                    <span class="badge bg-primary rounded-pill">{{ usuario.count }}</span>
                                 </div>
-                            {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Fecha</small>
+                                        <strong>{{ proxima_reserva.fecha_inicio|date:"d/m/Y" }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Horario</small>
+                                        <strong>{{ proxima_reserva.fecha_inicio|time:"H:i" }} - {{ proxima_reserva.fecha_fin|time:"H:i" }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if proxima_reserva.recurso.tipo == 'vehiculo' and proxima_reserva.destino %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Destino</small>
+                                        <strong>{{ proxima_reserva.destino }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
-                    {% else %}
-                        <div class="text-center py-3">
-                            <i class="fas fa-users fa-2x text-muted mb-2"></i>
-                            <p class="text-muted mb-0">No hay datos suficientes</p>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No tienes reservas próximas</h6>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+
+    <!-- Usuarios más activos -->
+    <div class="col-md-6 mb-4">
+        <div class="card-modern animate-slide-in-right">
+            <div class="card-header-modern">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Usuarios Más Activos
+                </h5>
+            </div>
+            <div class="card-body-modern">
+                {% if usuarios_mas_activos %}
+                    <div class="list-group list-group-flush">
+                        {% for usuario in usuarios_mas_activos %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 border-bottom">
+                            <div>
+                                <strong>{{ usuario.usuario__first_name }} {{ usuario.usuario__last_name }}</strong>
+                                <br><small class="text-muted">@{{ usuario.usuario__username }}</small>
+                            </div>
+                            <span class="badge-modern badge-success">{{ usuario.count }} reserva{{ usuario.count|pluralize }}</span>
                         </div>
-                    {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No hay datos suficientes</h6>
+                    </div>
+                {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Reservas recientes -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-history me-2"></i>
-                        Reservas Recientes
-                    </h5>
-                    <a href="{% url 'calendario:mis_reservas' %}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-list"></i> Ver Todas
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if reservas_recientes %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Título</th>
-                                        <th>Sala</th>
-                                        <th>Usuario</th>
-                                        <th>Fecha</th>
-                                        <th>Hora</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for reserva in reservas_recientes %}
-                                    <tr>
-                                        <td>
+<!-- Reservas recientes -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-modern animate-slide-in-up">
+            <div class="card-header-modern d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Reservas Recientes
+                </h5>
+                <a href="{% url 'calendario:mis_reservas' %}" class="btn-modern btn-primary-modern">
+                    <i class="fas fa-list me-2"></i>Ver Todas
+                </a>
+            </div>
+            <div class="card-body-modern">
+                {% if reservas_recientes %}
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-heading me-2"></i>Título / Responsable</th>
+                                    <th><i class="fas fa-door-open me-2"></i>Recurso</th>
+                                    <th><i class="fas fa-user me-2"></i>Usuario</th>
+                                    <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                                    <th><i class="fas fa-clock me-2"></i>Hora</th>
+                                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reserva in reservas_recientes %}
+                                <tr data-estado="{{ reserva.estado }}">
+                                    <td>
+                                        {% if reserva.recurso.tipo == 'vehiculo' %}
+                                            <strong>{{ reserva.responsable|default:"Responsable no especificado" }}</strong>
+                                            {% if reserva.destino %}
+                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ reserva.destino|truncatechars:30 }}</small>
+                                            {% endif %}
+                                        {% else %}
                                             <strong>{{ reserva.titulo }}</strong>
                                             {% if reserva.descripcion %}
                                                 <br><small class="text-muted">{{ reserva.descripcion|truncatechars:30 }}</small>
                                             {% endif %}
-                                        </td>
-                                        <td>
-                                            <span class="badge" style="background-color: {{ reserva.recurso.color }}; color: white;">
-                                                {{ reserva.recurso.nombre }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <small>
-                                                {{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}
-                                                <br><span class="text-muted">@{{ reserva.usuario.username }}</span>
-                                            </small>
-                                        </td>
-                                        <td>{{ reserva.fecha_inicio|date:"d/m/Y" }}</td>
-                                        <td>{{ reserva.fecha_inicio|time:"H:i" }} - {{ reserva.fecha_fin|time:"H:i" }}</td>
-                                        <td>
-                                            {% if reserva.estado == 'confirmada' %}
-                                                <span class="badge bg-success">{{ reserva.get_estado_display }}</span>
-                                            {% elif reserva.estado == 'en_curso' %}
-                                                <span class="badge bg-warning">{{ reserva.get_estado_display }}</span>
-                                            {% elif reserva.estado == 'terminada' %}
-                                                <span class="badge bg-info">{{ reserva.get_estado_display }}</span>
-                                            {% elif reserva.estado == 'cancelada' %}
-                                                <span class="badge bg-danger">{{ reserva.get_estado_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge-modern" style="background-color: {{ reserva.recurso.color }}; color: white;">
+                                            {% if reserva.recurso.tipo == 'vehiculo' %}
+                                                <i class="fas fa-car me-1"></i>
                                             {% else %}
-                                                <span class="badge bg-secondary">{{ reserva.get_estado_display }}</span>
+                                                <i class="fas fa-door-open me-1"></i>
                                             {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{% url 'calendario:editar_reserva' reserva.id %}" 
-                                                   class="btn btn-outline-primary" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="{% url 'calendario:eliminar_reserva' reserva.id %}" 
-                                                   class="btn btn-outline-danger" title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
+                                            {{ reserva.recurso.nombre }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}
+                                        <br><small class="text-muted">@{{ reserva.usuario.username }}</small>
+                                    </td>
+                                    <td>{{ reserva.fecha_inicio|date:"d/m/Y" }}</td>
+                                    <td>{{ reserva.fecha_inicio|time:"H:i" }} - {{ reserva.fecha_fin|time:"H:i" }}</td>
+                                    <td>
+                                        {% if reserva.estado == 'confirmada' %}
+                                            <span class="badge-modern badge-success">
+                                                <i class="fas fa-check-circle me-1"></i>{{ reserva.get_estado_display }}
+                                            </span>
+                                        {% elif reserva.estado == 'en_curso' %}
+                                            <span class="badge-modern badge-warning">
+                                                <i class="fas fa-clock me-1"></i>{{ reserva.get_estado_display }}
+                                            </span>
+                                        {% elif reserva.estado == 'terminada' %}
+                                            <span class="badge-modern badge-info">
+                                                <i class="fas fa-flag-checkered me-1"></i>{{ reserva.get_estado_display }}
+                                            </span>
+                                        {% elif reserva.estado == 'cancelada' %}
+                                            <span class="badge-modern badge-danger">
+                                                <i class="fas fa-times-circle me-1"></i>{{ reserva.get_estado_display }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge-modern badge-secondary">{{ reserva.get_estado_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
                             </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-calendar-plus fa-2x text-muted mb-3"></i>
-                            <h6 class="text-muted">No tienes reservas recientes</h6>
-                            <a href="{% url 'calendario:crear_reserva' %}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Crear Primera Reserva
-                            </a>
-                        </div>
-                    {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No hay reservas recientes</h6>
+                        <a href="{% url 'calendario:calendario' %}" class="btn-reserva-elegant mt-3">
+                            <div class="btn-reserva-content">
+                                <div class="btn-reserva-icon">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </div>
+                                <div class="btn-reserva-text">
+                                    <span class="btn-reserva-title">Crear Primera Reserva</span>
+                                    <span class="btn-reserva-subtitle">Comenzar ahora</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
                 </div>
             </div>
         </div>

@@ -53,6 +53,22 @@
                             <span>Mis reservas</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'buscar_reservas' %}active{% endif %}" 
+                           href="{% url 'calendario:buscar_reservas' %}">
+                            <i class="fas fa-search"></i>
+                            <span>Buscar</span>
+                        </a>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                           href="{% url 'calendario:dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    {% endif %}
                     {% endif %}
                 </ul>
                 
@@ -71,7 +87,6 @@
                             <li><a class="dropdown-item" href="/admin/calendario/recurso/">
                                 <i class="fas fa-door-open me-2"></i>Gestionar salas
                             </a></li>
-                            <li><hr class="dropdown-divider"></li>
                             {% endif %}
                             <li>
                                 <button type="button" class="dropdown-item border-0 bg-transparent w-100 text-start logout-btn" 
@@ -147,6 +162,7 @@
     <!-- Configuración global de URLs -->
     <script>
         window.logoutUrl = '{% url "logout" %}';
+        window.validarConflictoUrl = '{% url "calendario:api_validar_conflicto" %}';
     </script>
     
     <!-- CONTROLADOR CENTRALIZADO (debe cargar primero) -->

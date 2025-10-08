@@ -505,8 +505,6 @@ CalendarioApp.StateManager = {
    * Inicializar State Manager
    */
   init: function() {
-    console.log('📊 StateManager inicializado');
-    
     // Cargar estado persistente
     this.loadPersistentState();
     

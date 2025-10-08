@@ -728,14 +728,32 @@ CalendarioApp.Calendar = {
   },
   
   validarConflictos: function(recurso, fecha, horaInicio, horaFin) {
-    const url = `${window.horariosOcupadosUrl}?recurso_id=${recurso}&fecha=${fecha}&hora_inicio=${horaInicio}&hora_fin=${horaFin}`;
+    const validarConflictoUrl = window.validarConflictoUrl || '/calendario/api/validar-conflicto/';
+    const url = `${validarConflictoUrl}?sala=${recurso}&fecha=${fecha}&hora_inicio=${horaInicio}&hora_fin=${horaFin}`;
+    
+    CalendarioApp.Core.Logger.debug('Validando conflictos:', { recurso, fecha, horaInicio, horaFin });
     
     return fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (data.conflicts) {
-          return data.conflicts;
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            CalendarioApp.Core.Logger.warn('Conflictos detectados:', errorData);
+            if (errorData.validation_errors && errorData.validation_errors.conflicts) {
+              return errorData.validation_errors.conflicts;
+            }
+            if (errorData.message) {
+              return [{ type: 'error', message: errorData.message }];
+            }
+            return [];
+          });
         }
+        return response.json().then(data => {
+          CalendarioApp.Core.Logger.debug('Validación exitosa:', data);
+          return data.conflicts || [];
+        });
+      })
+      .catch(error => {
+        CalendarioApp.Core.Logger.error('Error en validación de conflictos:', error);
         return [];
       });
   },

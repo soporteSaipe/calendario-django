@@ -1,0 +1,337 @@
+{% extends 'calendario/base.html' %}
+{% load static %}
+
+{% block title %}Buscar Reservas - Sistema SAIPE{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-search me-1"></i>Buscar Reservas
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="search-header">
+    <h2 class="mb-2">
+        <i class="fas fa-search me-3"></i>Buscar Reservas
+    </h2>
+    <p class="mb-0">Encuentra reservas usando filtros avanzados</p>
+</div>
+
+<div class="search-filters">
+    <form method="GET" action="{% url 'calendario:buscar_reservas' %}" id="searchForm">
+        <div class="row g-3">
+            <!-- Búsqueda por texto -->
+            <div class="col-md-12">
+                <label for="searchText" class="form-label-modern">
+                    <i class="fas fa-font me-2"></i>Búsqueda de texto
+                </label>
+                <input type="text" 
+                       id="searchText" 
+                       name="q" 
+                       class="form-control-modern" 
+                       placeholder="Buscar por título, descripción o sala..."
+                       value="{{ filtros.q }}">
+            </div>
+
+            <!-- Rango de fechas -->
+            <div class="col-md-6">
+                <label for="fechaDesde" class="form-label-modern">
+                    <i class="fas fa-calendar me-2"></i>Desde
+                </label>
+                <input type="date" 
+                       id="fechaDesde" 
+                       name="fecha_desde" 
+                       class="form-control-modern"
+                       value="{{ filtros.fecha_desde }}">
+            </div>
+
+            <div class="col-md-6">
+                <label for="fechaHasta" class="form-label-modern">
+                    <i class="fas fa-calendar me-2"></i>Hasta
+                </label>
+                <input type="date" 
+                       id="fechaHasta" 
+                       name="fecha_hasta" 
+                       class="form-control-modern"
+                       value="{{ filtros.fecha_hasta }}">
+            </div>
+
+            <!-- Filtro por recurso -->
+            <div class="col-md-6">
+                <label for="recursoFilter" class="form-label-modern">
+                    <i class="fas fa-door-open me-2"></i>Sala/Recurso
+                </label>
+                <select id="recursoFilter" name="recurso" class="form-select-modern">
+                    <option value="todos" {% if filtros.recurso == 'todos' %}selected{% endif %}>Todos los recursos</option>
+                    {% for recurso in recursos %}
+                    <option value="{{ recurso.id }}" {% if filtros.recurso|stringformat:"s" == recurso.id|stringformat:"s" %}selected{% endif %}>
+                        {{ recurso.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtro por estado -->
+            <div class="col-md-6">
+                <label for="estadoFilter" class="form-label-modern">
+                    <i class="fas fa-info-circle me-2"></i>Estado
+                </label>
+                <select id="estadoFilter" name="estado" class="form-select-modern">
+                    <option value="todos" {% if filtros.estado == 'todos' %}selected{% endif %}>Todos los estados</option>
+                    <option value="confirmada" {% if filtros.estado == 'confirmada' %}selected{% endif %}>Confirmada</option>
+                    <option value="en_curso" {% if filtros.estado == 'en_curso' %}selected{% endif %}>En curso</option>
+                    <option value="terminada" {% if filtros.estado == 'terminada' %}selected{% endif %}>Terminada</option>
+                    <option value="cancelada" {% if filtros.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                </select>
+            </div>
+
+            <!-- Filtro por usuario (solo para staff) -->
+            {% if es_staff %}
+            <div class="col-md-12">
+                <label for="usuarioFilter" class="form-label-modern">
+                    <i class="fas fa-user me-2"></i>Usuario
+                </label>
+                <select id="usuarioFilter" name="usuario" class="form-select-modern">
+                    <option value="todos" {% if filtros.usuario == 'todos' %}selected{% endif %}>Todos los usuarios</option>
+                    {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}" {% if filtros.usuario|stringformat:"s" == usuario.id|stringformat:"s" %}selected{% endif %}>
+                        {{ usuario.get_full_name|default:usuario.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <!-- Botones de acción -->
+            <div class="col-12">
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" class="btn-modern btn-secondary-modern" id="btnLimpiarFiltros">
+                        <i class="fas fa-eraser me-2"></i>Limpiar filtros
+                    </button>
+                    <button type="submit" class="btn-modern btn-primary-modern">
+                        <i class="fas fa-search me-2"></i>Buscar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Resumen de resultados -->
+{% if total_resultados is not None %}
+<div class="results-summary">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>{{ total_resultados }}</strong> reserva{{ total_resultados|pluralize }} encontrada{{ total_resultados|pluralize }}
+        </div>
+        
+        <!-- Filtros activos -->
+        <div class="active-filters">
+            {% if filtros.q %}
+            <span class="filter-badge">
+                Texto: "{{ filtros.q }}"
+                <button type="button" class="remove-filter" data-filter="q">×</button>
+            </span>
+            {% endif %}
+            
+            {% if filtros.fecha_desde or filtros.fecha_hasta %}
+            <span class="filter-badge">
+                <i class="fas fa-calendar me-1"></i>
+                {% if filtros.fecha_desde %}{{ filtros.fecha_desde }}{% endif %}
+                {% if filtros.fecha_desde and filtros.fecha_hasta %} - {% endif %}
+                {% if filtros.fecha_hasta %}{{ filtros.fecha_hasta }}{% endif %}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Tabla de resultados -->
+<div class="card-modern">
+    <div class="card-header-modern">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Resultados de Búsqueda
+        </h5>
+    </div>
+    <div class="card-body-modern">
+        {% if reservas %}
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-heading me-2"></i>Título</th>
+                        <th><i class="fas fa-door-open me-2"></i>Recurso</th>
+                        {% if es_staff %}
+                        <th><i class="fas fa-user me-2"></i>Usuario</th>
+                        {% endif %}
+                        <th><i class="fas fa-calendar me-2"></i>Fecha Inicio</th>
+                        <th><i class="fas fa-calendar me-2"></i>Fecha Fin</th>
+                        <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                        <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr data-estado="{{ reserva.estado }}">
+                        <td>
+                            <strong>{{ reserva.titulo }}</strong>
+                            {% if reserva.descripcion %}
+                            <br><small class="text-muted">{{ reserva.descripcion|truncatechars:50 }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge-modern" style="background-color: {{ reserva.recurso.color }}; color: white;">
+                                {{ reserva.recurso.nombre }}
+                            </span>
+                        </td>
+                        {% if es_staff %}
+                        <td>{{ reserva.usuario.get_full_name|default:reserva.usuario.username }}</td>
+                        {% endif %}
+                        <td>{{ reserva.fecha_inicio|date:"d/m/Y H:i" }}</td>
+                        <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if reserva.estado == 'confirmada' %}
+                            <span class="badge-modern badge-success">Confirmada</span>
+                            {% elif reserva.estado == 'en_curso' %}
+                            <span class="badge-modern badge-warning">En curso</span>
+                            {% elif reserva.estado == 'terminada' %}
+                            <span class="badge-modern badge-info">Terminada</span>
+                            {% elif reserva.estado == 'cancelada' %}
+                            <span class="badge-modern badge-danger">Cancelada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group-sm d-flex gap-1">
+                                {% if reserva.usuario == user or es_staff %}
+                                <a href="{% url 'calendario:editar_reserva' reserva.id %}" 
+                                   class="btn-action btn-action-edit"
+                                   title="Editar reserva">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'calendario:eliminar_reserva' reserva.id %}" 
+                                   class="btn-action btn-action-delete"
+                                   title="Eliminar reserva"
+                                   onclick="return confirm('¿Estás seguro de eliminar esta reserva?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if reservas.has_other_pages %}
+        <nav aria-label="Navegación de páginas" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if reservas.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reservas.previous_page_number }}{% for key, value in filtros.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in reservas.paginator.page_range %}
+                    {% if reservas.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > reservas.number|add:'-3' and num < reservas.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in filtros.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if reservas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reservas.next_page_number }}{% for key, value in filtros.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No se encontraron reservas</h5>
+            <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+            <a href="{% url 'calendario:calendario' %}" class="btn-modern btn-primary-modern mt-3">
+                <i class="fas fa-calendar me-2"></i>Ir al Calendario
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Botón limpiar filtros
+    const btnLimpiar = document.getElementById('btnLimpiarFiltros');
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', function() {
+            window.location.href = '{% url "calendario:buscar_reservas" %}';
+        });
+    }
+
+    // Remover filtros individuales
+    const removeButtons = document.querySelectorAll('.remove-filter');
+    removeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            const form = document.getElementById('searchForm');
+            const input = form.querySelector(`[name="${filter}"]`);
+            if (input) {
+                input.value = '';
+                form.submit();
+            }
+        });
+    });
+
+    // Autocompletar fecha hasta con fecha desde si no está definida
+    const fechaDesde = document.getElementById('fechaDesde');
+    const fechaHasta = document.getElementById('fechaHasta');
+    
+    if (fechaDesde) {
+        fechaDesde.addEventListener('change', function() {
+            if (!fechaHasta.value) {
+                const fecha = new Date(this.value);
+                fecha.setMonth(fecha.getMonth() + 1);
+                fechaHasta.value = fecha.toISOString().split('T')[0];
+            }
+        });
+    }
+
+    // Validación de rango de fechas
+    const form = document.getElementById('searchForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (fechaDesde.value && fechaHasta.value) {
+                const desde = new Date(fechaDesde.value);
+                const hasta = new Date(fechaHasta.value);
+                
+                if (hasta < desde) {
+                    e.preventDefault();
+                    alert('La fecha "Hasta" debe ser posterior a la fecha "Desde"');
+                    fechaHasta.focus();
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+

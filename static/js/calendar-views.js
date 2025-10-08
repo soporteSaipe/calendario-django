@@ -178,8 +178,6 @@ CalendarioApp.CalendarViews = {
   changeView: function(view) {
     if (this.state.currentView === view) return;
 
-    console.log('Cambiando vista a:', view);
-
     // Actualizar estado
     this.state.currentView = view;
 
@@ -245,11 +243,9 @@ CalendarioApp.CalendarViews = {
     }
 
     try {
-      console.log('Cambiando vista del calendario a:', this.state.currentView);
       this.state.calendarInstance.changeView(this.state.currentView);
       this.updateCurrentDate();
       this.updateViewTitle();
-      console.log('Vista cambiada exitosamente');
     } catch (error) {
       console.error('Error al cambiar la vista del calendario:', error);
     }
@@ -408,7 +404,6 @@ CalendarioApp.CalendarViews = {
 
 // Función para integrar con el calendario existente
 CalendarioApp.CalendarViews.integrateWithCalendar = function(calendarInstance) {
-  console.log('Integrando con calendario:', calendarInstance);
   this.state.calendarInstance = calendarInstance;
   this.updateCalendarView();
 };

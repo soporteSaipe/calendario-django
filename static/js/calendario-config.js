@@ -10,15 +10,8 @@
 
 // Función para configurar las URLs desde el template
 function configurarUrlsCalendario(urls) {
-    console.log('Configurando URLs del calendario:', urls);
     window.calendarioApiUrl = urls.calendarioApiUrl;
     window.crearReservaUrl = urls.crearReservaUrl;
     window.horariosOcupadosUrl = urls.horariosOcupadosUrl;
     window.logoutUrl = urls.logoutUrl;
-    
-    console.log('URLs configuradas:');
-    console.log('calendarioApiUrl:', window.calendarioApiUrl);
-    console.log('crearReservaUrl:', window.crearReservaUrl);
-    console.log('horariosOcupadosUrl:', window.horariosOcupadosUrl);
-    console.log('logoutUrl:', window.logoutUrl);
 }

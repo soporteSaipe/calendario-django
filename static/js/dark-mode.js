@@ -23,8 +23,6 @@ class DarkModeManager {
         
         // Detectar cambios en preferencias del sistema
         // this.setupSystemThemeDetection();
-        
-        console.log('Dark Mode Manager inicializado (modo oscuro deshabilitado)');
     }
     
     createThemeToggle() {
@@ -67,7 +65,6 @@ class DarkModeManager {
     setTheme(theme) {
         // MODO OSCURO DESHABILITADO - SIEMPRE MODO CLARO
         if (theme !== 'light') {
-            console.log('Modo oscuro deshabilitado - aplicando modo claro');
             theme = 'light';
         }
         
@@ -95,8 +92,6 @@ class DarkModeManager {
         setTimeout(() => {
             document.body.classList.remove('theme-transition');
         }, 300);
-        
-        console.log(`Tema fijado a: ${theme} (modo oscuro deshabilitado)`);
     }
     
   updateMetaThemeColor(theme) {
@@ -132,7 +127,6 @@ class DarkModeManager {
     
     toggleTheme() {
         // MODO OSCURO DESHABILITADO
-        console.log('Toggle de tema deshabilitado - modo oscuro no disponible');
         return;
     }
     
@@ -166,7 +160,6 @@ class DarkModeManager {
             if (!savedTheme) {
                 const newTheme = e.matches ? 'dark' : 'light';
                 this.setTheme(newTheme);
-                console.log('Tema del sistema cambiado, aplicando:', newTheme);
             }
         });
     }
@@ -178,7 +171,6 @@ class DarkModeManager {
     
     setDarkMode() {
         // MODO OSCURO DESHABILITADO
-        console.log('setDarkMode() deshabilitado - modo oscuro no disponible');
         this.setTheme('light');
     }
     
@@ -186,7 +178,6 @@ class DarkModeManager {
         // MODO OSCURO DESHABILITADO - SIEMPRE MODO CLARO
         localStorage.setItem(this.themeKey, 'light');
         this.applyInitialTheme();
-        console.log('Tema fijado a modo claro (modo oscuro deshabilitado)');
     }
     
     getThemeInfo() {
@@ -209,9 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.setLightMode = () => window.darkModeManager.setLightMode();
     window.setDarkMode = () => window.darkModeManager.setDarkMode();
     window.resetTheme = () => window.darkModeManager.resetToSystem();
-    
-    console.log('Dark Mode Manager cargado');
-    console.log('Info del tema:', window.darkModeManager.getThemeInfo());
 });
 
 // Exportar para uso en módulos

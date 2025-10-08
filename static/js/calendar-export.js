@@ -166,12 +166,6 @@ CalendarioApp.CalendarExport = {
     const userMenu = document.querySelector('.dropdown-menu');
     const adminLink = userMenu && userMenu.querySelector('a[href="/admin/"]');
     
-    // Debug: mostrar información de depuración
-    console.log('CalendarExport - Verificando permisos de admin:');
-    console.log('- User menu encontrado:', !!userMenu);
-    console.log('- Admin link encontrado:', !!adminLink);
-    console.log('- Usuario autenticado:', document.querySelector('.navbar-nav .dropdown-toggle') !== null);
-    
     return adminLink !== null;
   },
 

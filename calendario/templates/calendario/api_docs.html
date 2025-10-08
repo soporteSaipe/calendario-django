@@ -1,0 +1,166 @@
+{% extends 'calendario/base.html' %}
+{% load static %}
+
+{% block title %}Documentación de API - Sistema SAIPE{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-book me-1"></i>Documentación de API
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h3 class="mb-0">
+                    <i class="fas fa-book me-3"></i>Documentación de API
+                </h3>
+            </div>
+            <div class="card-body-modern">
+                <p class="lead mb-4">
+                    Esta es la documentación completa de los endpoints disponibles en el sistema de calendario.
+                </p>
+
+                <!-- Endpoint: API Reservas -->
+                <div class="endpoint-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="endpoint-method method-get">GET</span>
+                            <h5 class="d-inline ms-2">Obtener Reservas</h5>
+                        </div>
+                    </div>
+                    <div class="endpoint-url mb-3">
+                        /calendario/api/reservas/
+                    </div>
+                    <p><strong>Descripción:</strong> Obtiene las reservas en formato JSON para el calendario.</p>
+                    <h6>Parámetros:</h6>
+                    <ul class="param-list">
+                        <li>
+                            <code class="param-name">start</code> 
+                            <span class="param-required">(opcional)</span> - 
+                            Fecha de inicio (formato ISO)
+                        </li>
+                        <li>
+                            <code class="param-name">end</code> 
+                            <span class="param-required">(opcional)</span> - 
+                            Fecha de fin (formato ISO)
+                        </li>
+                        <li>
+                            <code class="param-name">sala</code> 
+                            <span class="param-required">(opcional)</span> - 
+                            ID de la sala/recurso
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Endpoint: Validar Conflicto -->
+                <div class="endpoint-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="endpoint-method method-get">GET</span>
+                            <h5 class="d-inline ms-2">Validar Conflictos</h5>
+                        </div>
+                    </div>
+                    <div class="endpoint-url mb-3">
+                        /calendario/api/validar-conflicto/
+                    </div>
+                    <p><strong>Descripción:</strong> Valida conflictos de reservas en tiempo real antes de crearlas.</p>
+                    <h6>Parámetros:</h6>
+                    <ul class="param-list">
+                        <li>
+                            <code class="param-name">sala</code> 
+                            <span class="param-required">(requerido)</span> - 
+                            ID de la sala/recurso
+                        </li>
+                        <li>
+                            <code class="param-name">fecha</code> 
+                            <span class="param-required">(requerido)</span> - 
+                            Fecha en formato YYYY-MM-DD
+                        </li>
+                        <li>
+                            <code class="param-name">hora_inicio</code> 
+                            <span class="param-required">(requerido)</span> - 
+                            Hora de inicio en formato HH:MM
+                        </li>
+                        <li>
+                            <code class="param-name">hora_fin</code> 
+                            <span class="param-required">(requerido)</span> - 
+                            Hora de fin en formato HH:MM
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Endpoint: Detalles de Sala -->
+                <div class="endpoint-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="endpoint-method method-get">GET</span>
+                            <h5 class="d-inline ms-2">Detalles de Sala</h5>
+                        </div>
+                    </div>
+                    <div class="endpoint-url mb-3">
+                        /calendario/api/sala/&lt;id&gt;/detalles/
+                    </div>
+                    <p><strong>Descripción:</strong> Obtiene información detallada de una sala específica.</p>
+                    <h6>Parámetros:</h6>
+                    <ul class="param-list">
+                        <li>
+                            <code class="param-name">id</code> 
+                            <span class="param-required">(requerido)</span> - 
+                            ID de la sala (en la URL)
+                        </li>
+                    </ul>
+                    <h6 class="mt-3">Respuesta incluye:</h6>
+                    <ul>
+                        <li>Nombre, capacidad y color de la sala</li>
+                        <li>Descripción detallada</li>
+                        <li>Características (proyector, pizarra, audio, etc.)</li>
+                        <li>Horario de uso</li>
+                    </ul>
+                </div>
+
+                <!-- Endpoint: Horarios Ocupados -->
+                <div class="endpoint-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="endpoint-method method-get">GET</span>
+                            <h5 class="d-inline ms-2">Horarios Ocupados</h5>
+                        </div>
+                    </div>
+                    <div class="endpoint-url mb-3">
+                        /calendario/api/horarios-ocupados/
+                    </div>
+                    <p><strong>Descripción:</strong> Obtiene los horarios ocupados de un recurso en una fecha específica.</p>
+                    <h6>Parámetros:</h6>
+                    <ul class="param-list">
+                        <li>
+                            <code class="param-name">recurso_id</code> 
+                            <span class="param-required">(requerido)</span> - 
+                            ID del recurso
+                        </li>
+                        <li>
+                            <code class="param-name">fecha</code> 
+                            <span class="param-required">(requerido)</span> - 
+                            Fecha en formato YYYY-MM-DD
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="alert alert-success-modern mt-4">
+                    <h6><i class="fas fa-lightbulb me-2"></i>Información</h6>
+                    <ul class="mb-0">
+                        <li>Todos los endpoints requieren autenticación</li>
+                        <li>Las respuestas son en formato JSON</li>
+                        <li>Se aplica rate limiting según el tipo de endpoint</li>
+                        <li>Los errores incluyen códigos de error específicos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

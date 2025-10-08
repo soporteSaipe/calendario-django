@@ -232,15 +232,21 @@ function setupEditButtons() {
     const editButtons = document.querySelectorAll('.edit-reserva-btn');
     editButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const reservaId = this.getAttribute('data-reserva-id');
-            const titulo = this.getAttribute('data-titulo');
-            const recursoId = this.getAttribute('data-recurso-id');
-            const fecha = this.getAttribute('data-fecha');
-            const horaInicio = this.getAttribute('data-hora-inicio');
-            const horaFin = this.getAttribute('data-hora-fin');
-            const descripcion = this.getAttribute('data-descripcion');
+            const reservaData = {
+                reservaId: this.getAttribute('data-reserva-id'),
+                titulo: this.getAttribute('data-titulo') || '',
+                recursoId: this.getAttribute('data-recurso-id'),
+                tipoRecurso: this.getAttribute('data-recurso-tipo') || 'sala',
+                fecha: this.getAttribute('data-fecha'),
+                horaInicio: this.getAttribute('data-hora-inicio'),
+                horaFin: this.getAttribute('data-hora-fin'),
+                descripcion: this.getAttribute('data-descripcion') || '',
+                responsable: this.getAttribute('data-responsable') || '',
+                destino: this.getAttribute('data-destino') || '',
+                fechaVuelta: this.getAttribute('data-fecha-vuelta') || ''
+            };
             
-            abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, horaFin, descripcion);
+            abrirModalEdicion(reservaData);
         });
     });
 }
@@ -268,12 +274,23 @@ function setupEditModalListeners() {
         guardarCambiosReserva();
     });
     
-    // Cambio de sala - regenerar horarios
+    // Cambio de recurso - actualizar campos según tipo
     document.getElementById('editRecurso').addEventListener('change', function() {
         const recursoId = this.value;
+        const selectedOption = this.options[this.selectedIndex];
+        const tipoRecurso = selectedOption ? selectedOption.getAttribute('data-tipo') : 'sala';
+        
+        // Actualizar campos mostrados según el tipo
+        if (tipoRecurso === 'vehiculo') {
+            mostrarCamposVehiculo();
+        } else {
+            mostrarCamposSala();
+        }
+        
+        // Regenerar horarios
         generarHorarios('editHoraInicio', 'editHoraFin', recursoId);
         
-        // Limpiar horarios seleccionados al cambiar sala
+        // Limpiar horarios seleccionados al cambiar recurso
         document.getElementById('editHoraInicio').value = '';
         document.getElementById('editHoraFin').value = '';
         
@@ -295,34 +312,123 @@ function setupEditModalListeners() {
 /**
  * Abrir modal de edición con datos de la reserva
  */
-function abrirModalEdicion(reservaId, titulo, recursoId, fecha, horaInicio, horaFin, descripcion) {
+function abrirModalEdicion(data) {
     // Cargar salas disponibles en el select
     cargarSalasDisponibles();
     
-    // Llenar formulario con datos existentes
-    document.getElementById('reservaId').value = reservaId;
-    document.getElementById('editTitulo').value = titulo;
-    document.getElementById('editRecurso').value = recursoId;
-    document.getElementById('editFecha').value = fecha;
-    document.getElementById('editDescripcion').value = descripcion || '';
+    // Llenar formulario con datos básicos
+    document.getElementById('reservaId').value = data.reservaId;
+    document.getElementById('editRecurso').value = data.recursoId;
+    document.getElementById('editFecha').value = data.fecha;
+    document.getElementById('editDescripcion').value = data.descripcion;
     
-    // Generar horarios para la sala seleccionada
-    generarHorarios('editHoraInicio', 'editHoraFin', recursoId);
+    // Configurar campos según el tipo de recurso
+    if (data.tipoRecurso === 'vehiculo') {
+        mostrarCamposVehiculo();
+        document.getElementById('editResponsable').value = data.responsable;
+        document.getElementById('editDestino').value = data.destino;
+        document.getElementById('editFechaVuelta').value = data.fechaVuelta;
+    } else {
+        mostrarCamposSala();
+        document.getElementById('editTitulo').value = data.titulo;
+    }
+    
+    // Generar horarios para el recurso seleccionado
+    generarHorarios('editHoraInicio', 'editHoraFin', data.recursoId);
     
     // Establecer horarios después de que se generen las opciones
     setTimeout(() => {
-        document.getElementById('editHoraInicio').value = horaInicio;
-        document.getElementById('editHoraFin').value = horaFin;
-        
-        // NO aplicar filtro automáticamente al abrir el modal
-        // El filtro se aplicará cuando el usuario cambie la hora de inicio
-        // Esto permite ver todas las opciones disponibles al abrir el modal
-        
+        document.getElementById('editHoraInicio').value = data.horaInicio;
+        document.getElementById('editHoraFin').value = data.horaFin;
         validarHoraFinEdicion();
     }, 200);
     
     // Mostrar modal
     modalEditarReserva.show();
+}
+
+/**
+ * Mostrar campos específicos para vehículos
+ */
+function mostrarCamposVehiculo() {
+    // Ocultar campos de sala
+    const tituloField = document.getElementById('editTituloField');
+    const tituloInput = document.getElementById('editTitulo');
+    if (tituloField && tituloInput) {
+        tituloField.style.display = 'none';
+        tituloInput.required = false;
+        tituloInput.value = '';
+    }
+    
+    // Mostrar campos de vehículo
+    const responsableField = document.getElementById('editResponsableField');
+    const destinoField = document.getElementById('editDestinoField');
+    const fechaVueltaField = document.getElementById('editFechaVueltaField');
+    
+    if (responsableField) {
+        responsableField.style.display = 'block';
+        document.getElementById('editResponsable').required = true;
+    }
+    if (destinoField) {
+        destinoField.style.display = 'block';
+        document.getElementById('editDestino').required = true;
+    }
+    if (fechaVueltaField) {
+        fechaVueltaField.style.display = 'block';
+        document.getElementById('editFechaVuelta').required = true;
+    }
+    
+    // Actualizar labels y título del modal
+    const modalTitle = document.getElementById('modalEditarReservaTitle');
+    const recursoIcon = document.getElementById('editRecursoIcon');
+    const recursoLabel = document.getElementById('editRecursoLabel');
+    const fechaLabel = document.getElementById('editFechaLabel');
+    
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-car me-2"></i>Editar Reserva de Vehículo';
+    if (recursoIcon) recursoIcon.className = 'fas fa-car me-2';
+    if (recursoLabel) recursoLabel.textContent = 'Vehículo *';
+    if (fechaLabel) fechaLabel.textContent = 'Fecha de Salida *';
+}
+
+/**
+ * Mostrar campos específicos para salas
+ */
+function mostrarCamposSala() {
+    // Mostrar campos de sala
+    const tituloField = document.getElementById('editTituloField');
+    if (tituloField) {
+        tituloField.style.display = 'block';
+        document.getElementById('editTitulo').required = true;
+    }
+    
+    // Ocultar campos de vehículo
+    const responsableField = document.getElementById('editResponsableField');
+    const destinoField = document.getElementById('editDestinoField');
+    const fechaVueltaField = document.getElementById('editFechaVueltaField');
+    
+    if (responsableField) {
+        responsableField.style.display = 'none';
+        document.getElementById('editResponsable').required = false;
+    }
+    if (destinoField) {
+        destinoField.style.display = 'none';
+        document.getElementById('editDestino').required = false;
+    }
+    if (fechaVueltaField) {
+        fechaVueltaField.style.display = 'none';
+        document.getElementById('editFechaVuelta').required = false;
+    }
+    
+    // Actualizar labels y título del modal
+    const modalTitle = document.getElementById('modalEditarReservaTitle');
+    const recursoIcon = document.getElementById('editRecursoIcon');
+    const recursoLabel = document.getElementById('editRecursoLabel');
+    const fechaLabel = document.getElementById('editFechaLabel');
+    
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Editar Reserva';
+    if (recursoIcon) recursoIcon.className = 'fas fa-door-open me-2';
+    if (recursoLabel) recursoLabel.textContent = 'Sala *';
+    if (fechaLabel) fechaLabel.textContent = 'Fecha *';
 }
 
 /**
@@ -332,23 +438,24 @@ function cargarSalasDisponibles() {
     const selectRecurso = document.getElementById('editRecurso');
     
     // Limpiar opciones existentes
-    selectRecurso.innerHTML = '<option value="">Selecciona una sala</option>';
+    selectRecurso.innerHTML = '<option value="">Selecciona un recurso</option>';
     
-    // Cargar salas desde el elemento JSON
+    // Cargar recursos desde el elemento JSON
     const salasDataElement = document.getElementById('salas-data');
     if (salasDataElement) {
         try {
-            const salasDisponibles = JSON.parse(salasDataElement.textContent);
-            if (salasDisponibles && salasDisponibles.length > 0) {
-                salasDisponibles.forEach(sala => {
+            const recursosDisponibles = JSON.parse(salasDataElement.textContent);
+            if (recursosDisponibles && recursosDisponibles.length > 0) {
+                recursosDisponibles.forEach(recurso => {
                     const option = document.createElement('option');
-                    option.value = sala.id;
-                    option.textContent = sala.nombre;
+                    option.value = recurso.id;
+                    option.textContent = recurso.nombre;
+                    option.setAttribute('data-tipo', recurso.tipo);
                     selectRecurso.appendChild(option);
                 });
             }
         } catch (error) {
-            console.error('Error al parsear datos de salas:', error);
+            console.error('Error al parsear datos de recursos:', error);
         }
     }
 }
@@ -373,9 +480,36 @@ function guardarCambiosReserva() {
     const horaInicio = formData.get('hora_inicio');
     const horaFin = formData.get('hora_fin');
     
-    // Crear fechas completas en formato ISO
-    const fechaInicio = `${fecha}T${horaInicio}:00`;
-    const fechaFin = `${fecha}T${horaFin}:00`;
+    // Determinar tipo de recurso
+    const recursoSelect = document.getElementById('editRecurso');
+    const selectedOption = recursoSelect.options[recursoSelect.selectedIndex];
+    const tipoRecurso = selectedOption ? selectedOption.getAttribute('data-tipo') : 'sala';
+    
+    let fechaInicio, fechaFin;
+    
+    if (tipoRecurso === 'vehiculo') {
+        // Para vehículos: usar fecha de vuelta
+        const fechaVuelta = formData.get('fecha_vuelta');
+        fechaInicio = `${fecha}T${horaInicio}:00`;
+        fechaFin = `${fechaVuelta}T${horaFin}:00`;
+        
+        // Asegurar que campos de vehículo se envíen (incluso si están ocultos)
+        const responsable = document.getElementById('editResponsable').value;
+        const destino = document.getElementById('editDestino').value;
+        formData.set('responsable', responsable);
+        formData.set('destino', destino);
+        formData.set('fecha_vuelta', fechaVuelta);
+        // Para vehículos, título puede estar vacío (se genera automáticamente)
+        formData.set('titulo', formData.get('titulo') || '');
+    } else {
+        // Para salas: ambas en la misma fecha
+        fechaInicio = `${fecha}T${horaInicio}:00`;
+        fechaFin = `${fecha}T${horaFin}:00`;
+        
+        // Asegurar que título se envíe para salas
+        const titulo = document.getElementById('editTitulo').value;
+        formData.set('titulo', titulo);
+    }
     
     // Agregar campos combinados al FormData
     formData.set('fecha_inicio', fechaInicio);
@@ -388,11 +522,6 @@ function guardarCambiosReserva() {
     const editUrl = `/calendario/editar/${reservaId}/`;
     formEditarReserva.action = editUrl;
     
-    console.log('Enviando datos a URL:', editUrl);
-    console.log('Datos del formulario:', Object.fromEntries(formData));
-    console.log('Fecha inicio combinada:', fechaInicio);
-    console.log('Fecha fin combinada:', fechaFin);
-    
     // Enviar formulario
     fetch(editUrl, {
         method: 'POST',
@@ -403,8 +532,6 @@ function guardarCambiosReserva() {
         }
     })
     .then(response => {
-        console.log('Respuesta del servidor:', response.status, response.statusText);
-        
         // Verificar si la respuesta es JSON
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
@@ -412,7 +539,24 @@ function guardarCambiosReserva() {
                 return response.json();
             } else {
                 return response.json().then(errorData => {
-                    throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+                    // Construir mensaje de error más detallado
+                    let mensajeError = errorData.message || 'Error en el formulario';
+                    
+                    if (errorData.errors) {
+                        const erroresDetallados = [];
+                        for (const [campo, mensajes] of Object.entries(errorData.errors)) {
+                            if (Array.isArray(mensajes)) {
+                                erroresDetallados.push(`${campo}: ${mensajes.join(', ')}`);
+                            } else {
+                                erroresDetallados.push(`${campo}: ${mensajes}`);
+                            }
+                        }
+                        if (erroresDetallados.length > 0) {
+                            mensajeError += '\n' + erroresDetallados.join('\n');
+                        }
+                    }
+                    
+                    throw new Error(mensajeError);
                 });
             }
         } else {
@@ -425,8 +569,6 @@ function guardarCambiosReserva() {
         }
     })
     .then(data => {
-        console.log('Datos recibidos del servidor:', data);
-        
         hideLoadingIndicator();
         
         if (data.success) {
@@ -452,24 +594,53 @@ function guardarCambiosReserva() {
  * Validar formulario de edición
  */
 function validarFormularioEdicion() {
-    const titulo = document.getElementById('editTitulo').value.trim();
-    const recurso = document.getElementById('editRecurso').value;
+    const recursoSelect = document.getElementById('editRecurso');
+    const selectedOption = recursoSelect.options[recursoSelect.selectedIndex];
+    const tipoRecurso = selectedOption ? selectedOption.getAttribute('data-tipo') : 'sala';
+    
+    const recurso = recursoSelect.value;
     const fecha = document.getElementById('editFecha').value;
     const horaInicio = document.getElementById('editHoraInicio').value;
     const horaFin = document.getElementById('editHoraFin').value;
     
     const errores = [];
     
-    if (!titulo) {
-        errores.push('El título es obligatorio');
-    } else if (titulo.length < 3) {
-        errores.push('El título debe tener al menos 3 caracteres');
-    } else if (titulo.length > 100) {
-        errores.push('El título no puede exceder 100 caracteres');
+    // Validar campos comunes
+    if (!recurso) {
+        errores.push('Debe seleccionar un recurso');
     }
     
-    if (!recurso) {
-        errores.push('Debe seleccionar una sala');
+    // Validar campos específicos según tipo de recurso
+    if (tipoRecurso === 'vehiculo') {
+        const responsable = document.getElementById('editResponsable').value.trim();
+        const destino = document.getElementById('editDestino').value.trim();
+        const fechaVuelta = document.getElementById('editFechaVuelta').value;
+        
+        if (!responsable) {
+            errores.push('El responsable es obligatorio para vehículos');
+        } else if (responsable.length < 3) {
+            errores.push('El nombre del responsable debe tener al menos 3 caracteres');
+        }
+        
+        if (!destino) {
+            errores.push('El destino es obligatorio para vehículos');
+        } else if (destino.length < 3) {
+            errores.push('El destino debe tener al menos 3 caracteres');
+        }
+        
+        if (!fechaVuelta) {
+            errores.push('La fecha de vuelta es obligatoria para vehículos');
+        }
+    } else {
+        const titulo = document.getElementById('editTitulo').value.trim();
+        
+        if (!titulo) {
+            errores.push('El título es obligatorio para salas');
+        } else if (titulo.length < 3) {
+            errores.push('El título debe tener al menos 3 caracteres');
+        } else if (titulo.length > 100) {
+            errores.push('El título no puede exceder 100 caracteres');
+        }
     }
     
     if (!fecha) {
@@ -494,17 +665,21 @@ function validarFormularioEdicion() {
     }
     
     if (horaInicio && horaFin) {
-        if (horaInicio >= horaFin) {
-            errores.push('La hora de fin debe ser posterior a la hora de inicio');
-        }
-        
-        // Validar que la diferencia mínima sea de 30 minutos
-        const inicio = new Date(`2000-01-01T${horaInicio}:00`);
-        const fin = new Date(`2000-01-01T${horaFin}:00`);
-        const diferencia = (fin - inicio) / (1000 * 60); // en minutos
-        
-        if (diferencia < 30) {
-            errores.push('La reserva debe durar al menos 30 minutos');
+        // Para SALAS: validar que hora fin sea posterior a hora inicio (mismo día)
+        // Para VEHÍCULOS: NO validar porque pueden tener viajes de varios días
+        if (tipoRecurso !== 'vehiculo') {
+            if (horaInicio >= horaFin) {
+                errores.push('La hora de fin debe ser posterior a la hora de inicio');
+            }
+            
+            // Validar que la diferencia mínima sea de 30 minutos
+            const inicio = new Date(`2000-01-01T${horaInicio}:00`);
+            const fin = new Date(`2000-01-01T${horaFin}:00`);
+            const diferencia = (fin - inicio) / (1000 * 60); // en minutos
+            
+            if (diferencia < 30) {
+                errores.push('La reserva debe durar al menos 30 minutos');
+            }
         }
     }
     
@@ -542,64 +717,142 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
     selectInicio.innerHTML = '<option value="">Seleccionar hora</option>';
     selectFin.innerHTML = '<option value="">Seleccionar hora</option>';
     
-    // Determinar si es comedor
+    // Determinar el tipo de recurso
     let esComedor = false;
+    let esVehiculo = false;
+    
     if (recursoId) {
-        const salasDataElement = document.getElementById('salas-data');
-        if (salasDataElement) {
-            try {
-                const salasDisponibles = JSON.parse(salasDataElement.textContent);
-                const sala = salasDisponibles.find(s => s.id == recursoId);
-                esComedor = sala ? sala.esComedor : false;
-            } catch (error) {
-                console.error('Error al parsear datos de salas:', error);
+        // Obtener tipo desde el select de recurso
+        const recursoSelect = document.getElementById('editRecurso');
+        if (recursoSelect) {
+            const option = recursoSelect.querySelector(`option[value="${recursoId}"]`);
+            if (option) {
+                const tipo = option.getAttribute('data-tipo');
+                esVehiculo = tipo === 'vehiculo';
+                
+                // Si no es vehículo, verificar si es comedor
+                if (!esVehiculo) {
+                    const nombreRecurso = option.textContent.toLowerCase();
+                    esComedor = nombreRecurso.includes('comedor');
+                }
             }
         }
     }
     
-    // Horarios de inicio: 7:30-18:30 (excepto comedor que puede ser 7:00-18:30)
-    const horaInicioMin = esComedor ? 7 : 7.5; // 7:00 para comedor, 7:30 para otros
-    const horaInicioMax = 18.5; // 18:30
+    let horaInicioMin, horaInicioMax, horaFinMin, horaFinMax;
     
-    // Horarios de fin: 8:00-19:00
-    const horaFinMin = 8; // 8:00
-    const horaFinMax = 19; // 19:00
+    if (esVehiculo) {
+        // Vehículos: 24/7
+        horaInicioMin = 0;
+        horaInicioMax = 23.5;
+        horaFinMin = 0;
+        horaFinMax = 24;
+    } else if (esComedor) {
+        // Comedor: 7:00-18:30 (excluyendo 12:00-14:30)
+        horaInicioMin = 7;
+        horaInicioMax = 18.5;
+        horaFinMin = 7.5;
+        horaFinMax = 19;
+    } else {
+        // Salas normales: 7:30-18:30
+        horaInicioMin = 7.5;
+        horaInicioMax = 18.5;
+        horaFinMin = 8;
+        horaFinMax = 19;
+    }
     
     // Generar horarios de inicio
-    for (let hora = Math.floor(horaInicioMin); hora <= Math.floor(horaInicioMax); hora++) {
-        for (let minuto = 0; minuto < 60; minuto += 30) {
-            const horaDecimal = hora + (minuto / 60);
-            
-            // Aplicar restricciones de hora de inicio
-            if (horaDecimal < horaInicioMin || horaDecimal > horaInicioMax) {
-                continue;
+    if (esVehiculo) {
+        // Para vehículos: generar 00:00 - 23:30
+        for (let hora = 0; hora <= 23; hora++) {
+            for (let minuto = 0; minuto < 60; minuto += 30) {
+                const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+                const optionInicio = document.createElement('option');
+                optionInicio.value = tiempo;
+                optionInicio.textContent = tiempo;
+                selectInicio.appendChild(optionInicio);
             }
-            
-            const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
-            
+        }
+    } else if (esComedor) {
+        // Para comedor: 7:00-11:30 y 14:30-18:30
+        const horariosComedor = [
+            '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', 
+            '10:00', '10:30', '11:00', '11:30',
+            '14:30', '15:00', '15:30', '16:00', '16:30', 
+            '17:00', '17:30', '18:00', '18:30'
+        ];
+        horariosComedor.forEach(tiempo => {
             const optionInicio = document.createElement('option');
             optionInicio.value = tiempo;
             optionInicio.textContent = tiempo;
             selectInicio.appendChild(optionInicio);
+        });
+    } else {
+        // Para salas normales: 7:30-18:30
+        for (let hora = Math.floor(horaInicioMin); hora <= Math.floor(horaInicioMax); hora++) {
+            for (let minuto = 0; minuto < 60; minuto += 30) {
+                const horaDecimal = hora + (minuto / 60);
+                
+                if (horaDecimal < horaInicioMin || horaDecimal > horaInicioMax) {
+                    continue;
+                }
+                
+                const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+                const optionInicio = document.createElement('option');
+                optionInicio.value = tiempo;
+                optionInicio.textContent = tiempo;
+                selectInicio.appendChild(optionInicio);
+            }
         }
     }
     
     // Generar horarios de fin
-    for (let hora = Math.floor(horaFinMin); hora <= Math.floor(horaFinMax); hora++) {
-        for (let minuto = 0; minuto < 60; minuto += 30) {
-            const horaDecimal = hora + (minuto / 60);
-            
-            // Aplicar restricciones de hora de fin
-            if (horaDecimal < horaFinMin || horaDecimal > horaFinMax) {
-                continue;
+    if (esVehiculo) {
+        // Para vehículos: 00:00 - 23:30 + 00:00 (fin del día siguiente)
+        for (let hora = 0; hora <= 23; hora++) {
+            for (let minuto = 0; minuto < 60; minuto += 30) {
+                const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+                const optionFin = document.createElement('option');
+                optionFin.value = tiempo;
+                optionFin.textContent = tiempo;
+                selectFin.appendChild(optionFin);
             }
-            
-            const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
-            
+        }
+        // Agregar 00:00 como fin del día siguiente
+        const option00 = document.createElement('option');
+        option00.value = '00:00';
+        option00.textContent = '00:00';
+        selectFin.appendChild(option00);
+    } else if (esComedor) {
+        // Para comedor: 07:30-12:00 y 15:00-19:00
+        const horariosFinComedor = [
+            '07:30', '08:00', '08:30', '09:00', '09:30', 
+            '10:00', '10:30', '11:00', '11:30', '12:00',
+            '15:00', '15:30', '16:00', '16:30', 
+            '17:00', '17:30', '18:00', '18:30', '19:00'
+        ];
+        horariosFinComedor.forEach(tiempo => {
             const optionFin = document.createElement('option');
             optionFin.value = tiempo;
             optionFin.textContent = tiempo;
             selectFin.appendChild(optionFin);
+        });
+    } else {
+        // Para salas normales: 8:00-19:00
+        for (let hora = Math.floor(horaFinMin); hora <= Math.floor(horaFinMax); hora++) {
+            for (let minuto = 0; minuto < 60; minuto += 30) {
+                const horaDecimal = hora + (minuto / 60);
+                
+                if (horaDecimal < horaFinMin || horaDecimal > horaFinMax) {
+                    continue;
+                }
+                
+                const tiempo = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+                const optionFin = document.createElement('option');
+                optionFin.value = tiempo;
+                optionFin.textContent = tiempo;
+                selectFin.appendChild(optionFin);
+            }
         }
     }
 }
@@ -689,10 +942,8 @@ function actualizarCalendario() {
     if (window.CalendarioApp && window.CalendarioApp.Core) {
         if (window.CalendarioApp.Core.updateMainCalendar) {
             window.CalendarioApp.Core.updateMainCalendar();
-            console.log('Calendario actualizado');
         } else if (window.CalendarioApp.Core.calendar && window.CalendarioApp.Core.calendar.refetchEvents) {
             window.CalendarioApp.Core.calendar.refetchEvents();
-            console.log('Calendario actualizado con refetchEvents');
         }
     }
 }
