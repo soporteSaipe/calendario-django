@@ -36,6 +36,11 @@ def initialize_database():
         print("Error recopilando archivos estáticos")
         return False
     
+    # Cargar usuarios desde Excel si existe el archivo
+    print("Verificando archivo de credenciales...")
+    if not run_command("python manage.py cargar_usuarios_excel --archivo credenciales.xlsx"):
+        print("No se pudieron cargar usuarios desde Excel (puede que el archivo no exista)")
+    
     # Crear superusuario si no existe
     from django.contrib.auth.models import User
     if not User.objects.filter(username='admin').exists():

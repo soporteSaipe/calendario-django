@@ -200,3 +200,10 @@ Thumbs.db
 
 # UV specific
 uv.lock
+
+# Archivos de credenciales (eliminar después del primer deploy)
+# credenciales.xlsx
+# Descomenta la línea anterior después de que se hayan cargado los usuarios en producción
+
+# Scripts de prueba locales
+test_carga_usuarios.py
