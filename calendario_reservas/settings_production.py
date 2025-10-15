@@ -41,17 +41,40 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 # Base de datos para producción (PostgreSQL)
-# Railway siempre proporciona DATABASE_URL
+# Soporta Railway, Supabase, Render, etc.
 DATABASE_URL = os.getenv('DATABASE_URL')
+
+# Si no hay DATABASE_URL, construir desde variables individuales (útil para Supabase)
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is required for production")
+    # Intentar construir desde variables individuales de Supabase
+    SUPABASE_HOST = os.getenv('SUPABASE_DB_HOST')
+    SUPABASE_NAME = os.getenv('SUPABASE_DB_NAME', 'postgres')
+    SUPABASE_USER = os.getenv('SUPABASE_DB_USER')
+    SUPABASE_PASSWORD = os.getenv('SUPABASE_DB_PASSWORD')
+    SUPABASE_PORT = os.getenv('SUPABASE_DB_PORT', '5432')
+    
+    if SUPABASE_HOST and SUPABASE_USER and SUPABASE_PASSWORD:
+        DATABASE_URL = f"postgresql://{SUPABASE_USER}:{SUPABASE_PASSWORD}@{SUPABASE_HOST}:{SUPABASE_PORT}/{SUPABASE_NAME}"
+        print(f"✅ DATABASE_URL construida desde variables de Supabase")
+    else:
+        raise ValueError("DATABASE_URL o credenciales de Supabase (SUPABASE_DB_*) son requeridas para producción")
 
 # Debug: mostrar información de conexión (solo en logs)
 print(f"🔗 DATABASE_URL encontrada: {DATABASE_URL[:50]}...")
 
+# Parsear DATABASE_URL
 DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL)
 }
+
+# Configuración adicional para Supabase (SSL requerido)
+if 'supabase' in DATABASE_URL:
+    print("🔒 Configurando SSL para Supabase...")
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
+    }
+    DATABASES['default']['CONN_MAX_AGE'] = 600  # Mantener conexiones por 10 minutos
+    print("✅ SSL configurado para Supabase")
 
 # Configuración de cache mejorada para producción
 CACHES = {

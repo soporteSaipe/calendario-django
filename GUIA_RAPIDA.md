@@ -1,4 +1,30 @@
-# 🚀 Guía Rápida: Carga de Usuarios desde Excel en Railway
+# 🚀 Guía Rápida: Sistema de Calendario SAIPE
+
+## 📋 Opciones de Deploy
+
+### Opción A: Railway (Original)
+Sistema de deploy tradicional con Railway
+
+### Opción B: Supabase (Recomendado) ⭐
+Base de datos en Supabase con mejores prestaciones
+
+> 💡 **Nueva**: [Ver Guía de Migración a Supabase](./README_MIGRACION.md)
+
+---
+
+## 🗄️ Base de Datos: Railway vs Supabase
+
+| Característica | Railway | Supabase |
+|---------------|---------|----------|
+| Espacio | 100 MB | **500 MB** ⭐ |
+| Backups | ❌ | ✅ Automáticos |
+| Latencia (SA) | ~180ms | **~30ms** ⭐ |
+| Panel Admin | Básico | Completo ⭐ |
+
+**Recomendación**: Usa Supabase para la base de datos
+📖 [Leer comparación completa](./COMPARACION_DB.md)
+
+---
 
 ## 📋 Pasos a Seguir
 
@@ -132,6 +158,37 @@ Habrás creado:
 - ⚠️ Las contraseñas se almacenan hasheadas (seguro)
 - ⚠️ Usa contraseñas temporales y pide a los usuarios que las cambien
 - ⚠️ No subas el Excel a repositorios públicos con contraseñas reales
+
+---
+
+## 🆕 Migrar a Supabase (Opcional pero Recomendado)
+
+### ¿Por qué Supabase?
+- ✅ **5x más espacio**: 500 MB vs 100 MB
+- ✅ **Backups automáticos** incluidos
+- ✅ **Mejor rendimiento** en Sudamérica
+- ✅ **Panel de admin** completo
+
+### Migración Rápida (10 minutos)
+
+```bash
+# 1. Exportar datos de Railway
+python export_railway_data.py
+
+# 2. Configurar Supabase en .env
+# DATABASE_URL=postgresql://postgres.xxx:pass@aws-0-sa-east-1.pooler.supabase.com:5432/postgres
+
+# 3. Importar a Supabase
+python manage.py migrate
+python import_to_supabase.py
+```
+
+📖 **Guías completas de migración:**
+- [Inicio Rápido con Supabase](./SUPABASE_QUICKSTART.md) - 5 minutos
+- [Guía Completa de Migración](./MIGRACION_SUPABASE.md) - Detallada
+- [Scripts de Migración](./SCRIPTS_MIGRACION.md) - Documentación técnica
+- [Comparación Railway vs Supabase](./COMPARACION_DB.md) - Para decidir
+- [README de Migración](./README_MIGRACION.md) - Índice completo
 
 ---
 
