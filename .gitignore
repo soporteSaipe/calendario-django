@@ -45,8 +45,8 @@ staticfiles/
 *~
 .DS_Store
 
-# Credenciales (descomenta después de la carga inicial)
-# credenciales.xlsx
+# Credenciales (ignorar archivos de credenciales)
+credenciales.xlsx
 
 # Railway
 .railway/
