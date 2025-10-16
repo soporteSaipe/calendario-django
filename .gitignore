@@ -45,11 +45,13 @@ staticfiles/
 *~
 .DS_Store
 
-# Backups de migración
-backup_railway/
-
 # Credenciales (descomenta después de la carga inicial)
 # credenciales.xlsx
 
 # Railway
 .railway/
+
+# Archivos temporales y de prueba
+test_*.py
+*_temp.py
+*.tmp
