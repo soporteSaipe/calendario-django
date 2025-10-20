@@ -28,9 +28,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-pw^=t3(nq74lm&8x47=3(-p7&ubf#u_=o9qxh%p0(_t3kc58l%')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+# Obtener ALLOWED_HOSTS de variable de entorno o usar valores por defecto
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+# Limpiar espacios en blanco
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
+# Permitir acceso desde red local (formato wildcard)
+if any('*' in host for host in ALLOWED_HOSTS):
+    # Si hay wildcards, configurar para permitir cualquier host (solo para desarrollo local)
+    ALLOWED_HOSTS = ['*']
 
 
 # Application definition

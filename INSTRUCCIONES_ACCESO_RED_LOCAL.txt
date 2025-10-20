@@ -1,0 +1,103 @@
+========================================
+  CALENDARIO SAIPE - Acceso Red Local
+========================================
+
+CONFIGURACION DEL SERVIDOR
+===========================
+
+Tu servidor esta configurado para ejecutarse localmente y 
+usar la base de datos de Supabase en la nube.
+
+IP DEL SERVIDOR: 192.168.101.176
+Puerto: 8000
+
+
+COMO INICIAR EL SERVIDOR
+=========================
+
+1. Doble click en: ejecutar_servidor_local.bat
+
+   O desde la terminal:
+   python manage.py runserver 0.0.0.0:8000
+
+
+ACCESO PARA USUARIOS
+=====================
+
+Desde la misma PC (servidor):
+   http://127.0.0.1:8000/
+   http://localhost:8000/
+
+Desde otras PCs en la red:
+   http://192.168.101.176:8000/
+
+
+CREDENCIALES DE ACCESO
+======================
+
+Los usuarios pueden acceder con sus credenciales habituales.
+Todos los datos estan en Supabase (en la nube).
+
+
+REQUISITOS
+==========
+
+1. Tu PC debe estar encendida
+2. Debe estar conectada a la red SAIPE
+3. El firewall de Windows debe permitir conexiones al puerto 8000
+
+
+CONFIGURAR FIREWALL (SI ES NECESARIO)
+======================================
+
+Si otros usuarios no pueden acceder:
+
+1. Abre "Firewall de Windows Defender"
+2. Click en "Configuracion avanzada"
+3. Click en "Reglas de entrada"
+4. Click en "Nueva regla..."
+5. Selecciona "Puerto" → Siguiente
+6. Selecciona "TCP" → Puerto especifico: 8000 → Siguiente
+7. Selecciona "Permitir la conexion" → Siguiente
+8. Marca todas las opciones (Dominio, Privado, Publico) → Siguiente
+9. Nombre: "Django Calendario SAIPE" → Finalizar
+
+
+SOLUCIONAR PROBLEMAS
+=====================
+
+Si no funciona:
+
+1. Verifica que el servidor este ejecutandose (ventana negra abierta)
+
+2. Verifica tu IP actual:
+   ipconfig | findstr "IPv4"
+   
+   Si cambio, actualiza .env con la nueva IP
+
+3. Verifica que ambas PCs esten en la misma red
+
+4. Prueba hacer ping desde otra PC:
+   ping 192.168.101.176
+
+5. Verifica el firewall de Windows
+
+
+BASE DE DATOS
+=============
+
+Todos los datos se guardan en Supabase (en la nube).
+No se perderan datos si apagas el servidor.
+
+
+DETENER EL SERVIDOR
+===================
+
+Presiona Ctrl+C en la ventana del servidor
+o cierra la ventana
+
+
+========================================
+Ultima actualizacion: Octubre 2024
+========================================
+

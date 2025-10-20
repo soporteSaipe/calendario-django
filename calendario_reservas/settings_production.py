@@ -9,19 +9,21 @@ import dj_database_url
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-railway')
 
-# ALLOWED_HOSTS - crítico para Railway
+# ALLOWED_HOSTS - crítico para Railway y Render
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else [
     'healthcheck.railway.app',  # Para healthcheck de Railway
-    'calendariosaipe.up.railway.app',  # Tu dominio específico
+    'calendariosaipe.up.railway.app',  # Tu dominio Railway específico
     '*.up.railway.app',  # Todos los dominios de Railway
+    '*.onrender.com',  # Todos los dominios de Render
     'localhost',
     '127.0.0.1'
 ]
 
-# CSRF_TRUSTED_ORIGINS para Railway
+# CSRF_TRUSTED_ORIGINS para Railway y Render
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else [
-    'https://calendariosaipe.up.railway.app',  # Tu dominio específico
+    'https://calendariosaipe.up.railway.app',  # Tu dominio Railway específico
     'https://*.up.railway.app',  # Todos los dominios HTTPS de Railway
+    'https://*.onrender.com',  # Todos los dominios HTTPS de Render
     'https://healthcheck.railway.app'
 ]
 
