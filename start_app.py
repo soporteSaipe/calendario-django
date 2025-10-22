@@ -41,28 +41,44 @@ def initialize_database():
     if not run_command("python manage.py cargar_usuarios_excel --archivo credenciales.xlsx"):
         print("No se pudieron cargar usuarios desde Excel (puede que el archivo no exista)")
     
-    # Crear superusuario si no existe
+    # Crear o actualizar superusuario
     from django.contrib.auth.models import User
-    if not User.objects.filter(username='admin').exists():
-        print("Creando superusuario...")
-        User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    admin_user, created = User.objects.get_or_create(
+        username='admin',
+        defaults={
+            'email': 'admin@example.com',
+            'is_staff': True,
+            'is_superuser': True
+        }
+    )
+    admin_user.set_password('admin123')
+    admin_user.is_staff = True
+    admin_user.is_superuser = True
+    admin_user.save()
+    
+    if created:
         print("Superusuario creado: admin/admin123")
     else:
-        print("Superusuario ya existe")
+        print("Superusuario actualizado: admin/admin123")
     
-    # Crear usuario de prueba normal
-    if not User.objects.filter(username='usuario_prueba').exists():
-        print("Creando usuario de prueba...")
-        User.objects.create_user(
-            username='usuario_prueba',
-            email='usuario@prueba.com',
-            password='prueba123',
-            first_name='Usuario',
-            last_name='Prueba'
-        )
+    # Crear o actualizar usuario de prueba normal
+    usuario_prueba, created = User.objects.get_or_create(
+        username='usuario_prueba',
+        defaults={
+            'email': 'usuario@prueba.com',
+            'first_name': 'Usuario',
+            'last_name': 'Prueba'
+        }
+    )
+    usuario_prueba.set_password('prueba123')
+    usuario_prueba.first_name = 'Usuario'
+    usuario_prueba.last_name = 'Prueba'
+    usuario_prueba.save()
+    
+    if created:
         print("Usuario de prueba creado: usuario_prueba/prueba123")
     else:
-        print("Usuario de prueba ya existe")
+        print("Usuario de prueba actualizado: usuario_prueba/prueba123")
     
     # Crear recursos de ejemplo si no existen
     from calendario.models import Recurso

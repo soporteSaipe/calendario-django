@@ -14,17 +14,34 @@ if __name__ == '__main__':
     execute_from_command_line(['manage.py', 'migrate', '--noinput'])
     
     from django.contrib.auth.models import User
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
     
-    if not User.objects.filter(username='usuario_prueba').exists():
-        User.objects.create_user(
-            username='usuario_prueba',
-            email='usuario@prueba.com',
-            password='prueba123',
-            first_name='Usuario',
-            last_name='Prueba'
-        )
+    # Crear o actualizar superusuario
+    admin_user, created = User.objects.get_or_create(
+        username='admin',
+        defaults={
+            'email': 'admin@example.com',
+            'is_staff': True,
+            'is_superuser': True
+        }
+    )
+    admin_user.set_password('admin123')
+    admin_user.is_staff = True
+    admin_user.is_superuser = True
+    admin_user.save()
+    
+    # Crear o actualizar usuario de prueba
+    usuario_prueba, created = User.objects.get_or_create(
+        username='usuario_prueba',
+        defaults={
+            'email': 'usuario@prueba.com',
+            'first_name': 'Usuario',
+            'last_name': 'Prueba'
+        }
+    )
+    usuario_prueba.set_password('prueba123')
+    usuario_prueba.first_name = 'Usuario'
+    usuario_prueba.last_name = 'Prueba'
+    usuario_prueba.save()
     
     from calendario.models import Recurso
     if not Recurso.objects.exists():

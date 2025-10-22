@@ -36,7 +36,7 @@ class Command(BaseCommand):
             
             # Contadores
             usuarios_creados = 0
-            usuarios_existentes = 0
+            usuarios_actualizados = 0
             errores = 0
             
             # Leer las filas (asumiendo que la primera fila son encabezados)
@@ -67,27 +67,31 @@ class Command(BaseCommand):
                     # Crear email
                     email = f'{usuario}@saipe.com.ar'
                     
-                    # Verificar si el usuario ya existe
-                    if User.objects.filter(username=usuario).exists():
-                        self.stdout.write(
-                            self.style.WARNING(f'Fila {row_num}: Usuario "{usuario}" ya existe, saltando...')
-                        )
-                        usuarios_existentes += 1
-                        continue
-                    
-                    # Crear el usuario
-                    User.objects.create_user(
+                    # Crear o actualizar el usuario
+                    user, created = User.objects.get_or_create(
                         username=usuario,
-                        email=email,
-                        password=contraseña,
-                        is_staff=False,
-                        is_superuser=False
+                        defaults={
+                            'email': email,
+                            'is_staff': False,
+                            'is_superuser': False
+                        }
                     )
                     
-                    self.stdout.write(
-                        self.style.SUCCESS(f'Fila {row_num}: Usuario "{usuario}" creado exitosamente')
-                    )
-                    usuarios_creados += 1
+                    # Actualizar contraseña (tanto para usuarios nuevos como existentes)
+                    user.set_password(contraseña)
+                    user.email = email
+                    user.save()
+                    
+                    if created:
+                        self.stdout.write(
+                            self.style.SUCCESS(f'Fila {row_num}: Usuario "{usuario}" creado exitosamente')
+                        )
+                        usuarios_creados += 1
+                    else:
+                        self.stdout.write(
+                            self.style.SUCCESS(f'Fila {row_num}: Usuario "{usuario}" actualizado exitosamente')
+                        )
+                        usuarios_actualizados += 1
                     
                 except Exception as e:
                     self.stdout.write(
@@ -101,8 +105,8 @@ class Command(BaseCommand):
             # Resumen
             self.stdout.write('\n' + '='*60)
             self.stdout.write(self.style.SUCCESS(f'✓ Usuarios creados: {usuarios_creados}'))
-            if usuarios_existentes > 0:
-                self.stdout.write(self.style.WARNING(f'⚠ Usuarios que ya existían: {usuarios_existentes}'))
+            if usuarios_actualizados > 0:
+                self.stdout.write(self.style.SUCCESS(f'✓ Usuarios actualizados: {usuarios_actualizados}'))
             if errores > 0:
                 self.stdout.write(self.style.ERROR(f'✗ Errores: {errores}'))
             self.stdout.write('='*60 + '\n')
