@@ -486,7 +486,8 @@
         }
         
         // Event listener para cambio de recurso
-        recursoSelect.addEventListener('change', function() {
+        if (recursoSelect) {
+            recursoSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const tipo = selectedOption.getAttribute('data-tipo');
             
@@ -521,9 +522,12 @@
                 adaptarModalParaTipoRecurso('sala'); // Volver a configuración por defecto
             }
         });
+        }
         
         // Configurar modal al abrir
-        document.getElementById('abrirModalCrearReserva').addEventListener('click', function() {
+        const abrirModalBtn = document.getElementById('abrirModalCrearReserva');
+        if (abrirModalBtn) {
+            abrirModalBtn.addEventListener('click', function() {
             // Limpiar formulario
             document.getElementById('formCrearReserva').reset();
             document.getElementById('salaSelectedInfo').style.display = 'none';
@@ -531,6 +535,7 @@
             // Configurar por defecto para sala
             adaptarModalParaTipoRecurso('sala');
         });
+        }
         
         // Configurar selector superior
         const salaFilter = document.getElementById('salaFilter');
@@ -557,7 +562,8 @@
         }
         
         // Event listener para el selector superior
-        salaFilter.addEventListener('change', function() {
+        if (salaFilter) {
+            salaFilter.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const tipo = selectedOption.getAttribute('data-tipo');
             
@@ -569,6 +575,7 @@
                 adaptarHorariosCalendario('sala');
             }
         });
+        }
         
         // Función para adaptar horarios del calendario según el tipo de recurso
         function adaptarHorariosCalendario(tipo) {

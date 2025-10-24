@@ -833,6 +833,12 @@ CalendarioApp.Calendar = {
   setupTimeValidation: function(horaInicioSelect, horaFinSelect) {
     const self = this; // Guardar referencia al contexto
     
+    // Verificar que los elementos existan antes de agregar event listeners
+    if (!horaInicioSelect || !horaFinSelect) {
+      console.warn('setupTimeValidation: Elementos no encontrados, saltando configuración');
+      return;
+    }
+    
     horaInicioSelect.addEventListener('change', function() {
       const horaInicio = this.value;
       
