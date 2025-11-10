@@ -200,16 +200,10 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'formatter': 'verbose',
-        },
     },
     'loggers': {
         'calendario': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
@@ -224,6 +218,16 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# En desarrollo local, agregar handler de archivo si el directorio existe
+if DEBUG and (BASE_DIR / 'logs').exists():
+    LOGGING['handlers']['file'] = {
+        'level': 'DEBUG',
+        'class': 'logging.FileHandler',
+        'filename': BASE_DIR / 'logs' / 'django.log',
+        'formatter': 'verbose',
+    }
+    LOGGING['loggers']['calendario']['handlers'].append('file')
 
 # Configuración de autenticación
 LOGIN_REDIRECT_URL = 'calendario:calendario'  # Redirigir al calendario después del login
