@@ -94,11 +94,19 @@ if DATABASE_URL:
     # Si existe DATABASE_URL, usarla (Supabase/Railway/Render)
     import dj_database_url
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
-    # Configurar SSL si es Supabase
+    # Configurar SSL y opciones adicionales si es Supabase
     if 'supabase' in DATABASE_URL:
-        DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+        DATABASES['default']['OPTIONS'] = {
+            'sslmode': 'require',
+            'connect_timeout': 10,
+        }
+        DATABASES['default']['CONN_MAX_AGE'] = 600
+        # Asegurarse de que esté usando el puerto correcto del pooler (6543)
+        # Si la URL usa 5432, cambiar a 6543 para el pooler de transacciones
+        if 'PORT' not in DATABASES['default'] or DATABASES['default'].get('PORT') == '5432':
+            DATABASES['default']['PORT'] = '6543'
 else:
     # Si no, usar variables individuales (desarrollo local)
     DATABASES = {
