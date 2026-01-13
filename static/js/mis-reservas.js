@@ -754,11 +754,11 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
         horaFinMin = 7.5;
         horaFinMax = 19;
     } else {
-        // Salas normales: 7:30-18:30
+        // Salas normales: 7:30-18:00
         horaInicioMin = 7.5;
-        horaInicioMax = 18.5;
+        horaInicioMax = 18;
         horaFinMin = 8;
-        horaFinMax = 19;
+        horaFinMax = 20;
     }
     
     // Generar horarios de inicio
@@ -788,7 +788,7 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
             selectInicio.appendChild(optionInicio);
         });
     } else {
-        // Para salas normales: 7:30-18:30
+        // Para salas normales: 7:30-18:00
         for (let hora = Math.floor(horaInicioMin); hora <= Math.floor(horaInicioMax); hora++) {
             for (let minuto = 0; minuto < 60; minuto += 30) {
                 const horaDecimal = hora + (minuto / 60);
@@ -838,7 +838,7 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
             selectFin.appendChild(optionFin);
         });
     } else {
-        // Para salas normales: 8:00-19:00
+        // Para salas normales: 8:00-20:00
         for (let hora = Math.floor(horaFinMin); hora <= Math.floor(horaFinMax); hora++) {
             for (let minuto = 0; minuto < 60; minuto += 30) {
                 const horaDecimal = hora + (minuto / 60);

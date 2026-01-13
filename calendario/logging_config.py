@@ -70,13 +70,20 @@ class CalendarioLogger:
             console_handler.setFormatter(console_formatter)
             self.logger.addHandler(console_handler)
             
-            # Handler para archivo (si está configurado)
-            if hasattr(settings, 'LOGGING') and 'handlers' in settings.LOGGING:
-                file_handler = logging.FileHandler('logs/calendario.log')
-                file_handler.setLevel(logging.DEBUG)
-                file_formatter = StructuredFormatter()
-                file_handler.setFormatter(file_formatter)
-                self.logger.addHandler(file_handler)
+            # Handler para archivo (solo en desarrollo si el directorio existe)
+            if settings.DEBUG:
+                from pathlib import Path
+                logs_dir = Path('logs')
+                if logs_dir.exists():
+                    try:
+                        file_handler = logging.FileHandler('logs/calendario.log')
+                        file_handler.setLevel(logging.DEBUG)
+                        file_formatter = StructuredFormatter()
+                        file_handler.setFormatter(file_formatter)
+                        self.logger.addHandler(file_handler)
+                    except (OSError, IOError):
+                        # Si no se puede crear el archivo, continuar sin él
+                        pass
     
     def _add_context(self, extra_data: Optional[Dict[str, Any]] = None, 
                     request: Optional[HttpRequest] = None) -> Dict[str, Any]:

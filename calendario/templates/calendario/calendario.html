@@ -453,10 +453,10 @@
                     });
                 } else {
                     // Horarios normales para otras salas
-                    // Hora inicio: 7:00-18:30
-                    for (let hora = 7; hora <= 15; hora++) {
+                    // Hora inicio: 7:00-18:00
+                    for (let hora = 7; hora <= 18; hora++) {
                         for (let minuto = 0; minuto < 60; minuto += 30) {
-                            if (hora === 18 && minuto > 30) break; // No pasar de 18:30
+                            if (hora === 18 && minuto > 0) break; // No pasar de 18:00
                             
                             const horaStr = hora.toString().padStart(2, '0');
                             const minutoStr = minuto.toString().padStart(2, '0');
@@ -467,11 +467,11 @@
                         }
                     }
                     
-                    // Hora fin: 7:30-19:00
-                    for (let hora = 7; hora <= 16; hora++) {
+                    // Hora fin: 7:30-20:00
+                    for (let hora = 7; hora <= 20; hora++) {
                         for (let minuto = 0; minuto < 60; minuto += 30) {
                             if (hora === 7 && minuto === 0) continue; // Saltar 7:00 para hora fin
-                            if (hora === 19 && minuto > 0) break; // No pasar de 19:00
+                            if (hora === 20 && minuto > 0) break; // No pasar de 20:00
                             
                             const horaStr = hora.toString().padStart(2, '0');
                             const minutoStr = minuto.toString().padStart(2, '0');
@@ -606,11 +606,11 @@
                 } else {
                     // Configurar horarios laborales para salas
                     calendar.setOption('slotMinTime', '07:00:00');
-                    calendar.setOption('slotMaxTime', '19:00:00');
+                    calendar.setOption('slotMaxTime', '20:00:00');
                     calendar.setOption('views', {
                         timeGridDay: {
                             slotMinTime: '07:00:00',
-                            slotMaxTime: '19:00:00',
+                            slotMaxTime: '20:00:00',
                             slotDuration: '00:30:00'
                         },
                         timeGridWeek: {

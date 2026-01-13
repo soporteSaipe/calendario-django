@@ -147,7 +147,7 @@ CalendarioApp.Calendar = {
       },
       weekends: true,
       slotMinTime: '07:00:00',
-      slotMaxTime: '19:00:00',
+      slotMaxTime: '20:00:00',
       slotDuration: '00:30:00',
       slotLabelInterval: '01:00:00',
       allDaySlot: false,
@@ -892,11 +892,11 @@ CalendarioApp.Calendar = {
             }
           });
         } else {
-          // Generar opciones de hora de fin para otras salas (7:30 a 19:00)
-          for (let h = 7; h <= 16; h++) {
+          // Generar opciones de hora de fin para otras salas (7:30 a 20:00)
+          for (let h = 7; h <= 20; h++) {
             for (let m = 0; m < 60; m += 30) {
               if (h === 7 && m < 30) continue; // Empezar desde 7:30
-              if (h === 19 && m > 0) break; // Terminar en 19:00
+              if (h === 20 && m > 0) break; // Terminar en 20:00
               
               const horaActualMinutos = h * 60 + m;
               
@@ -980,10 +980,10 @@ CalendarioApp.Calendar = {
         horaInicioSelect.add(option);
       });
     } else {
-      // Otras salas: 7:00 a 18:30
-      for (let hora = 7; hora <= 15; hora++) {
+      // Otras salas: 7:00 a 18:00
+      for (let hora = 7; hora <= 18; hora++) {
         for (let minuto = 0; minuto < 60; minuto += 30) {
-          if (hora === 15 && minuto > 30) break;
+          if (hora === 18 && minuto > 0) break; // No pasar de 18:00
           
           const horaStr = hora.toString().padStart(2, '0');
           const minutoStr = minuto.toString().padStart(2, '0');

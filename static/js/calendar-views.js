@@ -354,7 +354,7 @@ CalendarioApp.CalendarViews = {
           ...baseConfig,
           aspectRatio: 1.8,
           slotMinTime: '07:00:00',
-          slotMaxTime: '19:00:00',
+          slotMaxTime: '20:00:00',
           slotDuration: '00:30:00'
         };
       case 'timeGridWeek':
@@ -362,7 +362,7 @@ CalendarioApp.CalendarViews = {
           ...baseConfig,
           aspectRatio: 1.6,
           slotMinTime: '07:00:00',
-          slotMaxTime: '19:00:00',
+          slotMaxTime: '20:00:00',
           slotDuration: '00:30:00'
         };
       case 'dayGridMonth':
