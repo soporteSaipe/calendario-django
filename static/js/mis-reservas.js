@@ -6,6 +6,8 @@
 // Variables globales para el modal de edición
 let modalEditarReserva = null;
 let formEditarReserva = null;
+/** Rango original de la reserva al abrir el modal (para permitir editar dentro del mismo) */
+let reservaOriginalRango = null;
 
 /**
  * Funciones auxiliares para reemplazar dependencias de CalendarioApp
@@ -343,6 +345,14 @@ function abrirModalEdicion(data) {
         validarHoraFinEdicion();
     }, 200);
     
+    // Guardar rango original para validación: permitir editar si el nuevo rango está dentro del original
+    reservaOriginalRango = {
+        fecha: data.fecha,
+        horaInicio: data.horaInicio,
+        horaFin: data.horaFin,
+        tipoRecurso: data.tipoRecurso || 'sala'
+    };
+    
     // Mostrar modal
     modalEditarReserva.show();
 }
@@ -646,13 +656,22 @@ function validarFormularioEdicion() {
     if (!fecha) {
         errores.push('La fecha es obligatoria');
     } else {
-        // Validar que la fecha no sea anterior a hoy
-        const fechaSeleccionada = new Date(fecha);
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
+        // Permitir edición si el nuevo rango está dentro del rango original (ej. acortar 9:00-11:00 a 9:00-10:00)
+        const dentroDelRangoOriginal = reservaOriginalRango &&
+            tipoRecurso !== 'vehiculo' &&
+            fecha === reservaOriginalRango.fecha &&
+            reservaOriginalRango.horaInicio != null &&
+            reservaOriginalRango.horaFin != null &&
+            horaInicio >= reservaOriginalRango.horaInicio &&
+            horaFin <= reservaOriginalRango.horaFin;
         
-        if (fechaSeleccionada < hoy) {
-            errores.push('No se puede editar una reserva con fecha anterior a hoy');
+        if (!dentroDelRangoOriginal) {
+            const fechaSeleccionada = new Date(fecha + 'T12:00:00');
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            if (fechaSeleccionada < hoy) {
+                errores.push('No se puede editar una reserva con fecha anterior a hoy');
+            }
         }
     }
     
