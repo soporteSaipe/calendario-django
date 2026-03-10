@@ -172,7 +172,7 @@ CalendarioApp.Calendar = {
     this.calendar.render();
   },
   
-  getEventsUrl: function() {
+  getEventsUrl: function(info) {
     if (!this.currentSalaFilter || this.currentSalaFilter === 'undefined') {
       const salaSelect = document.getElementById('salaFilter');
       if (salaSelect && salaSelect.options.length > 0) {
@@ -194,7 +194,10 @@ CalendarioApp.Calendar = {
       return [];
     }
     
-    const url = apiUrl + '?sala=' + this.currentSalaFilter;
+    let url = apiUrl + '?sala=' + this.currentSalaFilter;
+    if (info && info.start && info.end) {
+      url += '&start=' + info.start.toISOString() + '&end=' + info.end.toISOString();
+    }
     CalendarioApp.Core.Logger.debug('Cargando eventos desde URL:', url);
     
     return fetch(url)

@@ -93,6 +93,8 @@ class APIConfig:
     MAX_PAGE_SIZE = 100
     API_VERSION = 'v1'
     API_PREFIX = 'api'
+    API_MAX_RESERVAS = 500  # Límite máximo de reservas por petición (evita respuestas excesivas)
+    API_DEFAULT_PAST_DAYS = 90  # Días hacia atrás cuando no se envían start/end
 
 
 class CalendarConfig:

@@ -116,7 +116,6 @@ class CacheManager:
     def __init__(self):
         self.logger = calendario_logger
         self.key_generator = CacheKeyGenerator()
-        self.cache_tags = {}  # Mapeo de claves a tags
     
     def get(self, key: str, default: Any = None) -> Any:
         """
@@ -161,10 +160,8 @@ class CacheManager:
             
             cache.set(key, value, timeout)
             
-            # Registrar tags si se proporcionan
+            # Guardar mapeo de tags en el backend (no en memoria para evitar fugas)
             if tags:
-                self.cache_tags[key] = tags
-                # Guardar mapeo de tags
                 for tag in tags:
                     tag_key = f"tag_{tag}"
                     tagged_keys = cache.get(tag_key, [])
@@ -237,12 +234,12 @@ class CacheManager:
             Número de claves invalidadas
         """
         try:
-            # Nota: Esta implementación es básica
-            # En producción se recomienda usar Redis con SCAN
-            deleted_count = 0
+            # LocMemCache no soporta keys(); Redis sí tiene get_client()
+            if not hasattr(cache._cache, 'get_client'):
+                return 0
             
-            # Obtener todas las claves (esto puede ser costoso en producción)
-            all_keys = cache._cache.get_client().keys('*') if hasattr(cache._cache, 'get_client') else []
+            deleted_count = 0
+            all_keys = cache._cache.get_client().keys('*') or []
             
             for key in all_keys:
                 if pattern in key:

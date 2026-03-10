@@ -3,7 +3,7 @@ Vistas API para el sistema de calendario
 """
 
 import logging
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from django.http import JsonResponse
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -15,7 +15,9 @@ from ..query_optimizers import ReservaQueryOptimizer
 from ..constants import (
     RateLimitConfig,
     ValidationMessages,
-    ErrorMessages
+    ErrorMessages,
+    APIConfig,
+    BusinessRules
 )
 from ..http_responses import HTTP, ERROR_CODES
 
@@ -108,6 +110,13 @@ def api_reservas(request):
         except (ValueError, AttributeError) as e:
             logger.warning(f'Error parseando fechas en API: {str(e)}')
     
+    # Rango por defecto si no se envían start/end (evita devolver todas las reservas)
+    if fecha_inicio_dt is None or fecha_fin_dt is None:
+        now = timezone.now()
+        fecha_inicio_dt = now - timedelta(days=APIConfig.API_DEFAULT_PAST_DAYS)
+        fecha_fin_dt = now + timedelta(days=BusinessRules.MAX_FUTURE_DAYS)
+        logger.debug(f'Usando rango por defecto: {fecha_inicio_dt} - {fecha_fin_dt}')
+    
     if sala_id and sala_id != 'todas':
         try:
             sala_id_int = int(sala_id)
@@ -115,12 +124,12 @@ def api_reservas(request):
         except ValueError as e:
             logger.warning(f'Error parseando sala_id: {str(e)}')
     
-    # Obtener reservas usando el optimizador
+    # Obtener reservas usando el optimizador (con límite para evitar respuestas excesivas)
     reservas = ReservaQueryOptimizer.get_reservas_para_calendario(
         fecha_inicio=fecha_inicio_dt,
         fecha_fin=fecha_fin_dt,
         sala_id=sala_id_int
-    )
+    )[:APIConfig.API_MAX_RESERVAS]
     
     eventos = [
         {
