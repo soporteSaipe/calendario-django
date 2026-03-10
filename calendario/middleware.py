@@ -2,6 +2,7 @@
 Middleware personalizado para el sistema de calendario
 """
 import logging
+import time
 import traceback
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
@@ -18,6 +19,32 @@ from .logging_config import calendario_logger, security_logger
 from .http_responses import HTTP, ERROR_CODES
 
 logger = logging.getLogger('calendario')
+
+# Umbral en segundos para considerar una request lenta
+SLOW_REQUEST_THRESHOLD = 10
+
+
+class RequestTimingMiddleware(MiddlewareMixin):
+    """
+    Middleware para detectar requests lentos y registrarlos en logs.
+    Ayuda a identificar rutas que pueden provocar Worker Timeout.
+    """
+
+    def process_request(self, request):
+        request._request_start_time = time.time()
+        return None
+
+    def process_response(self, request, response):
+        if hasattr(request, '_request_start_time'):
+            duration = time.time() - request._request_start_time
+            if duration >= SLOW_REQUEST_THRESHOLD:
+                logger.warning(
+                    "Request lenta detectada: %s %s - %.1fs",
+                    request.method,
+                    request.path,
+                    duration,
+                )
+        return response
 
 
 class CalendarioErrorMiddleware(MiddlewareMixin):

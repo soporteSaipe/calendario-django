@@ -3,7 +3,7 @@ services:
     name: calendario-saipe
     env: python
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate
-    startCommand: gunicorn calendario_reservas.wsgi:application --timeout 120 --workers 1 --max-requests 500 --max-requests-jitter 50
+    startCommand: gunicorn calendario_reservas.wsgi:application -c gunicorn.conf.py
     healthCheckPath: /health/
     envVars:
       - key: DJANGO_SETTINGS_MODULE

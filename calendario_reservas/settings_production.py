@@ -119,6 +119,10 @@ LOGGING = {
 if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
+# RequestTimingMiddleware: detecta requests lentos (después de SecurityMiddleware)
+if 'calendario.middleware.RequestTimingMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.insert(1, 'calendario.middleware.RequestTimingMiddleware')
+
 # Agregar middleware personalizado si no está presente
 if 'calendario.middleware.RequestLoggingMiddleware' not in MIDDLEWARE:
     MIDDLEWARE.append('calendario.middleware.RequestLoggingMiddleware')
