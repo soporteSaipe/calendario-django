@@ -60,7 +60,7 @@ Render detectará automáticamente `render.yaml`, pero verifica:
 
 - **Start Command:**
   ```bash
-  gunicorn calendario_reservas.wsgi:application
+  gunicorn calendario_reservas.wsgi:application -c gunicorn.conf.py
   ```
 
 ### Plan:
@@ -70,12 +70,13 @@ Render detectará automáticamente `render.yaml`, pero verifica:
 
 ## 🔐 Paso 5: Configurar Variables de Entorno
 
-En la sección **Environment Variables**, agrega:
+En la sección **Environment Variables** del dashboard de Render, agrega:
 
 ```bash
 DJANGO_SETTINGS_MODULE=calendario_reservas.settings_production
 
-DATABASE_URL=postgresql://postgres.twpoddtqdxqlayepmtts:QfWo5LMTB1XKB0qW@aws-1-us-east-1.pooler.supabase.com:5432/postgres
+# Transaction pooler (puerto 6543) — NO usar Session pooler (5432)
+DATABASE_URL=postgresql://postgres.<project-ref>:<password>@<region>.pooler.supabase.com:6543/postgres
 
 SECRET_KEY=tu-clave-secreta-generada-aleatoriamente
 
@@ -84,7 +85,11 @@ DEBUG=False
 PYTHON_VERSION=3.11.0
 ```
 
-**Nota:** Render puede generar `SECRET_KEY` automáticamente.
+**Importante:**
+- Obtén `DATABASE_URL` desde Supabase Dashboard → Project Settings → Database → Connection string → **Transaction pooler**.
+- `DATABASE_URL` **no debe estar en el repositorio**. Configúrala solo en Render (Environment).
+- Si la contraseña estuvo expuesta en git, rotala en Supabase antes del deploy.
+- Render puede generar `SECRET_KEY` automáticamente.
 
 ---
 
@@ -174,8 +179,16 @@ Una vez configurado:
 ### Error: "Database connection failed"
 
 **Solución:**
-1. Verifica `DATABASE_URL` en variables de entorno
-2. Verifica que sea la URL de Supabase
+1. Verifica `DATABASE_URL` en variables de entorno de Render (no en el repo)
+2. Usa la URL de Supabase con **Transaction pooler** (puerto **6543**)
+3. Revisa logs de Render: el health check en `/health/` devuelve 503 si la BD no responde
+
+### La app deja de funcionar cada ~2 días
+
+**Solución:**
+1. Confirma que `DATABASE_URL` usa puerto **6543** (no 5432)
+2. Verifica conexiones idle en Supabase Dashboard → Database
+3. Si persisten fallos, rota la contraseña de Supabase y actualiza Render
 
 ---
 

@@ -25,8 +25,13 @@ def redirect_to_calendario(request):
     return redirect('calendario:calendario')
 
 def healthcheck(request):
-    # Healthcheck ultra simple que funciona sin importar qué
-    return HttpResponse("OK", content_type="text/plain")
+    from django.db import connection
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return HttpResponse("OK", content_type="text/plain")
+    except Exception:
+        return HttpResponse("DB unavailable", status=503, content_type="text/plain")
 
 class CustomLoginView(auth_views.LoginView):
     """Vista personalizada de login con mejor manejo de errores"""

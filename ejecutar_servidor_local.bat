@@ -3,11 +3,11 @@ echo ========================================
 echo   CALENDARIO SAIPE - Servidor Local
 echo ========================================
 echo.
-echo Tu IP local es: 192.168.101.176
+echo Tu IP local es: 192.168.101.155
 echo.
 echo El servidor sera accesible en:
 echo   - Desde esta PC: http://127.0.0.1:8000/
-echo   - Desde otras PCs: http://192.168.101.176:8000/
+echo   - Desde otras PCs: http://192.168.101.155:8000/
 echo.
 echo Presiona Ctrl+C para detener el servidor
 echo ========================================

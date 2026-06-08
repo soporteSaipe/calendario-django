@@ -9,11 +9,10 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: calendario_reservas.settings_production
       - key: DATABASE_URL
-        value: postgresql://postgres.twpoddtqdxqlayepmtts:QfWo5LMTB1XKB0qW@aws-1-us-east-1.pooler.supabase.com:5432/postgres
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: False
       - key: PYTHON_VERSION
         value: 3.11.0
-

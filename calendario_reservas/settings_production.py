@@ -3,7 +3,7 @@ Configuración para producción en Railway
 """
 from .settings import *
 import os
-import dj_database_url
+from .db_config import configure_database
 
 # Configuración de seguridad para producción
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
@@ -53,7 +53,7 @@ if not DATABASE_URL:
     SUPABASE_NAME = os.getenv('SUPABASE_DB_NAME', 'postgres')
     SUPABASE_USER = os.getenv('SUPABASE_DB_USER')
     SUPABASE_PASSWORD = os.getenv('SUPABASE_DB_PASSWORD')
-    SUPABASE_PORT = os.getenv('SUPABASE_DB_PORT', '5432')
+    SUPABASE_PORT = os.getenv('SUPABASE_DB_PORT', '6543')
     
     if SUPABASE_HOST and SUPABASE_USER and SUPABASE_PASSWORD:
         DATABASE_URL = f"postgresql://{SUPABASE_USER}:{SUPABASE_PASSWORD}@{SUPABASE_HOST}:{SUPABASE_PORT}/{SUPABASE_NAME}"
@@ -64,19 +64,12 @@ if not DATABASE_URL:
 # Debug: mostrar información de conexión (solo en logs)
 print(f"🔗 DATABASE_URL encontrada: {DATABASE_URL[:50]}...")
 
-# Parsear DATABASE_URL
 DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL)
+    'default': configure_database(DATABASE_URL)
 }
 
-# Configuración adicional para Supabase (SSL requerido)
 if 'supabase' in DATABASE_URL:
-    print("🔒 Configurando SSL para Supabase...")
-    DATABASES['default']['OPTIONS'] = {
-        'sslmode': 'require',
-    }
-    DATABASES['default']['CONN_MAX_AGE'] = 600  # Mantener conexiones por 10 minutos
-    print("✅ SSL configurado para Supabase")
+    print("Configurado Supabase transaction pooler (puerto 6543, CONN_MAX_AGE=0)")
 
 # Cache en memoria (suficiente para ~80 usuarios, 4-5 conexiones simultáneas)
 CACHES = {

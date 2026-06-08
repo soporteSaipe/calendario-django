@@ -29,3 +29,8 @@ def post_worker_init(worker):
     except Exception as e:
         worker.log.warning(f"Warmup falló: {e}")
     worker.log.info(f"Warmup completado en {time.time() - start:.1f}s")
+
+
+def worker_exit(server, worker):
+    from django.db import connections
+    connections.close_all()

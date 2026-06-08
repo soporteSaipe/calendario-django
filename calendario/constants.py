@@ -67,8 +67,8 @@ class SecurityConfig:
 
 
 class DatabaseConfig:
-    """Configuración de base de datos"""
-    CONN_MAX_AGE = 0  # No reutilizar conexiones
+    """Referencia de configuración Supabase (ver calendario_reservas/db_config.py)"""
+    CONN_MAX_AGE = 0
     CONN_HEALTH_CHECKS = True
 
 
