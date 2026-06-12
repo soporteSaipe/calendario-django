@@ -1,0 +1,311 @@
+/* MUNDIAL-ARGENTINA.CSS - Tema temporal Mundial 2026
+   Para revertir: eliminar este archivo y quitar su referencia en base.html */
+
+:root {
+  --primary: #75AADB;
+  --primary-dark: #1B3A6E;
+  --primary-light: #C8DDEF;
+  --secondary: #F5C518;
+  --warning: #F5C518;
+  --danger: #E53E3E;
+  --success: #38A169;
+  --info: #3182CE;
+  --neutral: #718096;
+
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-secondary: var(--secondary);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-neutral: var(--neutral);
+
+  --bg-primary: #EEF5FB;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-accent: #D6E8F7;
+  --bg-dark: #1B3A6E;
+
+  --text-primary: #1B3A6E;
+  --text-secondary: #2B6CB0;
+  --text-muted: #75AADB;
+  --text-on-dark: #FFFFFF;
+  --text-on-light: #1B3A6E;
+
+  --primary-rgb: 117, 170, 219;
+  --success-rgb: 56, 161, 105;
+  --color-success-rgb: 56, 161, 105;
+  --color-danger-rgb: 229, 62, 62;
+
+  --color-border-light: rgba(117, 170, 219, 0.25);
+  --color-border-medium: rgba(117, 170, 219, 0.45);
+  --color-border-focus: rgba(117, 170, 219, 0.35);
+
+  --surface: #FFFFFF;
+  --surface-light: #F0F7FC;
+  --border: #B8D4EC;
+  --border-light: #D6E8F7;
+
+  --navbar-bg: #75AADB;
+  --navbar-border: #F5C518;
+  --navbar-text: #FFFFFF;
+  --navbar-hover: rgba(255, 255, 255, 0.15);
+  --navbar-active: #1B3A6E;
+}
+
+/* Banner superior decorativo */
+.mundial-banner {
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    #75AADB 0%,
+    #75AADB 33%,
+    #FFFFFF 33%,
+    #FFFFFF 66%,
+    #75AADB 66%,
+    #75AADB 100%
+  );
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+}
+
+/* Fondo estilo camiseta (franjas diagonales sutiles) */
+body {
+  background-color: var(--bg-primary);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 18px,
+    rgba(117, 170, 219, 0.06) 18px,
+    rgba(117, 170, 219, 0.06) 36px
+  );
+  background-attachment: fixed;
+}
+
+/* Navbar celeste */
+.navbar-modern {
+  background: linear-gradient(135deg, #75AADB 0%, #5A96CC 50%, #1B3A6E 100%);
+  backdrop-filter: blur(20px);
+  border-bottom: 3px solid var(--secondary);
+  box-shadow: 0 4px 20px rgba(27, 58, 110, 0.25);
+}
+
+.navbar-brand {
+  color: var(--text-on-dark) !important;
+}
+
+.navbar-brand:hover {
+  color: var(--secondary) !important;
+}
+
+.navbar-brand i {
+  color: var(--secondary) !important;
+}
+
+.mundial-stars {
+  font-size: 0.85rem;
+  letter-spacing: -2px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.professional-badge {
+  background: var(--secondary);
+  color: var(--primary-dark);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.nav-link:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--secondary) !important;
+}
+
+.navbar-modern .navbar-nav .nav-item .nav-link.active {
+  background-color: var(--primary-dark);
+  color: var(--text-on-dark) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-modern .navbar-nav .nav-item .nav-link.active:hover {
+  background-color: #0F2447;
+  color: var(--text-on-dark) !important;
+}
+
+.navbar-toggler i {
+  color: var(--text-on-dark) !important;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-accent);
+  color: var(--primary-dark);
+}
+
+/* Cards */
+.card-modern,
+.card-modern-enhanced {
+  border: 1px solid var(--color-border-light);
+  box-shadow: 0 4px 16px rgba(117, 170, 219, 0.15);
+}
+
+.card-modern:not(:has(#calendar)):hover,
+.card-modern-enhanced:hover {
+  box-shadow: 0 8px 24px rgba(117, 170, 219, 0.25);
+  border-color: var(--primary);
+}
+
+.card-header-modern,
+.card-header-modern-enhanced {
+  background: linear-gradient(135deg, var(--primary-light) 0%, #FFFFFF 100%);
+  border-bottom: 2px solid var(--primary);
+}
+
+/* Botones */
+.btn-primary-modern {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-color: var(--primary-dark);
+}
+
+.btn-primary-modern:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #0F2447 100%);
+  border-color: #0F2447;
+  box-shadow: 0 4px 12px rgba(27, 58, 110, 0.35);
+}
+
+/* Breadcrumbs */
+.breadcrumb-modern {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--color-border-light);
+}
+
+.breadcrumb-link {
+  color: var(--text-secondary);
+}
+
+.breadcrumb-link:hover {
+  color: var(--primary-dark);
+}
+
+/* Footer azul marino */
+.footer-modern,
+.footer {
+  background: linear-gradient(135deg, #1B3A6E 0%, #0F2447 100%);
+  border-top: 3px solid var(--secondary);
+  color: var(--text-on-dark);
+}
+
+.footer-modern p,
+.footer p {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.footer-modern .text-primary,
+.footer .text-primary {
+  color: var(--secondary) !important;
+}
+
+/* Alerts con toque celeste */
+.alert-success-modern {
+  border-left-color: var(--success);
+  background: rgba(56, 161, 105, 0.08);
+}
+
+.alert-info-modern,
+.alert-warning-modern,
+.alert-error-modern {
+  border-left-color: var(--primary);
+}
+
+/* FullCalendar - eventos con tono celeste */
+.fc-event {
+  border-color: var(--primary-dark) !important;
+}
+
+.fc-button-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary-dark) !important;
+}
+
+.fc-button-primary:hover {
+  background-color: var(--primary-dark) !important;
+}
+
+/* Pelota flotante */
+.mundial-float-ball {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  font-size: 2.5rem;
+  line-height: 56px;
+  text-align: center;
+  z-index: 999;
+  cursor: default;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(27, 58, 110, 0.3));
+  animation: mundial-ball-bounce 2.5s ease-in-out infinite;
+}
+
+@keyframes mundial-ball-bounce {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-12px) rotate(15deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-6px) rotate(-10deg);
+  }
+}
+
+/* Canvas confeti */
+#mundial-confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Login page accent */
+.login-card-modern {
+  border-top: 4px solid var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mundial-float-ball {
+    width: 44px;
+    height: 44px;
+    font-size: 2rem;
+    line-height: 44px;
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .mundial-stars {
+    display: none;
+  }
+
+  .professional-badge {
+    font-size: 0.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mundial-float-ball {
+    animation: none;
+  }
+}
