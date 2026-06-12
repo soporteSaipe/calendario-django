@@ -1,5 +1,6 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
+{% load mundial_static %}
 
 {% block title %}Calendario de salas - Equipos internos SAIPE{% endblock %}
 
@@ -314,7 +315,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/calendario-config.js' %}"></script>
+<script src="{% static_v 'js/calendario-config.js' %}"></script>
 <script>
     configurarUrlsCalendario({
         calendarioApiUrl: '{% url "calendario:api_reservas" %}',

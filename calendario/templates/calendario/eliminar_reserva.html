@@ -1,5 +1,6 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
+{% load mundial_static %}
 
 {% block title %}Eliminar Reserva{% endblock %}
 
@@ -115,5 +116,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/eliminar-reserva.js' %}"></script>
+<script src="{% static_v 'js/eliminar-reserva.js' %}"></script>
 {% endblock %}

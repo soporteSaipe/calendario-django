@@ -146,3 +146,9 @@ class ErrorMessages:
     PERMISSION_DENIED = 'No tienes permisos para realizar esta acción'
     RESOURCE_UNAVAILABLE = 'El recurso no está disponible en este momento'
     EXPORT_ERROR = 'Error al generar la exportación: {error}'
+
+
+class MundialThemeConfig:
+    """Tema temporal Mundial 2026 — desactivar al revertir"""
+    ENABLED = True
+    STATIC_VERSION = '20260612'

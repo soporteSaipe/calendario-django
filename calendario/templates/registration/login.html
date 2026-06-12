@@ -1,5 +1,6 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
+{% load mundial_static %}
 
 {% block title %}Iniciar Sesión - Sistema de Reservas{% endblock %}
 
@@ -75,6 +76,6 @@
     </div>
 </div>
 
-<script src="{% static 'js/login-form.js' %}"></script>
+<script src="{% static_v 'js/login-form.js' %}"></script>
 
 {% endblock %}

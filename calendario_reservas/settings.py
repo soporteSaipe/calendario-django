@@ -60,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'calendario.middleware.MundialHtmlNoCacheMiddleware',
     'calendario.middleware.RequestLoggingMiddleware',
     'calendario.middleware.CalendarioErrorMiddleware',
 ]

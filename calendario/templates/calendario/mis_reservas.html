@@ -1,5 +1,6 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
+{% load mundial_static %}
 
 {% block title %}Mis Reservas - Equipos Internos{% endblock %}
 
@@ -378,5 +379,5 @@
 
 {% block extra_js %}
 <script type="application/json" id="salas-data">{{ salas_json|safe }}</script>
-<script src="{% static 'js/mis-reservas.js' %}"></script>
+<script src="{% static_v 'js/mis-reservas.js' %}"></script>
 {% endblock %}
