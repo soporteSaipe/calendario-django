@@ -8,7 +8,60 @@
   var CONFETTI_COLORS = ['#75AADB', '#FFFFFF', '#F5C518', '#1B3A6E', '#C8DDEF'];
   var CONFETTI_DURATION = 4000;
   var CONFETTI_COUNT = 80;
+  var STORAGE_KEY = 'mundial-fondo';
+  var LABEL_DURATION = 1800;
   var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var TEMAS = [
+    { clase: 'fondo-camiseta', nombre: '⚽ Camiseta Argentina' },
+    { clase: 'fondo-estadio', nombre: '🌙 Estadio Nocturno' },
+    { clase: 'fondo-cielo', nombre: '🌤 Cielo de estadio' }
+  ];
+
+  var labelTimeout = null;
+
+  function getTemaActual() {
+    var guardado = localStorage.getItem(STORAGE_KEY);
+    return TEMAS.findIndex(function (t) {
+      return t.clase === guardado;
+    });
+  }
+
+  function aplicarTema(idx) {
+    TEMAS.forEach(function (t) {
+      document.body.classList.remove(t.clase);
+    });
+    document.body.classList.add(TEMAS[idx].clase);
+    localStorage.setItem(STORAGE_KEY, TEMAS[idx].clase);
+  }
+
+  function mostrarLabel(nombre) {
+    var label = document.querySelector('.mundial-theme-label');
+    if (!label) {
+      label = document.createElement('div');
+      label.className = 'mundial-theme-label';
+      label.setAttribute('aria-live', 'polite');
+      document.body.appendChild(label);
+    }
+
+    label.textContent = nombre;
+    label.classList.add('visible');
+
+    if (labelTimeout) {
+      clearTimeout(labelTimeout);
+    }
+
+    labelTimeout = setTimeout(function () {
+      label.classList.remove('visible');
+    }, LABEL_DURATION);
+  }
+
+  function ciclarTema() {
+    var actual = getTemaActual();
+    var siguiente = (actual + 1) % TEMAS.length;
+    aplicarTema(siguiente);
+    mostrarLabel(TEMAS[siguiente].nombre);
+  }
 
   function createConfetti() {
     if (prefersReducedMotion) return;
@@ -82,15 +135,27 @@
   function createFloatingBall() {
     if (document.querySelector('.mundial-float-ball')) return;
 
-    var ball = document.createElement('div');
+    var ball = document.createElement('button');
+    ball.type = 'button';
     ball.className = 'mundial-float-ball';
-    ball.setAttribute('aria-hidden', 'true');
-    ball.title = 'Mundial Argentina 2026';
+    ball.setAttribute('aria-label', 'Cambiar fondo del tema Mundial');
+    ball.title = 'Clic para cambiar el fondo';
     ball.textContent = '\u26BD';
+
+    ball.addEventListener('click', function () {
+      ciclarTema();
+      ball.style.animation = 'none';
+      setTimeout(function () {
+        ball.style.animation = '';
+      }, 300);
+    });
+
     document.body.appendChild(ball);
   }
 
   function init() {
+    var idx = getTemaActual();
+    aplicarTema(idx < 0 ? 0 : idx);
     createFloatingBall();
     createConfetti();
   }

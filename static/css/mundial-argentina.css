@@ -72,17 +72,76 @@
     z-index: 1001;
   }
   
-  /* Fondo estilo camiseta (franjas diagonales sutiles) */
+  /* Fondos alternables (clase aplicada por mundial-argentina.js) */
   body {
     background-color: var(--bg-primary);
-    background-image: repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 18px,
-      rgba(117, 170, 219, 0.06) 18px,
-      rgba(117, 170, 219, 0.06) 36px
-    );
     background-attachment: fixed;
+    transition: background 0.6s ease;
+  }
+
+  /* Opción A — Camiseta Argentina */
+  body.fondo-camiseta {
+    background-color: #F0F7FC;
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(117, 170, 219, 0.18) 0px,
+      rgba(117, 170, 219, 0.18) 36px,
+      transparent 36px,
+      transparent 72px
+    );
+  }
+
+  /* Opción B — Estadio nocturno */
+  body.fondo-estadio {
+    background-color: #0D1F3C;
+    background-image:
+      radial-gradient(ellipse at 15% 25%, rgba(117, 170, 219, 0.30) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 75%, rgba(117, 170, 219, 0.25) 0%, transparent 45%),
+      radial-gradient(ellipse at 50% 10%, rgba(245, 197, 24, 0.12) 0%, transparent 35%);
+
+    --bg-primary: #0D1F3C;
+    --bg-secondary: #142540;
+    --bg-card: rgba(255, 255, 255, 0.06);
+    --text-primary: #E8F4FD;
+    --text-secondary: #A8CCEE;
+    --text-muted: #75AADB;
+    --border: rgba(255, 255, 255, 0.12);
+    --border-light: rgba(255, 255, 255, 0.07);
+    --color-border-light: rgba(117, 170, 219, 0.2);
+  }
+
+  body.fondo-estadio .card-modern,
+  body.fondo-estadio .card-modern-enhanced {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  body.fondo-estadio .breadcrumb-modern {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  body.fondo-estadio .breadcrumb-link {
+    color: #A8CCEE;
+  }
+
+  body.fondo-estadio .accounting-header h1,
+  body.fondo-estadio .accounting-header p {
+    color: #E8F4FD;
+  }
+
+  /* Opción E — Cielo de estadio */
+  body.fondo-cielo {
+    background: radial-gradient(
+      ellipse at 50% -10%,
+      #C8DDEF 0%,
+      #A8C8E8 30%,
+      #75AADB 60%,
+      #1B3A6E 100%
+    );
+    min-height: 100vh;
   }
   
   /* Navbar celeste */
@@ -235,7 +294,7 @@
     background-color: var(--primary-dark) !important;
   }
   
-  /* Pelota flotante */
+  /* Pelota flotante (clic para alternar fondo) */
   .mundial-float-ball {
     position: fixed;
     bottom: 24px;
@@ -246,11 +305,48 @@
     line-height: 56px;
     text-align: center;
     z-index: 999;
-    cursor: default;
+    cursor: pointer;
     user-select: none;
-    pointer-events: none;
+    pointer-events: auto;
     filter: drop-shadow(0 4px 8px rgba(27, 58, 110, 0.3));
     animation: mundial-ball-bounce 2.5s ease-in-out infinite;
+    transition: transform 0.15s ease, filter 0.15s ease;
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: inherit;
+  }
+
+  .mundial-float-ball:hover {
+    transform: scale(1.15);
+    filter: drop-shadow(0 6px 14px rgba(27, 58, 110, 0.5));
+  }
+
+  .mundial-float-ball:active {
+    transform: scale(0.92);
+  }
+
+  .mundial-theme-label {
+    position: fixed;
+    bottom: 88px;
+    right: 24px;
+    background: rgba(27, 58, 110, 0.88);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 1000;
+  }
+
+  .mundial-theme-label.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
   
   @keyframes mundial-ball-bounce {
@@ -293,6 +389,12 @@
       line-height: 44px;
       bottom: 16px;
       right: 16px;
+    }
+
+    .mundial-theme-label {
+      bottom: 68px;
+      right: 16px;
+      font-size: 0.65rem;
     }
   
     .mundial-stars {
