@@ -15,6 +15,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_
     'calendariosaipe.up.railway.app',  # Tu dominio Railway específico
     '*.up.railway.app',  # Todos los dominios de Railway
     '*.onrender.com',  # Todos los dominios de Render
+    '*.vercel.app',  # Todos los dominios de Vercel
     'localhost',
     '127.0.0.1'
 ]
@@ -24,6 +25,7 @@ CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.ge
     'https://calendariosaipe.up.railway.app',  # Tu dominio Railway específico
     'https://*.up.railway.app',  # Todos los dominios HTTPS de Railway
     'https://*.onrender.com',  # Todos los dominios HTTPS de Render
+    'https://*.vercel.app',  # Todos los dominios HTTPS de Vercel
     'https://healthcheck.railway.app'
 ]
 
@@ -125,6 +127,7 @@ if 'calendario.middleware.CalendarioErrorMiddleware' not in MIDDLEWARE:
 # Configuración adicional de WhiteNoise
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configuración de zona horaria para Railway (US East)
 # Railway está en US East (Virginia) que es UTC-5 (EST) o UTC-4 (EDT)
