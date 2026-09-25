@@ -9,25 +9,48 @@ from .db_config import configure_database
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-railway')
 
-# ALLOWED_HOSTS - crítico para Railway y Render
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else [
-    'healthcheck.railway.app',  # Para healthcheck de Railway
-    'calendariosaipe.up.railway.app',  # Tu dominio Railway específico
-    '*.up.railway.app',  # Todos los dominios de Railway
-    '*.onrender.com',  # Todos los dominios de Render
-    '*.vercel.app',  # Todos los dominios de Vercel
+# ALLOWED_HOSTS - crítico para Railway, Render y Vercel
+# Django usa .dominio.com (punto inicial), NO *.dominio.com
+_DEFAULT_ALLOWED_HOSTS = [
+    'healthcheck.railway.app',
+    'calendariosaipe.up.railway.app',
+    '.up.railway.app',
+    '.onrender.com',
+    '.vercel.app',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
 ]
 
-# CSRF_TRUSTED_ORIGINS para Railway y Render
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else [
-    'https://calendariosaipe.up.railway.app',  # Tu dominio Railway específico
-    'https://*.up.railway.app',  # Todos los dominios HTTPS de Railway
-    'https://*.onrender.com',  # Todos los dominios HTTPS de Render
-    'https://*.vercel.app',  # Todos los dominios HTTPS de Vercel
-    'https://healthcheck.railway.app'
+
+def _normalize_allowed_host(host):
+    host = host.strip()
+    if host.startswith('*.'):
+        return '.' + host[2:]
+    return host
+
+
+_env_hosts = os.getenv('ALLOWED_HOSTS')
+if _env_hosts:
+    env_hosts = [_normalize_allowed_host(h) for h in _env_hosts.split(',') if h.strip()]
+    ALLOWED_HOSTS = list(dict.fromkeys(env_hosts + _DEFAULT_ALLOWED_HOSTS))
+else:
+    ALLOWED_HOSTS = _DEFAULT_ALLOWED_HOSTS
+
+# CSRF_TRUSTED_ORIGINS para Railway, Render y Vercel
+_DEFAULT_CSRF_ORIGINS = [
+    'https://calendariosaipe.up.railway.app',
+    'https://*.up.railway.app',
+    'https://*.onrender.com',
+    'https://*.vercel.app',
+    'https://healthcheck.railway.app',
 ]
+
+_env_csrf = os.getenv('CSRF_TRUSTED_ORIGINS')
+if _env_csrf:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _env_csrf.split(',') if origin.strip()]
+    CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(CSRF_TRUSTED_ORIGINS + _DEFAULT_CSRF_ORIGINS))
+else:
+    CSRF_TRUSTED_ORIGINS = _DEFAULT_CSRF_ORIGINS
 
 # Filtrar valores vacíos y asegurar que todos tengan https://
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS if origin.strip()]
