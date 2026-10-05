@@ -249,3 +249,52 @@ textarea.form-control-modern { min-height: 90px; resize: vertical; }
   .accounting-header { margin-bottom: 18px; }
   .accounting-header .eyebrow { margin-bottom: 6px; }
 }
+
+/* Keep the full 07:00–20:00 agenda visible without an internal scroller.
+   Half-hour rows adapt to the viewport, with a readable minimum on short screens. */
+.calendar-page { --calendar-slot-height: clamp(16px, calc((100dvh - 410px) / 26), 24px); }
+.calendar-page .navbar-modern { min-height: 60px; padding-block: 6px; }
+.calendar-page .main-container { padding-block: 14px 20px; }
+.calendar-page .breadcrumb-container { display: none; }
+.calendar-page .accounting-header { margin-bottom: 12px; }
+.calendar-page .accounting-header h1 { font-size: 22px; margin: 0; }
+.calendar-resource-row { margin-bottom: 12px; }
+.calendar-page .sala-selector-enhanced .card-body-modern { padding: 10px 16px; }
+.calendar-page .sala-selector-main { gap: 24px; }
+.calendar-page .sala-info-card { padding-left: 24px; }
+.calendar-page .sala-actions { display: flex; align-items: center; gap: 16px; }
+.calendar-page .sala-selector-select { min-height: 38px; padding-block: 6px; }
+.calendar-agenda > .card-body-modern { padding: 14px 16px; }
+.calendar-page .calendar-view-controls { margin-bottom: 10px; }
+.calendar-page .fc-col-header-cell-cushion { padding-block: 7px; }
+.calendar-page .fc-timegrid-slot { height: var(--calendar-slot-height); font-size: 11px; line-height: 1; }
+.calendar-page .fc-timegrid-slot-label-cushion { line-height: 1; }
+.calendar-page .fc-timegrid-event { padding: 1px 4px; line-height: 1.2; }
+.calendar-page .calendar-hint { margin: 8px 0 0; }
+.calendar-page .calendar-export-controls { margin-top: 10px; padding-top: 10px; }
+.calendar-page .footer-modern { padding-block: 12px; }
+@media (min-width: 768px) and (max-height: 800px) {
+  .calendar-page .main-container { padding-top: 10px; }
+  .calendar-page .accounting-header { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .calendar-page .sala-selector-enhanced .card-body-modern { padding-block: 8px; }
+  .calendar-page .calendar-view-controls { margin-bottom: 8px; }
+  .calendar-agenda > .card-body-modern { padding-block: 10px; }
+  .calendar-page .fc-col-header-cell-cushion { padding-block: 5px; }
+}
+@media (min-width: 992px) and (max-height: 800px) {
+  .calendar-page .sala-selector-dropdown { display: flex; align-items: center; gap: 10px; width: 430px; }
+  .calendar-page .sala-selector-dropdown .form-label-modern { margin: 0; white-space: nowrap; }
+}
+@media (max-width: 991px) and (min-width: 768px) {
+  .calendar-page .sala-selector-dropdown { width: 280px; }
+  .calendar-page .sala-selector-main { gap: 16px; }
+  .calendar-page .sala-info-card { padding-left: 16px; }
+  .calendar-page .sala-info-header { gap: 8px; }
+  .calendar-page .sala-actions { gap: 8px; }
+}
+@media (max-width: 767px) {
+  .calendar-page .sala-selector-main { gap: 10px; }
+  .calendar-page .sala-info-card { padding: 10px 0 0; flex-wrap: wrap; }
+  .calendar-page .sala-actions { margin-left: auto; }
+  .calendar-page .accounting-header h1 { font-size: 21px; }
+}

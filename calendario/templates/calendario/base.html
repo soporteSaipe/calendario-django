@@ -16,7 +16,7 @@
     <link href="{% static 'css/workspace.css' %}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <a class="skip-link" href="#main-content">Saltar al contenido</a>
     <nav class="navbar navbar-expand-lg navbar-modern">
         <div class="container">
