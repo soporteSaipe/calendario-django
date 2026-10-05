@@ -55,3 +55,5 @@ credenciales.xlsx
 *_temp.py
 *.tmp
 .audit/
+
+.vercel/

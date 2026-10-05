@@ -5,6 +5,12 @@ Django de Vercel, Python 3.13 y WhiteNoise con archivos estáticos versionados.
 `manage.py` selecciona producción cuando existe `VERCEL`; para otros servidores
 se debe definir `DJANGO_SETTINGS_MODULE=calendario_reservas.settings_production`.
 
+En el proyecto `calendariosaipe`, `calendario-vercel` genera despliegues Preview.
+La rama de producción configurada en Vercel es `feature/calendario-django`.
+El Preview de `calendario-vercel` usa overrides de `ALLOWED_HOSTS` y
+`CSRF_TRUSTED_ORIGINS` con sus dominios explícitos. Las variables compartidas
+deben cumplir las mismas restricciones antes de promover a producción.
+
 ## Variables del proyecto
 
 - `SECRET_KEY`: clave aleatoria de al menos 50 caracteres. Ya no hay clave de
