@@ -1,0 +1,92 @@
+/* Local Material Symbols. The fa-* aliases retain the resource API and existing
+   dynamic icon class contract; no Font Awesome font or runtime is loaded.
+   New actions should use .material-symbols-outlined with a Material ligature. */
+.fas, .far, .fa, .material-symbols-outlined {
+  display: inline-block;
+  font-family: 'Material Symbols Outlined';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 1.2em;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  -webkit-font-smoothing: antialiased;
+  vertical-align: -0.16em;
+  flex-shrink: 0;
+}
+.fas::before, .far::before, .fa::before { content: var(--icon-symbol, 'circle'); }
+.fa-3x { font-size: 3em; }
+.fa-spin { animation: icon-spin 1s linear infinite; }
+@keyframes icon-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fa-spin { animation: none; } }
+
+.fa-align-left { --icon-symbol: "notes"; }
+.fa-arrow-left { --icon-symbol: "arrow_back"; }
+.fa-ban { --icon-symbol: "block"; }
+.fa-bars { --icon-symbol: "menu"; }
+.fa-book { --icon-symbol: "menu_book"; }
+.fa-building { --icon-symbol: "apartment"; }
+.fa-calendar { --icon-symbol: "calendar_today"; }
+.fa-calendar-alt { --icon-symbol: "calendar_month"; }
+.fa-calendar-check { --icon-symbol: "event_available"; }
+.fa-calendar-day { --icon-symbol: "today"; }
+.fa-calendar-plus { --icon-symbol: "event"; }
+.fa-calendar-times { --icon-symbol: "event_busy"; }
+.fa-calendar-week { --icon-symbol: "date_range"; }
+.fa-car { --icon-symbol: "directions_car"; }
+.fa-chart-line { --icon-symbol: "monitoring"; }
+.fa-check { --icon-symbol: "check"; }
+.fa-check-circle { --icon-symbol: "check_circle"; }
+.fa-chevron-left { --icon-symbol: "chevron_left"; }
+.fa-chevron-right { --icon-symbol: "chevron_right"; }
+.fa-circle { --icon-symbol: "circle"; }
+.fa-clipboard-list { --icon-symbol: "assignment"; }
+.fa-clock { --icon-symbol: "schedule"; }
+.fa-cogs { --icon-symbol: "settings"; }
+.fa-database { --icon-symbol: "database"; }
+.fa-door-open { --icon-symbol: "meeting_room"; }
+.fa-download { --icon-symbol: "download"; }
+.fa-edit { --icon-symbol: "edit"; }
+.fa-eraser { --icon-symbol: "filter_alt_off"; }
+.fa-exclamation-circle { --icon-symbol: "error"; }
+.fa-exclamation-triangle { --icon-symbol: "warning"; }
+.fa-file-code { --icon-symbol: "code"; }
+.fa-file-excel { --icon-symbol: "table_view"; }
+.fa-file-export { --icon-symbol: "file_export"; }
+.fa-file-pdf { --icon-symbol: "picture_as_pdf"; }
+.fa-flag-checkered { --icon-symbol: "flag"; }
+.fa-font { --icon-symbol: "text_fields"; }
+.fa-heading { --icon-symbol: "title"; }
+.fa-heartbeat { --icon-symbol: "monitor_heart"; }
+.fa-history { --icon-symbol: "history"; }
+.fa-home { --icon-symbol: "home"; }
+.fa-info-circle { --icon-symbol: "info"; }
+.fa-lightbulb { --icon-symbol: "lightbulb"; }
+.fa-list { --icon-symbol: "list"; }
+.fa-lock { --icon-symbol: "lock"; }
+.fa-map-marker-alt { --icon-symbol: "location_on"; }
+.fa-plane-arrival { --icon-symbol: "flight_land"; }
+.fa-plane-departure { --icon-symbol: "flight_takeoff"; }
+.fa-plus { --icon-symbol: "add"; }
+.fa-plus-circle { --icon-symbol: "add_circle"; }
+.fa-save { --icon-symbol: "save"; }
+.fa-search { --icon-symbol: "search"; }
+.fa-sign-in-alt { --icon-symbol: "login"; }
+.fa-sign-out-alt { --icon-symbol: "logout"; }
+.fa-spinner { --icon-symbol: "progress_activity"; }
+.fa-stopwatch { --icon-symbol: "timer"; }
+.fa-sync { --icon-symbol: "refresh"; }
+.fa-tachometer-alt { --icon-symbol: "dashboard"; }
+.fa-times { --icon-symbol: "close"; }
+.fa-times-circle { --icon-symbol: "cancel"; }
+.fa-trash { --icon-symbol: "delete"; }
+.fa-user { --icon-symbol: "person"; }
+.fa-user-circle { --icon-symbol: "account_circle"; }
+.fa-user-shield { --icon-symbol: "admin_panel_settings"; }
+.fa-users { --icon-symbol: "group"; }
+.fa-warning { --icon-symbol: "warning"; }

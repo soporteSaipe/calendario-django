@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv*/
 ENV/
 build/
 develop-eggs/
@@ -34,6 +35,8 @@ staticfiles/
 
 # Environment variables
 .env
+.env.*
+credenciales.xlsx
 .env.local
 .env.*.local
 
@@ -49,6 +52,6 @@ staticfiles/
 .railway/
 
 # Archivos temporales y de prueba
-test_*.py
 *_temp.py
 *.tmp
+.audit/

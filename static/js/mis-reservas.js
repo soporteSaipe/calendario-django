@@ -81,12 +81,13 @@ function showNotification(message, type = 'info') {
     // Crear notificación
     const notification = document.createElement('div');
     notification.style.cssText = `
-        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
-        color: white;
+        background: var(--surface);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        border-left: 3px solid ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--info)'};
         padding: 15px 20px;
         border-radius: 8px;
         margin-bottom: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transform: translateX(100%);
         transition: transform 0.3s ease;
         font-weight: 500;
@@ -95,12 +96,12 @@ function showNotification(message, type = 'info') {
     
     notification.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" style="
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" aria-hidden="true"></i>
+            <span>${CalendarioApp.Calendar.escapeHTML(message)}</span>
+            <button type="button" aria-label="Cerrar notificación" title="Cerrar notificación" onclick="this.parentElement.parentElement.remove()" style="
                 background: none;
                 border: none;
-                color: white;
+                color: var(--text-secondary);
                 font-size: 18px;
                 cursor: pointer;
                 margin-left: auto;
@@ -156,7 +157,7 @@ function initializeTooltips() {
             if (!element.querySelector('.tooltip-text')) {
                 const tooltipElement = document.createElement('span');
                 tooltipElement.className = 'tooltip-text';
-                tooltipElement.innerHTML = tooltipText;
+                tooltipElement.textContent = tooltipText;
                 tooltipElement.style.display = 'none'; // Asegurar que esté oculto
                 element.appendChild(tooltipElement);
             }
@@ -170,27 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar modal de edición
     initializeEditModal();
-    // Función mejorada para confirmar eliminación
-    const deleteButtons = document.querySelectorAll('a[data-confirm]');
-    
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const confirmMessage = this.getAttribute('data-confirm');
-            const reservaTitle = this.getAttribute('aria-label').replace('Eliminar reserva: ', '');
-            
-            // Crear modal de confirmación personalizado
-            if (confirm(`${confirmMessage}\n\nReserva: ${reservaTitle}`)) {
-                // Mostrar indicador de carga
-                showLoadingIndicator('Eliminando reserva...');
-                
-                // Realizar eliminación real
-                eliminarReserva(this.href);
-            }
-        });
-    });
-    
     // Aplicar colores dinámicos a los badges
     const badges = document.querySelectorAll('.badge-modern[data-color]');
     badges.forEach(badge => {
@@ -209,22 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurar botones de edición
     setupEditButtons();
     
-    // Agregar navegación por teclado a las filas de la tabla
-    const tableRows = document.querySelectorAll('.table-modern tbody tr');
-    tableRows.forEach((row, index) => {
-        row.setAttribute('tabindex', '0');
-        row.setAttribute('role', 'row');
-        
-        row.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                const editButton = this.querySelector('.edit-reserva-btn');
-                if (editButton) {
-                    editButton.click();
-                }
-            }
-        });
-    });
+
 });
 
 /**
@@ -394,7 +359,7 @@ function mostrarCamposVehiculo() {
     const recursoLabel = document.getElementById('editRecursoLabel');
     const fechaLabel = document.getElementById('editFechaLabel');
     
-    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-car me-2"></i>Editar Reserva de Vehículo';
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-car me-2" aria-hidden="true"></i>Editar Reserva de Vehículo';
     if (recursoIcon) recursoIcon.className = 'fas fa-car me-2';
     if (recursoLabel) recursoLabel.textContent = 'Vehículo *';
     if (fechaLabel) fechaLabel.textContent = 'Fecha de Salida *';
@@ -435,7 +400,7 @@ function mostrarCamposSala() {
     const recursoLabel = document.getElementById('editRecursoLabel');
     const fechaLabel = document.getElementById('editFechaLabel');
     
-    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Editar Reserva';
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit me-2" aria-hidden="true"></i>Editar Reserva';
     if (recursoIcon) recursoIcon.className = 'fas fa-door-open me-2';
     if (recursoLabel) recursoLabel.textContent = 'Sala *';
     if (fechaLabel) fechaLabel.textContent = 'Fecha *';
@@ -640,6 +605,8 @@ function validarFormularioEdicion() {
         
         if (!fechaVuelta) {
             errores.push('La fecha de vuelta es obligatoria para vehículos');
+        } else if (fecha && horaInicio && horaFin && new Date(`${fechaVuelta}T${horaFin}`) <= new Date(`${fecha}T${horaInicio}`)) {
+            errores.push('La fecha y hora de regreso deben ser posteriores a la salida');
         }
     } else {
         const titulo = document.getElementById('editTitulo').value.trim();
@@ -703,7 +670,7 @@ function validarFormularioEdicion() {
     }
     
     if (errores.length > 0) {
-        mostrarError(errores.join('<br>'));
+        mostrarError(errores.join(' · '));
         return false;
     }
     
@@ -774,9 +741,9 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
         horaFinMax = 19;
     } else {
         // Salas normales: 7:30-18:00
-        horaInicioMin = 7.5;
+        horaInicioMin = 7;
         horaInicioMax = 18;
-        horaFinMin = 8;
+        horaFinMin = 7.5;
         horaFinMax = 20;
     }
     
@@ -837,11 +804,6 @@ function generarHorarios(selectInicioId, selectFinId, recursoId = null) {
                 selectFin.appendChild(optionFin);
             }
         }
-        // Agregar 00:00 como fin del día siguiente
-        const option00 = document.createElement('option');
-        option00.value = '00:00';
-        option00.textContent = '00:00';
-        selectFin.appendChild(option00);
     } else if (esComedor) {
         // Para comedor: 07:30-12:00 y 15:00-19:00
         const horariosFinComedor = [
@@ -887,6 +849,13 @@ function validarHorariosEdicion() {
  * Validar hora de fin en edición
  */
 function validarHoraFinEdicion() {
+    const recurso = document.getElementById('editRecurso');
+    const option = recurso?.options[recurso.selectedIndex];
+    if (option?.getAttribute('data-tipo') === 'vehiculo') {
+        // The return date can be later; never discard a valid earlier clock time.
+        resetearFiltroHorasFin('editHoraFin');
+        return;
+    }
     const horaInicio = document.getElementById('editHoraInicio').value;
     const horaFin = document.getElementById('editHoraFin').value;
     
@@ -965,59 +934,4 @@ function actualizarCalendario() {
             window.CalendarioApp.Core.calendar.refetchEvents();
         }
     }
-}
-
-/**
- * Eliminar reserva mediante petición AJAX
- */
-function eliminarReserva(deleteUrl) {
-    // Obtener token CSRF
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    fetch(deleteUrl, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        // Verificar si la respuesta es JSON
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message || `Error al eliminar la reserva: ${response.status}`);
-                });
-            }
-        } else {
-            if (response.ok) {
-                // Si no es JSON pero está OK, asumir éxito
-                return { success: true, message: 'Reserva eliminada exitosamente' };
-            } else {
-                throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-            }
-        }
-    })
-    .then(data => {
-        hideLoadingIndicator();
-        showNotification('Reserva eliminada exitosamente', 'success');
-        
-        // Actualizar el calendario si existe
-        actualizarCalendario();
-        
-        // Si estamos en la página de mis reservas, recargar la tabla
-        if (window.location.pathname.includes('mis-reservas')) {
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        }
-    })
-    .catch(error => {
-        hideLoadingIndicator();
-        showNotification('Error al eliminar la reserva: ' + error.message, 'error');
-        console.error('Error al eliminar reserva:', error);
-    });
 }

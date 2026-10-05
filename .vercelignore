@@ -1,0 +1,9 @@
+.env*
+credenciales.xlsx
+.venv*/
+venv/
+.audit/
+logs/
+__pycache__/
+*.pyc
+calendario_reservas/settings_test.py

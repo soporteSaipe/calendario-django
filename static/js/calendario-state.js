@@ -105,6 +105,7 @@ CalendarioApp.StateManager = {
     const { silent = false, source = 'unknown' } = options;
     
     // Crear copia profunda del estado
+    const previousValue = this.getState(path);
     const newState = this.deepClone(this.state);
     
     // Actualizar la ruta específica
@@ -131,7 +132,7 @@ CalendarioApp.StateManager = {
 
     // Notificar a suscriptores
     if (!silent) {
-      this.notifySubscribers(path, value, this.getState(path));
+      this.notifySubscribers(path, value, previousValue);
     }
 
     // Log en modo debug
@@ -302,7 +303,7 @@ CalendarioApp.StateManager = {
       // Auto-remove después de duración
       if (newNotification.duration > 0) {
         setTimeout(() => {
-          CalendarioApp.StateManager.removeNotification(newNotification.id);
+          CalendarioApp.StateManager.actions.removeNotification(newNotification.id);
         }, newNotification.duration);
       }
     },
@@ -315,8 +316,7 @@ CalendarioApp.StateManager = {
 
     setTheme: function(theme) {
       CalendarioApp.StateManager.setState('ui.theme', theme, { source: 'ui' });
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('calendario-theme', theme);
+      // dark-mode.js owns presentation and preserves the user's system preference.
     },
 
     setCurrentPage: function(page) {
@@ -459,28 +459,17 @@ CalendarioApp.StateManager = {
   /**
    * Utilidades de clonación profunda
    */
-  deepClone: function(obj) {
-    if (obj === null || typeof obj !== 'object') {
-      return obj;
-    }
-
-    if (obj instanceof Date) {
-      return new Date(obj.getTime());
-    }
-
-    if (obj instanceof Array) {
-      return obj.map(item => this.deepClone(item));
-    }
-
-    if (typeof obj === 'object') {
-      const cloned = {};
-      Object.keys(obj).forEach(key => {
-        cloned[key] = this.deepClone(obj[key]);
-      });
-      return cloned;
-    }
-
-    return obj;
+  deepClone: function(obj, seen = new WeakMap()) {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (obj instanceof Date) return new Date(obj.getTime());
+    if (seen.has(obj)) return seen.get(obj);
+    // FullCalendar, DOM and Bootstrap instances must retain their identity.
+    const prototype = Object.getPrototypeOf(obj);
+    if (!Array.isArray(obj) && prototype !== Object.prototype && prototype !== null) return obj;
+    const cloned = Array.isArray(obj) ? [] : {};
+    seen.set(obj, cloned);
+    Object.keys(obj).forEach(key => { cloned[key] = this.deepClone(obj[key], seen); });
+    return cloned;
   },
 
   /**
@@ -519,7 +508,7 @@ CalendarioApp.StateManager = {
   loadPersistentState: function() {
     try {
       // Cargar tema
-      const savedTheme = localStorage.getItem('calendario-theme');
+      const savedTheme = document.documentElement.getAttribute('data-theme');
       if (savedTheme) {
         this.actions.setTheme(savedTheme);
       }

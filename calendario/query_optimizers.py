@@ -42,7 +42,7 @@ class ReservaQueryOptimizer:
             'id', 'titulo', 'fecha_inicio', 'fecha_fin', 'descripcion', 'estado',
             'recurso__id', 'recurso__nombre', 'recurso__color', 'recurso__capacidad',
             'usuario__username'
-        ).filter(estado='confirmada')
+        ).exclude(estado='cancelada')
         
         # Aplicar filtros de fecha si se proporcionan
         if fecha_inicio and fecha_fin:
@@ -124,7 +124,7 @@ class ReservaQueryOptimizer:
         """
         queryset = Reserva.objects.filter(
             recurso=recurso,
-            estado='confirmada',
+            estado__in=('confirmada', 'en_curso'),
             fecha_inicio__lt=fecha_fin,
             fecha_fin__gt=fecha_inicio
         ).select_related('usuario')

@@ -1,164 +1,75 @@
-"""
-Configuración para producción en Railway
-"""
-from .settings import *
+"""Configuración de producción para Vercel y otros servidores WSGI."""
 import os
+from urllib.parse import quote
+from django.core.exceptions import ImproperlyConfigured
+from .settings import *
 from .db_config import configure_database
 
-# Configuración de seguridad para producción
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-railway')
+DEBUG = False
+SECRET_KEY = os.getenv('SECRET_KEY', '')
+if len(SECRET_KEY) < 50 or SECRET_KEY.startswith('django-insecure-'):
+    raise ImproperlyConfigured('Configura SECRET_KEY con al menos 50 caracteres aleatorios en producción.')
 
-# ALLOWED_HOSTS - crítico para Railway, Render y Vercel
-# Django usa .dominio.com (punto inicial), NO *.dominio.com
-_DEFAULT_ALLOWED_HOSTS = [
-    'healthcheck.railway.app',
-    'calendariosaipe.up.railway.app',
-    '.up.railway.app',
-    '.onrender.com',
-    '.vercel.app',
-    'localhost',
-    '127.0.0.1',
-]
+# Dominios de este proyecto: nunca confiar en todos los clientes del proveedor.
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h.strip()]
+for variable in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL', 'VERCEL_BRANCH_URL', 'RAILWAY_PUBLIC_DOMAIN', 'RENDER_EXTERNAL_HOSTNAME'):
+    host = os.getenv(variable)
+    if host:
+        ALLOWED_HOSTS.append(host.strip())
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
+if any('*' in host or host.startswith('.') for host in ALLOWED_HOSTS):
+    raise ImproperlyConfigured('ALLOWED_HOSTS debe contener dominios explícitos, sin comodines.')
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()]
+if any('*' in origin or not origin.startswith('https://') for origin in CSRF_TRUSTED_ORIGINS):
+    raise ImproperlyConfigured('CSRF_TRUSTED_ORIGINS debe contener orígenes HTTPS explícitos.')
 
-
-def _normalize_allowed_host(host):
-    host = host.strip()
-    if host.startswith('*.'):
-        return '.' + host[2:]
-    return host
-
-
-_env_hosts = os.getenv('ALLOWED_HOSTS')
-if _env_hosts:
-    env_hosts = [_normalize_allowed_host(h) for h in _env_hosts.split(',') if h.strip()]
-    ALLOWED_HOSTS = list(dict.fromkeys(env_hosts + _DEFAULT_ALLOWED_HOSTS))
-else:
-    ALLOWED_HOSTS = _DEFAULT_ALLOWED_HOSTS
-
-# CSRF_TRUSTED_ORIGINS para Railway, Render y Vercel
-_DEFAULT_CSRF_ORIGINS = [
-    'https://calendariosaipe.up.railway.app',
-    'https://*.up.railway.app',
-    'https://*.onrender.com',
-    'https://*.vercel.app',
-    'https://healthcheck.railway.app',
-]
-
-_env_csrf = os.getenv('CSRF_TRUSTED_ORIGINS')
-if _env_csrf:
-    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _env_csrf.split(',') if origin.strip()]
-    CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(CSRF_TRUSTED_ORIGINS + _DEFAULT_CSRF_ORIGINS))
-else:
-    CSRF_TRUSTED_ORIGINS = _DEFAULT_CSRF_ORIGINS
-
-# Filtrar valores vacíos y asegurar que todos tengan https://
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS if origin.strip()]
-CSRF_TRUSTED_ORIGINS = [origin if origin.startswith('https://') else f'https://{origin}' for origin in CSRF_TRUSTED_ORIGINS]
-
-# Configuración de seguridad
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
 X_FRAME_OPTIONS = 'DENY'
 
-# Configuración de archivos estáticos para producción
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+DATABASE_URL = os.getenv('DATABASE_URL')
+if not DATABASE_URL:
+    host = os.getenv('SUPABASE_DB_HOST')
+    user = os.getenv('SUPABASE_DB_USER')
+    password = os.getenv('SUPABASE_DB_PASSWORD')
+    if not (host and user and password):
+        raise ImproperlyConfigured('Configura DATABASE_URL o las credenciales SUPABASE_DB_* en producción.')
+    database = quote(os.getenv('SUPABASE_DB_NAME', 'postgres'), safe='')
+    port = os.getenv('SUPABASE_DB_PORT', '6543')
+    DATABASE_URL = f'postgresql://{quote(user, safe="")}:{quote(password, safe="")}@{host}:{port}/{database}'
+DATABASES = {'default': configure_database(DATABASE_URL)}
+if DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql':
+    raise ImproperlyConfigured('Producción requiere PostgreSQL para garantizar el bloqueo de reservas.')
 
-# Configuración de archivos multimedia
+MIDDLEWARE = list(MIDDLEWARE)
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+MIDDLEWARE.insert(2, 'calendario.middleware.RequestTimingMiddleware')
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
+WHITENOISE_USE_FINDERS = False
+WHITENOISE_AUTOREFRESH = False
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-# Base de datos para producción (PostgreSQL)
-# Soporta Railway, Supabase, Render, etc.
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Redis permite compartir límites entre instancias serverless.
+if os.getenv('REDIS_URL'):
+    CACHES = {'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.environ['REDIS_URL'], 'TIMEOUT': 300,
+    }}
 
-# Si no hay DATABASE_URL, construir desde variables individuales (útil para Supabase)
-if not DATABASE_URL:
-    # Intentar construir desde variables individuales de Supabase
-    SUPABASE_HOST = os.getenv('SUPABASE_DB_HOST')
-    SUPABASE_NAME = os.getenv('SUPABASE_DB_NAME', 'postgres')
-    SUPABASE_USER = os.getenv('SUPABASE_DB_USER')
-    SUPABASE_PASSWORD = os.getenv('SUPABASE_DB_PASSWORD')
-    SUPABASE_PORT = os.getenv('SUPABASE_DB_PORT', '6543')
-    
-    if SUPABASE_HOST and SUPABASE_USER and SUPABASE_PASSWORD:
-        DATABASE_URL = f"postgresql://{SUPABASE_USER}:{SUPABASE_PASSWORD}@{SUPABASE_HOST}:{SUPABASE_PORT}/{SUPABASE_NAME}"
-        print(f"✅ DATABASE_URL construida desde variables de Supabase")
-    else:
-        raise ValueError("DATABASE_URL o credenciales de Supabase (SUPABASE_DB_*) son requeridas para producción")
-
-# Debug: mostrar información de conexión (solo en logs)
-print(f"🔗 DATABASE_URL encontrada: {DATABASE_URL[:50]}...")
-
-DATABASES = {
-    'default': configure_database(DATABASE_URL)
-}
-
-if 'supabase' in DATABASE_URL:
-    print("Configurado Supabase transaction pooler (puerto 6543, CONN_MAX_AGE=0)")
-
-# Cache en memoria (suficiente para ~80 usuarios, 4-5 conexiones simultáneas)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 300,
-    },
-    'recursos': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake-recursos',
-        'TIMEOUT': 600,
-    }
-}
-
-# Configuración de logging para producción
+# Solo consola: Vercel no ofrece archivos persistentes para logs.
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
+    'version': 1, 'disable_existing_loggers': False,
+    'formatters': {'simple': {'format': '{levelname} {message}', 'style': '{'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'}},
+    'root': {'handlers': ['console'], 'level': 'INFO'},
+    'loggers': {'calendario': {'handlers': ['console'], 'level': 'INFO', 'propagate': False}},
 }
-
-# Configuración de archivos estáticos con WhiteNoise
-if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
-    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-
-# RequestTimingMiddleware: detecta requests lentos (después de SecurityMiddleware)
-if 'calendario.middleware.RequestTimingMiddleware' not in MIDDLEWARE:
-    MIDDLEWARE.insert(1, 'calendario.middleware.RequestTimingMiddleware')
-
-# Agregar middleware personalizado si no está presente
-if 'calendario.middleware.RequestLoggingMiddleware' not in MIDDLEWARE:
-    MIDDLEWARE.append('calendario.middleware.RequestLoggingMiddleware')
-if 'calendario.middleware.CalendarioErrorMiddleware' not in MIDDLEWARE:
-    MIDDLEWARE.append('calendario.middleware.CalendarioErrorMiddleware')
-
-# Configuración adicional de WhiteNoise
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = True
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Configuración de zona horaria para Railway (US East)
-# Railway está en US East (Virginia) que es UTC-5 (EST) o UTC-4 (EDT)
-# Pero queremos mantener la zona horaria de Buenos Aires para los usuarios
-TIME_ZONE = 'America/Argentina/Buenos_Aires'
-USE_TZ = True
-
-# Configuración específica para manejo de fechas en producción
-# Esto asegura que las fechas se interpreten correctamente
-import os
-os.environ['TZ'] = 'America/Argentina/Buenos_Aires'

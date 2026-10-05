@@ -1,120 +1,21 @@
 #!/usr/bin/env python
-"""
-Script de inicio para la aplicación Django en Railway
-"""
+"""Start a persistent WSGI server without modifying accounts or seeding data."""
 import os
-import sys
-import subprocess
 import django
-from django.core.management import execute_from_command_line
+from django.core.management import call_command
 
-def run_command(command):
-    """Ejecutar un comando y mostrar el resultado"""
-    print(f"Ejecutando: {command}")
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    if result.stdout:
-        print(result.stdout)
-    if result.stderr:
-        print(f"Error: {result.stderr}")
-    return result.returncode == 0
 
 def initialize_database():
-    """Inicializar la base de datos"""
-    print("=== Inicializando base de datos ===")
-    
-    # Railway ya configuró DJANGO_SETTINGS_MODULE
-    # Solo necesitamos configurar Django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'calendario_reservas.settings_production')
     django.setup()
-    
-    # Ejecutar migraciones
-    if not run_command("python manage.py migrate --noinput"):
-        print("Error ejecutando migraciones")
-        return False
-    
-    # Recopilar archivos estáticos
-    if not run_command("python manage.py collectstatic --noinput"):
-        print("Error recopilando archivos estáticos")
-        return False
-    
-    # Cargar usuarios desde Excel si existe el archivo
-    print("Verificando archivo de credenciales...")
-    if not run_command("python manage.py cargar_usuarios_excel --archivo credenciales.xlsx"):
-        print("No se pudieron cargar usuarios desde Excel (puede que el archivo no exista)")
-    
-    # Crear o actualizar superusuario
-    from django.contrib.auth.models import User
-    admin_user, created = User.objects.get_or_create(
-        username='admin',
-        defaults={
-            'email': 'admin@example.com',
-            'is_staff': True,
-            'is_superuser': True
-        }
-    )
-    admin_user.set_password('admin123')
-    admin_user.is_staff = True
-    admin_user.is_superuser = True
-    admin_user.save()
-    
-    if created:
-        print("Superusuario creado: admin/admin123")
-    else:
-        print("Superusuario actualizado: admin/admin123")
-    
-    # Crear o actualizar usuario de prueba normal
-    usuario_prueba, created = User.objects.get_or_create(
-        username='usuario_prueba',
-        defaults={
-            'email': 'usuario@prueba.com',
-            'first_name': 'Usuario',
-            'last_name': 'Prueba'
-        }
-    )
-    usuario_prueba.set_password('prueba123')
-    usuario_prueba.first_name = 'Usuario'
-    usuario_prueba.last_name = 'Prueba'
-    usuario_prueba.save()
-    
-    if created:
-        print("Usuario de prueba creado: usuario_prueba/prueba123")
-    else:
-        print("Usuario de prueba actualizado: usuario_prueba/prueba123")
-    
-    # Crear recursos de ejemplo si no existen
-    from calendario.models import Recurso
-    if not Recurso.objects.exists():
-        print("Creando recursos de ejemplo...")
-        recursos = [
-            {'nombre': 'Sala de Juntas A', 'descripcion': 'Sala principal para reuniones', 'capacidad': 10, 'color': '#007bff'},
-            {'nombre': 'Sala de Juntas B', 'descripcion': 'Sala secundaria para reuniones', 'capacidad': 8, 'color': '#28a745'},
-            {'nombre': 'Auditorio', 'descripcion': 'Espacio para presentaciones grandes', 'capacidad': 50, 'color': '#dc3545'},
-            {'nombre': 'Sala de Capacitación', 'descripcion': 'Espacio para entrenamientos', 'capacidad': 20, 'color': '#ffc107'},
-        ]
-        
-        for recurso_data in recursos:
-            Recurso.objects.create(**recurso_data)
-        print(f"Se crearon {len(recursos)} recursos de ejemplo")
-    else:
-        print("Los recursos ya existen")
-    
-    print("=== Inicialización completada ===")
-    return True
+    call_command('migrate', interactive=False)
+    call_command('collectstatic', interactive=False)
+
 
 if __name__ == '__main__':
-    print("Iniciando aplicación Django...")
-    
-    # Inicializar base de datos
-    if not initialize_database():
-        print("Error en la inicialización. Saliendo...")
-        sys.exit(1)
-    
-    # Obtener puerto
-    port = os.getenv('PORT', '8000')
-    
-    # Iniciar Gunicorn
-    print(f"Iniciando Gunicorn en puerto {port}...")
-    os.execvp('gunicorn', [
-        'gunicorn',
-        'calendario_reservas.wsgi:application',
-        '--bind', f'0.0.0.0:{port}'
-    ])
+    initialize_database()
+    port = int(os.getenv('PORT', '8000'))
+    if not 1 <= port <= 65535:
+        raise ValueError('PORT must be between 1 and 65535')
+    os.execvp('gunicorn', ['gunicorn', 'calendario_reservas.wsgi:application',
+                         '--bind', f'0.0.0.0:{port}'])

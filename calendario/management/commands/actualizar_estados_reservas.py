@@ -19,13 +19,13 @@ class Command(BaseCommand):
         reservas_en_curso = Reserva.objects.filter(
             estado='confirmada',
             fecha_inicio__lte=now,
-            fecha_fin__gte=now
+            fecha_fin__gt=now
         )
         
         # Reservas que deben estar "Terminadas"
         reservas_terminadas = Reserva.objects.filter(
             estado__in=['confirmada', 'en_curso'],
-            fecha_fin__lt=now
+            fecha_fin__lte=now
         )
         
         # Actualizar estados

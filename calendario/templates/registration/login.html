@@ -1,12 +1,11 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
-{% load mundial_static %}
 
 {% block title %}Iniciar Sesión - Sistema de Reservas{% endblock %}
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item active" aria-current="page">
-    <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+    <i class="fas fa-sign-in-alt me-1" aria-hidden="true"></i>Iniciar Sesión
 </li>
 {% endblock %}
 
@@ -14,22 +13,16 @@
 <div class="login-container">
     <div class="login-card">
         <div class="login-header">
-            <i class="fas fa-sign-in-alt spring-icon"></i>
-            <h4>Iniciar Sesión</h4>
+            <p class="eyebrow">SAIPE · Reservas</p>
+            <h1>Salas y vehículos</h1>
+            <p>Consultá la disponibilidad y gestioná las reservas del equipo.</p>
         </div>
         <div class="login-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert-modern alert-{{ message.tags }}">
-                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    
+                    <h2>Iniciar sesión</h2>
+                    <p class="text-muted mb-4">Usá tu cuenta del equipo SAIPE.</p>
                     {% if form.errors %}
                         <div class="alert-modern alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
                             {% if form.non_field_errors %}
                                 {% for error in form.non_field_errors %}
                                     {{ error }}
@@ -42,14 +35,15 @@
 
                     <form method="post" data-validate>
                         {% csrf_token %}
+                        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
                         <div class="form-group-modern">
                             <label for="{{ form.username.id_for_label }}" class="form-label-modern">
-                                <i class="fas fa-user"></i>Usuario
+                                <i class="fas fa-user" aria-hidden="true"></i>Usuario
                             </label>
                             <input type="text" 
                                    class="form-control-modern" 
                                    id="{{ form.username.id_for_label }}" 
-                                   name="{{ form.username.name }}" 
+                                   name="{{ form.username.name }}" autocomplete="username" autofocus
                                    value="{{ form.username.value|default:'' }}"
                                    placeholder="Ingresa tu nombre de usuario"
                                    required>
@@ -57,18 +51,18 @@
                         
                         <div class="form-group-modern">
                             <label for="{{ form.password.id_for_label }}" class="form-label-modern">
-                                <i class="fas fa-lock"></i>Contraseña
+                                <i class="fas fa-lock" aria-hidden="true"></i>Contraseña
                             </label>
                             <input type="password" 
                                    class="form-control-modern" 
                                    id="{{ form.password.id_for_label }}" 
-                                   name="{{ form.password.name }}" 
+                                   name="{{ form.password.name }}" autocomplete="current-password"
                                    placeholder="Ingresa tu contraseña"
                                    required>
                         </div>
                         
                         <button type="submit" class="btn-login" id="submit-btn-original">
-                            <i class="fas fa-sign-in-alt me-2"></i>
+                            <i class="fas fa-sign-in-alt me-2" aria-hidden="true"></i>
                             Iniciar Sesión
                         </button>
                     </form>
@@ -76,6 +70,6 @@
     </div>
 </div>
 
-<script src="{% static_v 'js/login-form.js' %}"></script>
+<script src="{% static 'js/login-form.js' %}"></script>
 
 {% endblock %}

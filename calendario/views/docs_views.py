@@ -4,6 +4,7 @@ Vistas para documentación de API
 
 import logging
 from django.http import JsonResponse, HttpResponse
+from django.utils import timezone
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -91,13 +92,13 @@ def health_check_endpoint(request):
         health = health_checker.get_overall_health()
         
         if health['overall_status'] == 'healthy':
-            return JsonResponse(health, status=200)
+            return JsonResponse({'overall_status': 'healthy'}, status=200)
         else:
-            return JsonResponse(health, status=503)
+            return JsonResponse({'overall_status': 'unhealthy'}, status=503)
             
     except Exception as e:
         return JsonResponse({
             'overall_status': 'unhealthy',
-            'error': str(e),
-            'timestamp': datetime.now().isoformat()
+            'error': 'Servicio no disponible',
+            'timestamp': timezone.now().isoformat()
         }, status=500)

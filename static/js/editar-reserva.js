@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fechaInicio && fechaVuelta && fechaInicio.value && fechaVuelta.value) {
             // Extraer solo la fecha de fecha_inicio (puede ser datetime)
             const inicioDate = new Date(fechaInicio.value);
-            const vueltaDate = new Date(fechaVuelta.value);
+            const vueltaDate = new Date(fechaVuelta.value + 'T00:00:00');
             
             // Convertir a solo fecha para comparar
             inicioDate.setHours(0, 0, 0, 0);
@@ -54,8 +54,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function aplicarValidacion() {
         const tipoRecurso = getTipoRecurso();
         
+        if (fechaFin) fechaFin.setCustomValidity('');
+        if (fechaVuelta) fechaVuelta.setCustomValidity('');
         if (tipoRecurso === 'vehiculo') {
             validarFechasVehiculos();
+            validarFechasSalas();
         } else {
             validarFechasSalas();
         }

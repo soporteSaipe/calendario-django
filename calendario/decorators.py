@@ -36,24 +36,29 @@ def rate_limit(requests_per_minute=None, window_seconds=None, error_message=None
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            # Verificar si el usuario ha excedido el límite
-            if getattr(request, 'limited', False):
-                error_msg = error_message or ValidationMessages.RATE_LIMIT_EXCEEDED
-                logger.warning(f'Rate limit excedido para usuario: {request.user.username if request.user.is_authenticated else "Anónimo"}')
-                
-                # Verificar si es una petición AJAX
-                is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-                if is_ajax:
-                    return JsonResponse({
-                        'success': False,
-                        'error': error_msg,
-                        'error_type': 'rate_limit_exceeded',
-                        'retry_after': window_seconds or RateLimitConfig.WINDOW_SECONDS
-                    }, status=429)
-                else:
-                    messages.error(request, error_msg)
-                    return redirect('calendario:calendario')
-            
+            from django.core.cache import cache
+            from hashlib import sha256
+            import time
+            from .http_responses import HTTP
+
+            window = window_seconds or RateLimitConfig.WINDOW_SECONDS
+            limit = requests_per_minute or RateLimitConfig.API_REQUESTS
+            # Trust REMOTE_ADDR only; arbitrary forwarded headers can bypass a limit.
+            identity = f'user:{request.user.pk}' if request.user.is_authenticated else f'ip:{request.META.get("REMOTE_ADDR", "unknown")}'
+            bucket = int(time.time()) // window
+            key = 'rate:' + sha256(f'{view_func.__module__}.{view_func.__name__}:{identity}:{bucket}'.encode()).hexdigest()
+            if cache.add(key, 1, timeout=window + 1):
+                count = 1
+            else:
+                try:
+                    count = cache.incr(key)
+                except ValueError:
+                    cache.set(key, 1, timeout=window + 1)
+                    count = 1
+            if count > limit:
+                return HTTP.rate_limited(retry_after=window - int(time.time()) % window,
+                                         limit=limit, request=request)
+
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator

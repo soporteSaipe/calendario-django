@@ -4,7 +4,7 @@ Middleware personalizado para el sistema de calendario
 import logging
 import time
 import traceback
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.core.exceptions import ValidationError
 from django.utils.deprecation import MiddlewareMixin
 from .exceptions import (
@@ -60,6 +60,9 @@ class CalendarioErrorMiddleware(MiddlewareMixin):
         if not request.path.startswith('/calendario/'):
             return None
         
+        if isinstance(exception, Http404):
+            return None
+
         # Log del error usando el logger estructurado
         calendario_logger().error(
             f'Error en {request.path}: {str(exception)}',
@@ -251,27 +254,3 @@ class RequestLoggingMiddleware(MiddlewareMixin):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
-
-
-class MundialHtmlNoCacheMiddleware(MiddlewareMixin):
-    """
-    Evita cachear HTML mientras el tema Mundial esté activo.
-    Así los usuarios reciben base.html actualizado sin borrar caché manualmente.
-    """
-
-    def process_response(self, request, response):
-        from .constants import MundialThemeConfig
-
-        if not MundialThemeConfig.ENABLED:
-            return response
-
-        if request.path.startswith('/static/') or request.path.startswith('/health/'):
-            return response
-
-        content_type = response.get('Content-Type', '')
-        if 'text/html' not in content_type:
-            return response
-
-        response['Cache-Control'] = 'no-cache, must-revalidate'
-        response['Pragma'] = 'no-cache'
-        return response

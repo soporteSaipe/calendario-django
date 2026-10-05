@@ -3,41 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#75AADB">
+    <meta name="theme-color" content="#FDF7ED">
     <title>{% block title %}Sistema de reservas de salas SAIPE{% endblock %}</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% load static %}
-    {% load mundial_static %}
-    <!-- Archivos CSS consolidados y optimizados -->
-    <link href="{% static_v 'css/core.css' %}" rel="stylesheet">
-    <link href="{% static_v 'css/components.css' %}" rel="stylesheet">
-    <link href="{% static_v 'css/features.css' %}" rel="stylesheet">
-    <link href="{% static_v 'css/effects.css' %}" rel="stylesheet">
-    <link href="{% static_v 'css/pages.css' %}" rel="stylesheet">
-    <link href="{% static_v 'css/optimization.css' %}" rel="stylesheet">
-    <link href="{% static_v 'css/mundial-argentina.css' %}" rel="stylesheet">
-    <!-- Modo oscuro - DESHABILITADO TEMPORALMENTE -->
-    <!-- <link href="{% static 'css/dark-theme.css' %}" rel="stylesheet"> -->
-    
+    <meta name="description" content="Reservas de salas y vehículos para el equipo SAIPE.">
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <script src="{% static 'js/dark-mode.js' %}"></script>
+    <link rel="preload" href="{% static 'fonts/inter-latin-variable.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/icons.css' %}" rel="stylesheet">
+    <link href="{% static 'css/workspace.css' %}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="mundial-banner" aria-hidden="true"></div>
-    <nav class="navbar navbar-expand-lg navbar-modern animate-on-load">
+    <a class="skip-link" href="#main-content">Saltar al contenido</a>
+    <nav class="navbar navbar-expand-lg navbar-modern">
         <div class="container">
             <a class="navbar-brand" href="{% url 'calendario:calendario' %}">
-                <span class="mundial-stars">⭐⭐⭐</span>
-                <i class="fas fa-futbol accounting-icon"></i>
-                <span>Sistema de reservas</span>
-                <span class="professional-badge ms-2">SAIPE | Mundial 2026</span>
+                <span class="brand-mark" aria-hidden="true">S</span>
+                <span class="brand-name">SAIPE<span class="brand-caption">Reservas</span></span>
             </a>
             
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="fas fa-bars"></i>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir navegación" title="Abrir navegación">
+                <i class="fas fa-bars" aria-hidden="true"></i>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -45,7 +34,7 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'calendario' %}active{% endif %}" 
                            href="{% url 'calendario:calendario' %}">
-                            <i class="fas fa-calendar-alt"></i>
+                            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                             <span>Calendario</span>
                         </a>
                     </li>
@@ -53,14 +42,14 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'mis_reservas' %}active{% endif %}" 
                            href="{% url 'calendario:mis_reservas' %}">
-                            <i class="fas fa-clipboard-list"></i>
+                            <i class="fas fa-clipboard-list" aria-hidden="true"></i>
                             <span>Mis reservas</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'buscar_reservas' %}active{% endif %}" 
                            href="{% url 'calendario:buscar_reservas' %}">
-                            <i class="fas fa-search"></i>
+                            <i class="fas fa-search" aria-hidden="true"></i>
                             <span>Buscar</span>
                         </a>
                     </li>
@@ -68,42 +57,47 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
                            href="{% url 'calendario:dashboard' %}">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                            <span>Resumen</span>
                         </a>
                     </li>
                     {% endif %}
                     {% endif %}
                 </ul>
                 
-                <ul class="navbar-nav">
+                <ul class="navbar-nav account-nav">
+                    <li class="nav-item theme-preference">
+                        <select id="themePreference" aria-label="Apariencia">
+                            <option value="system">Tema del sistema</option><option value="light">Tema claro</option><option value="dark">Tema oscuro</option>
+                        </select>
+                    </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i>
+                        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user" aria-hidden="true"></i>
                             <span>{{ user.username }}</span>
-                        </a>
+                        </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if user.is_staff %}
                             <li><a class="dropdown-item" href="/admin/">
-                                <i class="fas fa-cogs me-2"></i>Panel de control
+                                <i class="fas fa-cogs me-2" aria-hidden="true"></i>Panel de control
                             </a></li>
                             <li><a class="dropdown-item" href="/admin/calendario/recurso/">
-                                <i class="fas fa-door-open me-2"></i>Gestionar salas
+                                <i class="fas fa-door-open me-2" aria-hidden="true"></i>Gestionar salas
                             </a></li>
                             {% endif %}
                             <li>
-                                <button type="button" class="dropdown-item border-0 bg-transparent w-100 text-start logout-btn" 
-                                        onclick="handleLogout()">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-                                </button>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2" aria-hidden="true"></i>Cerrar sesión</button>
+                                </form>
                             </li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">
-                            <i class="fas fa-sign-in-alt"></i>
+                            <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
                             <span>Iniciar sesión</span>
                         </a>
                     </li>
@@ -113,13 +107,13 @@
         </div>
     </nav>
 
-    <main class="main-container">
+    <main class="main-container" id="main-content" tabindex="-1">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}-modern alert-dismissible fade show" role="alert" aria-live="polite">
                     <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2" aria-hidden="true"></i>
                     <span class="alert-message">{{ message }}</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar mensaje"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar mensaje" title="Cerrar mensaje"></button>
                 </div>
             {% endfor %}
         {% endif %}
@@ -129,7 +123,7 @@
             <ol class="breadcrumb breadcrumb-modern" id="breadcrumbList">
                 <li class="breadcrumb-item">
                     <a href="{% url 'calendario:calendario' %}" class="breadcrumb-link">
-                        <i class="fas fa-home me-1"></i>Inicio
+                        <i class="fas fa-home me-1" aria-hidden="true"></i>Inicio
                     </a>
                 </li>
                 {% block breadcrumbs %}{% endblock %}
@@ -144,13 +138,13 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="mb-0">
-                        <i class="fas fa-calendar-alt me-2"></i>
-                        <strong>Sistema de reservas de salas</strong>
+                        <i class="fas fa-calendar-alt me-2" aria-hidden="true"></i>
+                        <strong>Salas y vehículos</strong>
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="mb-0">
-                        ⚽ SAIPE — Mundial Argentina 2026 ⭐⭐⭐
+                        SAIPE · Reservas
                     </p>
                 </div>
             </div>
@@ -160,7 +154,7 @@
     <!-- Librerías externas -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales/es.global.min.js"></script>
     
     <!-- Configuración global de URLs -->
     <script>
@@ -169,35 +163,17 @@
     </script>
     
     <!-- CONTROLADOR CENTRALIZADO (debe cargar primero) -->
-    <script src="{% static_v 'js/calendario-controller.js' %}"></script>
+    <script src="{% static 'js/calendario-controller.js' %}"></script>
     
     <!-- SISTEMAS MODULARES - ARQUITECTURA NUEVA -->
-    <script src="{% static_v 'js/calendario-core.js' %}"></script>
-    <script src="{% static_v 'js/calendario-state.js' %}"></script>
-    <script src="{% static_v 'js/calendario-modals.js' %}"></script>
-    <script src="{% static_v 'js/calendario-errors.js' %}"></script>
-    <script src="{% static_v 'js/calendario-integration.js' %}"></script>
-    <script src="{% static_v 'js/calendario-main.js' %}"></script>
-           <script src="{% static_v 'js/calendar-views.js' %}"></script>
-           <!-- <script src="{% static 'js/calendar-views-debug.js' %}"></script> -->
-           <!-- <script src="{% static 'js/realtime-notifications.js' %}"></script> -->
-           <!-- <script src="{% static 'js/realtime-validation.js' %}"></script> -->
-           <script src="{% static_v 'js/calendar-export.js' %}"></script>
-           <!-- Modo oscuro - DESHABILITADO TEMPORALMENTE -->
-           <script src="{% static_v 'js/dark-mode.js' %}"></script>
-           <!-- Pruebas del modo oscuro (remover en producción) -->
-           <!-- <script src="{% static 'js/dark-mode-test.js' %}"></script> -->
-           
-           <!-- Efectos especiales -->
-           <!-- <script type="module" src="{% static 'js/fallingPetals.js' %}"></script> -->
-           <!-- <script src="{% static 'js/fallingPetals-integration.js' %}"></script> -->
-    
-    {% if debug %}
-    {% endif %}
-    <!-- SCRIPT DE PRUEBA SIMPLE -->
-    <script src="{% static_v 'js/simple-test.js' %}"></script>
-    
-    <script src="{% static_v 'js/mundial-argentina.js' %}"></script>
+    <script src="{% static 'js/calendario-core.js' %}"></script>
+    <script src="{% static 'js/calendario-state.js' %}"></script>
+    <script src="{% static 'js/calendario-modals.js' %}"></script>
+    <script src="{% static 'js/calendario-errors.js' %}"></script>
+    <script src="{% static 'js/calendario-integration.js' %}"></script>
+    <script src="{% static 'js/calendario-main.js' %}"></script>
+    <script src="{% static 'js/calendar-views.js' %}"></script>
+    <script src="{% static 'js/calendar-export.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -32,7 +32,7 @@ def calendario_view(request):
         try:
             sala_activa = Recurso.objects.get(id=sala_seleccionada, activo=True)
             logger.debug(f'Sala seleccionada: {sala_activa.nombre}')
-        except Recurso.DoesNotExist:
+        except (Recurso.DoesNotExist, ValueError, OverflowError):
             logger.warning(f'Intento de acceso a sala inexistente: {sala_seleccionada}')
             sala_activa = None
     

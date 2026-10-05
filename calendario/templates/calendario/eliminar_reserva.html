@@ -1,8 +1,12 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
-{% load mundial_static %}
 
-{% block title %}Eliminar Reserva{% endblock %}
+{% block title %}Eliminar reserva · SAIPE{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'calendario:mis_reservas' %}">Mis reservas</a></li>
+<li class="breadcrumb-item active" aria-current="page">Eliminar reserva</li>
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,11 +14,11 @@
         <div class="card-modern card-danger-modern">
             <div class="card-header-modern card-header-danger-modern">
                 <h4 class="mb-0">
-                    <i class="fas fa-exclamation-triangle me-2 spring-icon"></i>Eliminar Reserva
+                    <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>Eliminar Reserva
                     {% if user.is_staff or user.is_superuser %}
                         {% if reserva.usuario != user %}
-                            <small class="ms-2 text-light opacity-75">
-                                <i class="fas fa-user-shield me-1"></i>Reserva de: {{ reserva.usuario.username }}
+                            <small class="ms-2 text-muted">
+                                <i class="fas fa-user-shield me-1" aria-hidden="true"></i>Reserva de: {{ reserva.usuario.username }}
                             </small>
                         {% endif %}
                     {% endif %}
@@ -24,7 +28,7 @@
                 {% if user.is_staff or user.is_superuser %}
                     {% if reserva.usuario != user %}
                         <div class="alert alert-info-modern mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
+                            <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
                             <strong>Vista Administrativa:</strong> Estás eliminando una reserva que pertenece a 
                             <strong>{{ reserva.usuario.username }}</strong>.
                         </div>
@@ -32,21 +36,21 @@
                 {% endif %}
                 
                 <div class="alert alert-warning-modern">
-                    <i class="fas fa-warning me-2"></i>
-                    <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                    <i class="fas fa-warning me-2" aria-hidden="true"></i>
+                    Esta acción no se puede deshacer.
                 </div>
                 
-                <h5 class="mb-4">¿Estás seguro de que quieres eliminar esta reserva?</h5>
+                <p class="mb-4">Revisá los datos antes de eliminar la reserva. El recurso volverá a estar disponible en ese horario.</p>
                 
-                <div class="card-modern bg-light">
+                <div class="reservation-summary">
                     <div class="card-body-modern">
                         <h6 class="card-title">
-                            <i class="fas fa-calendar-check me-2"></i>{{ reserva.titulo }}
+                            <i class="fas fa-calendar-check me-2" aria-hidden="true"></i>{{ reserva.titulo }}
                         </h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <p class="card-text">
-                                    <strong><i class="fas fa-building me-1"></i>Recurso:</strong><br>
+                                    <strong><i class="fas fa-building me-1" aria-hidden="true"></i>Recurso:</strong><br>
                                     <span class="badge-modern" data-color="{{ reserva.recurso.color|default:'#64748B' }}">
                                         {{ reserva.recurso.nombre }}
                                     </span>
@@ -54,7 +58,7 @@
                             </div>
                             <div class="col-md-6">
                                 <p class="card-text">
-                                    <strong><i class="fas fa-info-circle me-1"></i>Estado:</strong><br>
+                                    <strong><i class="fas fa-info-circle me-1" aria-hidden="true"></i>Estado:</strong><br>
                                     <span class="badge-modern badge-{{ reserva.estado|default:'secondary' }}">
                                         {{ reserva.get_estado_display }}
                                     </span>
@@ -65,9 +69,9 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <p class="card-text">
-                                        <strong><i class="fas fa-user me-1"></i>Propietario de la reserva:</strong><br>
+                                        <strong><i class="fas fa-user me-1" aria-hidden="true"></i>Propietario de la reserva:</strong><br>
                                         <span class="badge-modern badge-info">
-                                            <i class="fas fa-user-circle me-1"></i>{{ reserva.usuario.username }}
+                                            <i class="fas fa-user-circle me-1" aria-hidden="true"></i>{{ reserva.usuario.username }}
                                         </span>
                                     </p>
                                 </div>
@@ -76,20 +80,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <p class="card-text">
-                                    <strong><i class="fas fa-clock me-1"></i>Fecha de inicio:</strong><br>
+                                    <strong><i class="fas fa-clock me-1" aria-hidden="true"></i>Fecha de inicio:</strong><br>
                                     {{ reserva.fecha_inicio|date:"d/m/Y H:i" }}
                                 </p>
                             </div>
                             <div class="col-md-6">
                                 <p class="card-text">
-                                    <strong><i class="fas fa-clock me-1"></i>Fecha de fin:</strong><br>
+                                    <strong><i class="fas fa-clock me-1" aria-hidden="true"></i>Fecha de fin:</strong><br>
                                     {{ reserva.fecha_fin|date:"d/m/Y H:i" }}
                                 </p>
                             </div>
                         </div>
                         {% if reserva.descripcion %}
                             <p class="card-text">
-                                <strong><i class="fas fa-align-left me-1"></i>Descripción:</strong><br>
+                                <strong><i class="fas fa-align-left me-1" aria-hidden="true"></i>Descripción:</strong><br>
                                 {{ reserva.descripcion }}
                             </p>
                         {% endif %}
@@ -100,12 +104,12 @@
                     {% csrf_token %}
                     <div class="d-flex justify-content-between">
                         <a href="{% url 'calendario:mis_reservas' %}" class="btn-modern btn-secondary-modern">
-                            <i class="fas fa-arrow-left"></i>
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
                             <span>Cancelar</span>
                         </a>
-                        <button type="submit" class="btn-modern btn-danger-modern bloom-button">
-                            <i class="fas fa-trash"></i>
-                            <span>Eliminar Reserva</span>
+                        <button type="submit" class="btn-modern btn-danger-modern">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
+                            <span>Eliminar reserva</span>
                         </button>
                     </div>
                 </form>
@@ -116,5 +120,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static_v 'js/eliminar-reserva.js' %}"></script>
+<script src="{% static 'js/eliminar-reserva.js' %}"></script>
 {% endblock %}

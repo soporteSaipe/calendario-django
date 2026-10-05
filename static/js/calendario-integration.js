@@ -124,35 +124,7 @@ CalendarioApp.Integration = {
    * Integrar ErrorHandler con StateManager
    */
   integrateErrorHandlerWithState: function() {
-    if (!this.integrationStatus.errors || !this.integrationStatus.state) return;
-
-    // Suscribirse a cambios de estado para detectar errores
-    CalendarioApp.StateManager.subscribe('*', (state, path, value) => {
-      // Detectar errores en el estado
-      if (path && path.includes('error')) {
-        CalendarioApp.ErrorHandler.specific.stateError(
-          new Error(`Error en estado: ${path}`),
-          path,
-          'state_change'
-        );
-      }
-    });
-
-    // Agregar errores al estado cuando se manejan
-    const originalHandle = CalendarioApp.ErrorHandler.handle.bind(CalendarioApp.ErrorHandler);
-    CalendarioApp.ErrorHandler.handle = function(error, context, options) {
-      const result = originalHandle(error, context, options);
-      
-      // Actualizar estado de errores
-      if (CalendarioApp.StateManager) {
-        const recentErrors = CalendarioApp.StateManager.getState('errors.recent') || [];
-        CalendarioApp.StateManager.setState('errors.recent', [result, ...recentErrors].slice(0, 10));
-      }
-      
-      return result;
-    };
-
-    CalendarioApp.Core.Logger.debug('🔗 ErrorHandler integrado con StateManager');
+    // ErrorHandler already records its errors. Subscribing to errors here would recurse.
   },
 
   /**

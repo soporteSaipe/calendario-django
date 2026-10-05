@@ -7,6 +7,17 @@
 
 // ===== SISTEMA DE CALENDARIO =====
 CalendarioApp.Calendar = {
+  escapeHTML: function(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
+  },
+  safeColor: function(value) { return /^#[0-9a-f]{6}$/i.test(value) ? value : '#445371'; },
+  setStatus: function(message, isError = false) {
+    const status = document.getElementById('calendarStatus');
+    if (!status) return;
+    status.textContent = message;
+    status.hidden = !message;
+    status.classList.toggle('is-error', isError);
+  },
   calendar: null,
   currentSalaFilter: null,
   salasData: {},
@@ -16,7 +27,7 @@ CalendarioApp.Calendar = {
     this.setInitialSala();
     
     if (typeof FullCalendar === 'undefined') {
-      console.error('FullCalendar no está cargado');
+      this.setStatus('No se pudo cargar el calendario. Revisá la conexión y recargá la página.', true);
       return;
     }
     
@@ -53,7 +64,7 @@ CalendarioApp.Calendar = {
           const match = textContent.match(/\((\d+) pasajeros\)/);
           capacidad = match ? parseInt(match[1]) : 1;
           // Extraer nombre sin la patente
-          nombre = textContent.split(' - ')[0].trim();
+          nombre = textContent.split(' · ')[0].split(' (')[0].trim();
         } else {
           // Para salas: "Sala1 (capacidad: 10)"
           const match = textContent.match(/capacidad: (\d+)/);
@@ -64,7 +75,7 @@ CalendarioApp.Calendar = {
         const salaData = {
           id: option.value,
           nombre: nombre,
-          color: option.getAttribute('data-color') || '#64748B',
+          color: option.getAttribute('data-color') || '#445371',
           capacidad: capacidad,
           tipo: tipo
         };
@@ -89,7 +100,7 @@ CalendarioApp.Calendar = {
     const salaFromUrl = urlParams.get('sala');
     
     if (salaFromUrl && salaSelect) {
-      const option = salaSelect.querySelector(`option[value="${salaFromUrl}"]`);
+      const option = Array.from(salaSelect.options).find(item => item.value === salaFromUrl);
       if (option) {
         salaSelect.value = salaFromUrl;
         this.currentSalaFilter = salaFromUrl;
@@ -98,7 +109,7 @@ CalendarioApp.Calendar = {
     }
     
     if (salaSelect.options.length > 0) {
-      const firstOption = salaSelect.options[0];
+      const firstOption = salaSelect.options[salaSelect.selectedIndex >= 0 ? salaSelect.selectedIndex : 0];
       if (firstOption.value) {
         salaSelect.value = firstOption.value;
         this.currentSalaFilter = firstOption.value;
@@ -118,18 +129,20 @@ CalendarioApp.Calendar = {
     
     this.calendar = new FullCalendar.Calendar(calendarEl, {
       locale: 'es',
-      initialView: 'timeGridWeek',
+      initialView: window.matchMedia('(max-width: 767px)').matches ? 'timeGridDay' : 'timeGridWeek',
+      firstDay: 1,
+      nowIndicator: true,
       lazyFetching: false,
       headerToolbar: false, // Deshabilitamos el header del calendario para usar nuestros controles
       views: {
         timeGridDay: {
-          slotMinTime: '00:00:00',
-          slotMaxTime: '24:00:00',
+          slotMinTime: '07:00:00',
+          slotMaxTime: '20:00:00',
           slotDuration: '00:30:00'
         },
         timeGridWeek: {
-          slotMinTime: '00:00:00',
-          slotMaxTime: '24:00:00',
+          slotMinTime: '07:00:00',
+          slotMaxTime: '20:00:00',
           slotDuration: '00:30:00'
         },
         dayGridMonth: {
@@ -165,8 +178,8 @@ CalendarioApp.Calendar = {
         minute: '2-digit',
         hour12: false
       },
-      height: 'auto',
-      aspectRatio: 1.8
+      // Let every time slot extend the page instead of creating an inner scroller.
+      height: 'auto'
     });
     
     this.calendar.render();
@@ -178,8 +191,9 @@ CalendarioApp.Calendar = {
       if (salaSelect && salaSelect.options.length > 0) {
         this.currentSalaFilter = salaSelect.options[0].value;
       } else {
-        console.error('No hay salas disponibles');
-        return [];
+        this.setStatus('Todavía no hay recursos disponibles. Contactá al administrador para agregar una sala o un vehículo.');
+        document.getElementById('abrirModalCrearReserva')?.setAttribute('disabled', '');
+        return Promise.resolve([]);
       }
     }
     
@@ -200,6 +214,7 @@ CalendarioApp.Calendar = {
     }
     CalendarioApp.Core.Logger.debug('Cargando eventos desde URL:', url);
     
+    this.setStatus('Cargando reservas…');
     return fetch(url)
       .then(response => {
         if (!response.ok) {
@@ -208,13 +223,12 @@ CalendarioApp.Calendar = {
         return response.json();
       })
       .then(data => {
+        this.setStatus(data.length ? '' : 'No hay reservas en este período para el recurso seleccionado.');
         return data;
       })
       .catch(error => {
         console.error('Error al cargar eventos:', error);
-        if (window.CalendarioApp?.ModalFactory) {
-          CalendarioApp.ModalFactory.utils.alert('Error al cargar eventos del calendario', { type: 'error' });
-        }
+        this.setStatus('No se pudieron cargar las reservas. Recargá la página para volver a intentarlo.', true);
         return [];
       });
   },
@@ -229,8 +243,7 @@ CalendarioApp.Calendar = {
     }
     
     // Actualizar título del modal
-    document.getElementById('reservaModalDetallesLabel').innerHTML = 
-      `<i class="fas fa-calendar-check me-2"></i>${event.title || 'Detalles de Reserva'}`;
+    document.getElementById('reservaModalDetallesLabel').textContent = event.title || 'Detalles de reserva';
     
     // Mostrar detalles de la reserva
     this.showReservaDetails(event);
@@ -255,10 +268,10 @@ CalendarioApp.Calendar = {
         <div class="reserva-details-header mb-4">
           <div class="d-flex align-items-center justify-content-between mb-3">
             <h4 class="reserva-details-title mb-0">
-              <i class="fas fa-calendar-check me-2 text-primary"></i>
-              ${event.title || 'Reserva'}
+              <i class="fas fa-calendar-check me-2 text-primary" aria-hidden="true"></i>
+              ${this.escapeHTML(event.title || 'Reserva')}
             </h4>
-            <span class="badge-modern badge-${this.getEstadoColor(estado)} fs-6">${estado}</span>
+            <span class="badge-modern badge-${this.getEstadoColor(estado)} fs-6">${this.escapeHTML(estado)}</span>
           </div>
         </div>
         
@@ -269,13 +282,13 @@ CalendarioApp.Calendar = {
             <div class="col-12">
               <div class="reserva-info-section">
                 <h6 class="section-title mb-3">
-                  <i class="fas fa-calendar-alt me-2 text-primary"></i>Fecha y Hora
+                  <i class="fas fa-calendar-alt me-2 text-primary" aria-hidden="true"></i>Fecha y Hora
                 </h6>
                 <div class="row g-2">
                   <div class="col-md-6">
                     <div class="info-item">
                       <div class="info-label">
-                        <i class="fas fa-calendar me-2"></i>Fecha
+                        <i class="fas fa-calendar me-2" aria-hidden="true"></i>Fecha
                       </div>
                       <div class="info-value">
                         ${startDate ? startDate.toLocaleDateString('es-ES', { 
@@ -290,7 +303,7 @@ CalendarioApp.Calendar = {
                   <div class="col-md-6">
                     <div class="info-item">
                       <div class="info-label">
-                        <i class="fas fa-clock me-2"></i>Horario
+                        <i class="fas fa-clock me-2" aria-hidden="true"></i>Horario
                       </div>
                       <div class="info-value">
                         ${startDate && endDate ? 
@@ -307,7 +320,7 @@ CalendarioApp.Calendar = {
             <div class="col-12">
               <div class="reserva-duration-card">
                 <div class="duration-content">
-                  <i class="fas fa-stopwatch me-2 text-info"></i>
+                  <i class="fas fa-stopwatch me-2 text-info" aria-hidden="true"></i>
                   <span class="duration-label">Duración total:</span>
                   <span class="duration-value">
                     ${startDate && endDate ? this.calculateDuration(startDate, endDate) : 'No disponible'}
@@ -320,23 +333,23 @@ CalendarioApp.Calendar = {
             <div class="col-12">
               <div class="reserva-info-section">
                 <h6 class="section-title mb-3">
-                  <i class="fas fa-info-circle me-2 text-primary"></i>Información Adicional
+                  <i class="fas fa-info-circle me-2 text-primary" aria-hidden="true"></i>Información Adicional
                 </h6>
                 <div class="row g-2">
                   <div class="col-md-6">
                     <div class="info-item">
                       <div class="info-label">
-                        <i class="fas fa-user me-2"></i>Usuario
+                        <i class="fas fa-user me-2" aria-hidden="true"></i>Usuario
                       </div>
-                      <div class="info-value">${usuario}</div>
+                      <div class="info-value">${this.escapeHTML(usuario)}</div>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="info-item">
                       <div class="info-label">
-                        <i class="fas fa-door-open me-2"></i>Sala
+                        <i class="fas fa-door-open me-2" aria-hidden="true"></i>Sala
                       </div>
-                      <div class="info-value">${sala}</div>
+                      <div class="info-value">${this.escapeHTML(sala)}</div>
                     </div>
                   </div>
                 </div>
@@ -347,10 +360,10 @@ CalendarioApp.Calendar = {
             <div class="col-12">
               <div class="reserva-description-section">
                 <h6 class="section-title mb-3">
-                  <i class="fas fa-align-left me-2 text-primary"></i>Descripción
+                  <i class="fas fa-align-left me-2 text-primary" aria-hidden="true"></i>Descripción
                 </h6>
                 <div class="description-content">
-                  <p class="mb-0">${descripcion}</p>
+                  <p class="mb-0">${this.escapeHTML(descripcion)}</p>
                 </div>
               </div>
             </div>
@@ -385,37 +398,20 @@ CalendarioApp.Calendar = {
   },
   
   handleDateClick: function(info) {
-    const clickedDate = new Date(info.dateStr);
-    const dayOfWeek = clickedDate.getDay();
-    
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      return false;
-    }
-    
-    const fecha = info.dateStr;
-    const crearReservaUrl = window.crearReservaUrl || CalendarioApp.Core?.urls?.api?.crearReserva;
-    
-    if (crearReservaUrl) {
-      const url = crearReservaUrl + '?fecha=' + fecha;
-      window.location.href = url;
-    } else {
-      if (window.CalendarioApp?.ModalFactory) {
-        CalendarioApp.ModalFactory.utils.alert('URL de creación de reserva no configurada', { type: 'warning' });
-      }
+    const trigger = document.getElementById('abrirModalCrearReserva');
+    if (!trigger) return;
+    trigger.click();
+    const date = document.getElementById('fecha');
+    if (date) { date.value = info.dateStr.slice(0, 10); date.dispatchEvent(new Event('change')); }
+    if (info.dateStr.includes('T')) {
+      const hour = document.getElementById('hora_inicio');
+      if (hour) { hour.value = info.dateStr.slice(11, 16); hour.dispatchEvent(new Event('change')); }
     }
   },
   
   getEstadoColor: function(estado) {
-    switch(estado) {
-      case 'pendiente': return 'warning';
-      case 'confirmada': return 'success';
-      case 'cancelada': return 'danger';
-      case 'completada': return 'info';
-      case 'desconocido': return 'secondary';
-      default: return 'secondary';
-    }
+    return {confirmada: 'success', cancelada: 'danger', en_curso: 'warning', terminada: 'info'}[estado] || 'secondary';
   },
-  
   setupFilterListeners: function() {
     const salaFilter = document.getElementById('salaFilter');
     if (salaFilter) {
@@ -468,12 +464,12 @@ CalendarioApp.Calendar = {
     const fechaInput = document.getElementById('fecha');
     if (fechaInput) {
       const today = new Date();
-      fechaInput.min = today.toISOString().split('T')[0];
+      fechaInput.min = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       
       // Configurar fecha máxima (6 meses en el futuro)
       const maxDate = new Date();
       maxDate.setMonth(maxDate.getMonth() + 6);
-      fechaInput.max = maxDate.toISOString().split('T')[0];
+      fechaInput.max = `${maxDate.getFullYear()}-${String(maxDate.getMonth() + 1).padStart(2, '0')}-${String(maxDate.getDate()).padStart(2, '0')}`;
     }
     
     // Resetear modal cuando se cierre
@@ -638,7 +634,7 @@ CalendarioApp.Calendar = {
   
   crearReserva: function() {
     const form = document.getElementById('formCrearReserva');
-    if (!form) return;
+    if (!form || !form.reportValidity()) return;
     
     // Validar formulario
     if (!form.checkValidity()) {
@@ -710,7 +706,7 @@ CalendarioApp.Calendar = {
     }
     
     // Validar conflictos de horarios
-    this.validarConflictos(recurso, fecha, horaInicio, horaFin)
+    this.validarConflictos(recurso, fecha, horaInicio, horaFin, tipoRecurso === 'vehiculo' ? fechaVuelta : '')
       .then(conflictos => {
         if (conflictos.length > 0) {
           const mensaje = conflictos.map(c => c.message).join('\n');
@@ -730,9 +726,11 @@ CalendarioApp.Calendar = {
       });
   },
   
-  validarConflictos: function(recurso, fecha, horaInicio, horaFin) {
+  validarConflictos: function(recurso, fecha, horaInicio, horaFin, fechaVuelta = '') {
     const validarConflictoUrl = window.validarConflictoUrl || '/calendario/api/validar-conflicto/';
-    const url = `${validarConflictoUrl}?sala=${recurso}&fecha=${fecha}&hora_inicio=${horaInicio}&hora_fin=${horaFin}`;
+    const params = new URLSearchParams({sala: recurso, fecha, hora_inicio: horaInicio, hora_fin: horaFin});
+    if (fechaVuelta) params.set('fecha_vuelta', fechaVuelta);
+    const url = `${validarConflictoUrl}?${params}`;
     
     CalendarioApp.Core.Logger.debug('Validando conflictos:', { recurso, fecha, horaInicio, horaFin });
     
@@ -771,7 +769,7 @@ CalendarioApp.Calendar = {
     const btnCrear = document.getElementById('btnCrearReserva');
     if (btnCrear) {
       btnCrear.disabled = true;
-      btnCrear.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+      btnCrear.innerHTML = '<i class="fas fa-spinner fa-spin me-2" aria-hidden="true"></i>Creando...';
     }
     
     // Obtener datos del formulario
@@ -790,7 +788,7 @@ CalendarioApp.Calendar = {
     .then(data => {
       if (btnCrear) {
         btnCrear.disabled = false;
-        btnCrear.innerHTML = '<i class="fas fa-plus me-2"></i>Crear Reserva';
+        btnCrear.innerHTML = '<i class="fas fa-plus me-2" aria-hidden="true"></i>Crear Reserva';
       }
       
       if (window.CalendarioApp?.StateManager) {
@@ -820,7 +818,7 @@ CalendarioApp.Calendar = {
       console.error('Error al crear reserva:', error);
       if (btnCrear) {
         btnCrear.disabled = false;
-        btnCrear.innerHTML = '<i class="fas fa-plus me-2"></i>Crear Reserva';
+        btnCrear.innerHTML = '<i class="fas fa-plus me-2" aria-hidden="true"></i>Crear Reserva';
       }
       
       if (window.CalendarioApp?.StateManager) {
@@ -858,25 +856,13 @@ CalendarioApp.Calendar = {
         const esVehiculo = salaSeleccionada && self.isVehiculo(salaSeleccionada);
         
         if (esVehiculo) {
-          // Para vehículos: generar opciones 24/7 (hasta 00:00 del día siguiente)
+          // The return date determines the day, so every return time remains selectable.
           for (let h = 0; h < 24; h++) {
             for (let m = 0; m < 60; m += 30) {
-              const horaActualMinutos = h * 60 + m;
-              
-              // Solo agregar si es posterior a la hora de inicio
-              if (horaActualMinutos > horaInicioMinutos) {
-                const horaStr = h.toString().padStart(2, '0');
-                const minutoStr = m.toString().padStart(2, '0');
-                const horaCompleta = `${horaStr}:${minutoStr}`;
-                
-                const option = new Option(horaCompleta, horaCompleta);
-                horaFinSelect.add(option);
-              }
+              const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+              horaFinSelect.add(new Option(time, time));
             }
           }
-          // Agregar 00:00 como opción final (fin del día siguiente)
-          const option = new Option('00:00 (fin del día siguiente)', '00:00');
-          horaFinSelect.add(option);
         } else if (esComedor) {
           // Horarios especiales para el comedor
           const horariosFinComedor = [
@@ -1078,7 +1064,7 @@ CalendarioApp.Calendar = {
       console.error('salaData no tiene id:', salaData);
       content.innerHTML = `
         <div class="alert alert-warning">
-          <i class="fas fa-exclamation-triangle me-2"></i>
+          <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
           Error: No se pudo obtener la información de la sala.
         </div>
       `;
@@ -1108,25 +1094,25 @@ CalendarioApp.Calendar = {
         content.innerHTML = `
           <div class="sala-details-card">
             <div class="sala-details-header">
-              <div class="sala-color-preview" style="background-color: ${datosSala.color};">
-                <i class="fas fa-door-open"></i>
+              <div class="sala-color-preview" style="background-color: ${this.safeColor(datosSala.color)};">
+                <i class="fas fa-door-open" aria-hidden="true"></i>
               </div>
               <div class="sala-details-info">
-                <h4 class="sala-name">${datosSala.nombre}</h4>
+                <h4 class="sala-name">${this.escapeHTML(datosSala.nombre)}</h4>
                 <p class="sala-capacity">
-                  <i class="fas fa-users me-2"></i>
-                  Capacidad: ${datosSala.capacidad} personas
+                  <i class="fas fa-users me-2" aria-hidden="true"></i>
+                  Capacidad: ${this.escapeHTML(datosSala.capacidad)} personas
                 </p>
               </div>
             </div>
             
             <div class="sala-description">
-              <h6><i class="fas fa-info-circle me-2"></i>Descripción</h6>
-              <p>${datosSala.descripcion_detallada}</p>
+              <h6><i class="fas fa-info-circle me-2" aria-hidden="true"></i>Descripción</h6>
+              <p>${this.escapeHTML(datosSala.descripcion_detallada)}</p>
             </div>
             
             <div class="sala-features">
-              <h6><i class="fas fa-cogs me-2"></i>Características</h6>
+              <h6><i class="fas fa-cogs me-2" aria-hidden="true"></i>Características</h6>
               <div class="row">
                 <div class="col-md-6">
                   ${caracteristicasHTML}
@@ -1135,11 +1121,11 @@ CalendarioApp.Calendar = {
             </div>
             
             <div class="sala-availability">
-              <h6><i class="fas fa-clock me-2"></i>Disponibilidad</h6>
-              <p class="text-muted">Horario de uso: ${datosSala.horario_uso}</p>
+              <h6><i class="fas fa-clock me-2" aria-hidden="true"></i>Disponibilidad</h6>
+              <p class="text-muted">Horario de uso: ${this.escapeHTML(datosSala.horario_uso)}</p>
               <div class="availability-status">
                 <span class="badge-modern badge-success">
-                  <i class="fas fa-circle me-1"></i>Disponible
+                  Consultá las reservas en el calendario
                 </span>
               </div>
             </div>
@@ -1152,29 +1138,29 @@ CalendarioApp.Calendar = {
         content.innerHTML = `
           <div class="sala-details-card">
             <div class="sala-details-header">
-              <div class="sala-color-preview" style="background-color: ${salaData.color};">
-                <i class="fas fa-door-open"></i>
+              <div class="sala-color-preview" style="background-color: ${this.safeColor(salaData.color)};">
+                <i class="fas fa-door-open" aria-hidden="true"></i>
               </div>
               <div class="sala-details-info">
-                <h4 class="sala-name">${salaData.nombre}</h4>
+                <h4 class="sala-name">${this.escapeHTML(salaData.nombre)}</h4>
                 <p class="sala-capacity">
-                  <i class="fas fa-users me-2"></i>
-                  Capacidad: ${salaData.capacidad} personas
+                  <i class="fas fa-users me-2" aria-hidden="true"></i>
+                  Capacidad: ${this.escapeHTML(salaData.capacidad)} personas
                 </p>
               </div>
             </div>
             
             <div class="sala-description">
-              <h6><i class="fas fa-info-circle me-2"></i>Descripción</h6>
-              <p>Sala de reunión equipada con proyector, pizarra y sistema de videoconferencia. Ideal para reuniones de equipo y presentaciones.</p>
+              <h6><i class="fas fa-info-circle me-2" aria-hidden="true"></i>Descripción</h6>
+              <p>No se pudieron cargar los detalles del recurso. Cerrá esta ventana y volvé a intentarlo.</p>
             </div>
             
             <div class="sala-availability">
-              <h6><i class="fas fa-clock me-2"></i>Disponibilidad</h6>
-              <p class="text-muted">Horario de uso: Lunes a Viernes de 7:00 AM a 4:00 PM</p>
+              <h6><i class="fas fa-clock me-2" aria-hidden="true"></i>Disponibilidad</h6>
+              <p class="text-muted">Consultá los horarios en el calendario.</p>
               <div class="availability-status">
                 <span class="badge-modern badge-success">
-                  <i class="fas fa-circle me-1"></i>Disponible
+                  Consultá las reservas en el calendario
                 </span>
               </div>
             </div>
@@ -1189,7 +1175,7 @@ CalendarioApp.Calendar = {
     }
     
     const caracteristicasHTML = caracteristicas.map(caracteristica => 
-      `<li><i class="fas fa-check text-success me-2"></i>${caracteristica}</li>`
+      `<li><i class="fas fa-check text-success me-2" aria-hidden="true"></i>${this.escapeHTML(caracteristica)}</li>`
     ).join('');
     
     return `<ul class="list-unstyled">${caracteristicasHTML}</ul>`;
@@ -1216,7 +1202,7 @@ CalendarioApp.Calendar = {
         // Actualizar preview de color
         if (salaColorPreview) {
           salaColorPreview.style.backgroundColor = salaData.color;
-          salaColorPreview.innerHTML = '<i class="fas fa-door-open"></i>';
+          salaColorPreview.innerHTML = '<i class="fas fa-door-open" aria-hidden="true"></i>';
         }
         
         // Actualizar nombre de la sala
@@ -1229,19 +1215,10 @@ CalendarioApp.Calendar = {
           salaCapacityValue.textContent = salaData.capacidad;
         }
         
-        // Actualizar estado (simulado por ahora)
-        if (salaStatus) {
-          const statusElement = salaStatus.querySelector('span');
-          if (statusElement) {
-            statusElement.textContent = 'Disponible';
-            salaStatus.className = 'sala-status';
-          }
-        }
-        
         // Actualizar título del calendario
         const salaTitulo = document.getElementById('salaTitulo');
         if (salaTitulo) {
-          salaTitulo.textContent = `Calendario de ${salaData.nombre}`;
+          salaTitulo.textContent = `${salaData.nombre}`;
         }
       }
     }

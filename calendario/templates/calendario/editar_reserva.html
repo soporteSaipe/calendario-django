@@ -1,22 +1,21 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
-{% load mundial_static %}
 
 {% block title %}Editar Reserva{% endblock %}
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item">
     <a href="{% url 'calendario:calendario' %}" class="breadcrumb-link">
-        <i class="fas fa-calendar-alt me-1"></i>Calendario
+        <i class="fas fa-calendar-alt me-1" aria-hidden="true"></i>Calendario
     </a>
 </li>
 <li class="breadcrumb-item">
     <a href="{% url 'calendario:mis_reservas' %}" class="breadcrumb-link">
-        <i class="fas fa-clipboard-list me-1"></i>Mis Reservas
+        <i class="fas fa-clipboard-list me-1" aria-hidden="true"></i>Mis Reservas
     </a>
 </li>
 <li class="breadcrumb-item active" aria-current="page">
-    <i class="fas fa-edit me-1"></i>Editar Reserva
+    <i class="fas fa-edit me-1" aria-hidden="true"></i>Editar Reserva
 </li>
 {% endblock %}
 
@@ -26,11 +25,11 @@
         <div class="card-modern">
             <div class="card-header-modern">
                 <h4 class="mb-0">
-                    <i class="fas fa-edit me-2 spring-icon"></i>Editar Reserva
+                    <i class="fas fa-edit me-2" aria-hidden="true"></i>Editar Reserva
                     {% if user.is_staff or user.is_superuser %}
                         {% if reserva.usuario != user %}
-                            <small class="ms-2 text-light opacity-75">
-                                <i class="fas fa-user-shield me-1"></i>Reserva de: {{ reserva.usuario.username }}
+                            <small class="ms-2 text-muted">
+                                <i class="fas fa-user-shield me-1" aria-hidden="true"></i>Reserva de: {{ reserva.usuario.username }}
                             </small>
                         {% endif %}
                     {% endif %}
@@ -40,7 +39,7 @@
                 {% if user.is_staff or user.is_superuser %}
                     {% if reserva.usuario != user %}
                         <div class="alert alert-info-modern mb-4">
-                            <i class="fas fa-info-circle me-2"></i>
+                            <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
                             <strong>Vista Administrativa:</strong> Estás editando una reserva que pertenece a 
                             <strong>{{ reserva.usuario.username }}</strong>. 
                             Los cambios se aplicarán a la reserva original del usuario.
@@ -51,12 +50,12 @@
                 <!-- Resumen de la reserva actual -->
                 <div class="alert alert-modern alert-info-modern mb-4">
                     <h6 class="mb-3">
-                        <i class="fas fa-info-circle me-2"></i>Reserva Actual
+                        <i class="fas fa-info-circle me-2" aria-hidden="true"></i>Reserva Actual
                     </h6>
                     <div class="row g-2">
                         <div class="col-md-6">
                             <strong>Recurso:</strong> {{ reserva.recurso.nombre }}
-                            {% if reserva.recurso.tipo == 'vehiculo' %} - {{ reserva.recurso.patente }}{% endif %}
+                            {% if reserva.recurso.patente %} · {{ reserva.recurso.patente }}{% endif %}
                         </div>
                         {% if reserva.recurso.tipo == 'sala' %}
                         <div class="col-md-6">
@@ -91,7 +90,7 @@
                     <div class="row">
                         <div class="col-md-12 form-group-modern">
                             <label for="{{ form.recurso.id_for_label }}" class="form-label-modern">
-                                <i class="fas fa-{% if reserva.recurso.tipo == 'vehiculo' %}car{% else %}door-open{% endif %} me-2"></i>
+                                <i class="fas fa-{% if reserva.recurso.tipo == 'vehiculo' %}car{% else %}door-open{% endif %} me-2" aria-hidden="true"></i>
                                 {{ form.recurso.label }}
                             </label>
                             <select name="recurso" id="id_recurso" class="form-control-modern" required>
@@ -100,7 +99,7 @@
                                         data-tipo="{{ recurso.tipo }}"
                                         {% if form.instance.recurso.id == recurso.id %}selected{% endif %}>
                                     {% if recurso.tipo == 'vehiculo' %}
-                                        {{ recurso.nombre }} - {{ recurso.patente }}
+                                        {{ recurso.nombre }}{% if recurso.patente %} · {{ recurso.patente }}{% endif %}
                                     {% else %}
                                         {{ recurso.nombre }}
                                     {% endif %}
@@ -121,7 +120,7 @@
                     {% if reserva.recurso.tipo == 'sala' %}
                     <div class="form-group-modern" id="tituloField">
                         <label for="{{ form.titulo.id_for_label }}" class="form-label-modern">
-                            <i class="fas fa-heading me-2"></i>{{ form.titulo.label }}
+                            <i class="fas fa-heading me-2" aria-hidden="true"></i>{{ form.titulo.label }}
                         </label>
                         {{ form.titulo }}
                         {% if form.titulo.errors %}
@@ -139,7 +138,7 @@
                     <div class="row">
                         <div class="col-md-6 form-group-modern">
                             <label for="{{ form.responsable.id_for_label }}" class="form-label-modern">
-                                <i class="fas fa-user me-2"></i>{{ form.responsable.label }}
+                                <i class="fas fa-user me-2" aria-hidden="true"></i>{{ form.responsable.label }}
                             </label>
                             {{ form.responsable }}
                             {% if form.responsable.errors %}
@@ -153,7 +152,7 @@
                         
                         <div class="col-md-6 form-group-modern">
                             <label for="{{ form.destino.id_for_label }}" class="form-label-modern">
-                                <i class="fas fa-map-marker-alt me-2"></i>{{ form.destino.label }}
+                                <i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i>{{ form.destino.label }}
                             </label>
                             {{ form.destino }}
                             {% if form.destino.errors %}
@@ -184,7 +183,7 @@
                     <div class="row">
                         <div class="col-md-6 form-group-modern">
                             <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label-modern">
-                                <i class="fas fa-calendar me-2"></i>
+                                <i class="fas fa-calendar me-2" aria-hidden="true"></i>
                                 {% if reserva.recurso.tipo == 'vehiculo' %}Fecha de Salida{% else %}{{ form.fecha_inicio.label }}{% endif %}
                             </label>
                             {{ form.fecha_inicio }}
@@ -199,8 +198,8 @@
                         
                         <div class="col-md-6 form-group-modern">
                             <label for="{{ form.fecha_fin.id_for_label }}" class="form-label-modern">
-                                <i class="fas fa-clock me-2"></i>
-                                {% if reserva.recurso.tipo == 'vehiculo' %}Hora de Salida{% else %}{{ form.fecha_fin.label }}{% endif %}
+                                <i class="fas fa-clock me-2" aria-hidden="true"></i>
+                                {% if reserva.recurso.tipo == 'vehiculo' %}Fecha y hora de regreso{% else %}{{ form.fecha_fin.label }}{% endif %}
                             </label>
                             {{ form.fecha_fin }}
                             {% if form.fecha_fin.errors %}
@@ -217,7 +216,7 @@
                     {% if reserva.recurso.tipo == 'vehiculo' %}
                     <div class="form-group-modern">
                         <label for="{{ form.fecha_vuelta.id_for_label }}" class="form-label-modern">
-                            <i class="fas fa-calendar-check me-2"></i>{{ form.fecha_vuelta.label }}
+                            <i class="fas fa-calendar-check me-2" aria-hidden="true"></i>{{ form.fecha_vuelta.label }}
                         </label>
                         {{ form.fecha_vuelta }}
                         {% if form.fecha_vuelta.errors %}
@@ -232,7 +231,7 @@
                     
                     {% if form.non_field_errors %}
                         <div class="alert alert-danger-modern">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
                             {% for error in form.non_field_errors %}
                                 <div>{{ error }}</div>
                             {% endfor %}
@@ -241,11 +240,11 @@
                     
                     <div class="d-flex justify-content-between">
                         <a href="{% url 'calendario:mis_reservas' %}" class="btn-modern btn-secondary-modern">
-                            <i class="fas fa-arrow-left"></i>
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
                             <span>Volver a Mis Reservas</span>
                         </a>
-                        <button type="submit" class="btn-modern btn-primary-modern bloom-button">
-                            <i class="fas fa-save"></i>
+                        <button type="submit" class="btn-modern btn-primary-modern">
+                            <i class="fas fa-save" aria-hidden="true"></i>
                             <span>Actualizar Reserva</span>
                         </button>
                     </div>
@@ -257,5 +256,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static_v 'js/editar-reserva.js' %}"></script>
+<script src="{% static 'js/editar-reserva.js' %}"></script>
 {% endblock %}

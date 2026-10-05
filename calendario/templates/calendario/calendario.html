@@ -1,28 +1,27 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
-{% load mundial_static %}
 
 {% block title %}Calendario de salas - Equipos internos SAIPE{% endblock %}
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item active" aria-current="page">
-    <i class="fas fa-calendar-alt me-1"></i>Calendario
+    <i class="fas fa-calendar-alt me-1" aria-hidden="true"></i>Calendario
 </li>
 {% endblock %}
 
 {% block content %}
-<div class="accounting-header animate-on-load">
-    <h1><i class="fas fa-calendar-alt me-3"></i>Sistema de reservas de salas</h1>
-    <p>Reserva salas de reunión para tu equipo de manera rápida y organizada</p>
+<div class="accounting-header">
+    <h1>Calendario de reservas</h1>
+    <p>Consultá la disponibilidad de salas y vehículos.</p>
 </div>
 
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card-modern sala-selector-enhanced animate-on-load">
+        <div class="card-modern sala-selector-enhanced">
             <div class="card-header-modern">
                 <h5 class="mb-0">
-                    <i class="fas fa-door-open me-2" id="selectorIcon"></i>
-                    <span id="selectorTitle">Seleccionar Sala de Reunión</span>
+                    <i class="fas fa-door-open me-2" id="selectorIcon" aria-hidden="true"></i>
+                    <span id="selectorTitle">Elegí un recurso</span>
                 </h5>
             </div>
             <div class="card-body-modern">
@@ -30,7 +29,7 @@
                     <div class="sala-selector-main">
                         <div class="sala-selector-dropdown">
                             <label for="salaFilter" class="form-label-modern">
-                                <i class="fas fa-building me-2" id="filterIcon"></i>
+                                <i class="fas fa-building me-2" id="filterIcon" aria-hidden="true"></i>
                                 <span id="filterLabel">Sala de reunión</span>
                             </label>
                             <select id="salaFilter" class="form-select form-select-modern sala-selector-select">
@@ -38,7 +37,7 @@
                                 <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" data-tipo="{{ recurso.tipo }}"
                                         {% if sala_activa and recurso.id == sala_activa.id %}selected{% elif not sala_activa and forloop.first %}selected{% endif %}>
                                     {% if recurso.tipo == 'vehiculo' %}
-                                        {{ recurso.nombre }} - {{ recurso.patente }} ({{ recurso.capacidad }} pasajeros)
+                                        {{ recurso.nombre }}{% if recurso.patente %} · {{ recurso.patente }}{% endif %} ({{ recurso.capacidad }} pasajeros)
                                     {% else %}
                                         {{ recurso.nombre }} (capacidad: {{ recurso.capacidad }})
                                     {% endif %}
@@ -54,19 +53,16 @@
                                     <h6 class="sala-name" id="salaName">Selecciona una sala</h6>
                                     <div class="sala-meta">
                                         <span class="sala-capacity" id="salaCapacity">
-                                            <i class="fas fa-users me-1"></i>
+                                            <i class="fas fa-users me-1" aria-hidden="true"></i>
                                             <span id="salaCapacityValue">-</span> personas
                                         </span>
-                                        <span class="sala-status" id="salaStatus">
-                                            <i class="fas fa-circle me-1"></i>
-                                            <span>Disponible</span>
-                                        </span>
+
                                     </div>
                                 </div>
                             </div>
                             <div class="sala-actions">
                                    <button type="button" class="btn-sala-details" id="salaDetailsBtn">
-                                       <i class="fas fa-info-circle me-2"></i>
+                                       <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
                                        <span>Detalles</span>
                                    </button>
                             </div>
@@ -81,20 +77,20 @@
 
 <div class="row">
     <div class="col-12">
-        <div class="card-modern animate-on-load">
+        <div class="card-modern">
             <div class="calendar-header-modern d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>
+                    <i class="fas fa-calendar-alt me-2" aria-hidden="true"></i>
                     <span id="salaTitulo">Calendario de sala</span>
                 </h4>
                            {% if user.is_authenticated %}
                            <button type="button" class="btn-reserva-elegant" id="abrirModalCrearReserva" data-bs-toggle="modal" data-bs-target="#reservaModalCrear">
                                <div class="btn-reserva-content">
                                    <div class="btn-reserva-icon">
-                                       <i class="fas fa-calendar-plus"></i>
+                                       <i class="fas fa-calendar-plus" aria-hidden="true"></i>
                                    </div>
                                    <div class="btn-reserva-text">
-                                       <span class="btn-reserva-title">Crear Reserva</span>
+                                       <span class="btn-reserva-title">Nueva reserva</span>
                                        <span class="btn-reserva-subtitle" id="btnReservaSubtitle">Nueva reserva</span>
                                    </div>
                                </div>
@@ -103,7 +99,9 @@
             </div>
             <div class="card-body-modern">
                 <div class="calendar-container">
-                    <div id="calendar"></div>
+                    <p id="calendarStatus" class="calendar-status" role="status" aria-live="polite" hidden></p>
+                    <div id="calendar" aria-label="Calendario de reservas"></div>
+                    <p class="calendar-hint">Seleccioná una reserva para ver sus detalles. Los horarios se muestran en tu zona horaria.</p>
                 </div>
             </div>
         </div>
@@ -116,10 +114,10 @@
         <div class="modal-content modal-content-modern">
             <div class="modal-header modal-header-modern">
                 <h5 class="modal-title modal-title-modern" id="reservaModalCrearLabel">
-                    <i class="fas fa-calendar-plus me-2" id="modalIcon"></i>
+                    <i class="fas fa-calendar-plus me-2" id="modalIcon" aria-hidden="true"></i>
                     <span id="modalTitle">Crear Nueva Reserva</span>
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" title="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <form id="formCrearReserva" method="post" action="{% url 'calendario:crear_reserva' %}">
@@ -128,7 +126,7 @@
                         <div class="col-md-6">
                             <div class="form-group-modern">
                                 <label for="recurso" class="form-label-modern">
-                                    <i class="fas fa-door-open me-2" id="recursoIcon"></i>
+                                    <i class="fas fa-door-open me-2" id="recursoIcon" aria-hidden="true"></i>
                                     <span id="recursoLabel">Sala *</span>
                                 </label>
                                 <select name="recurso" id="recurso" class="form-select-modern" required>
@@ -136,7 +134,7 @@
                                     {% for recurso in recursos %}
                                     <option value="{{ recurso.id }}" data-color="{{ recurso.color }}" data-tipo="{{ recurso.tipo }}">
                                         {% if recurso.tipo == 'vehiculo' %}
-                                            {{ recurso.nombre }} - {{ recurso.patente }} ({{ recurso.capacidad }} pasajeros)
+                                            {{ recurso.nombre }}{% if recurso.patente %} · {{ recurso.patente }}{% endif %} ({{ recurso.capacidad }} pasajeros)
                                         {% else %}
                                             {{ recurso.nombre }} ({{ recurso.capacidad }} personas)
                                         {% endif %}
@@ -148,7 +146,7 @@
                         <div class="col-md-6" id="tituloField">
                             <div class="form-group-modern">
                                 <label for="titulo" class="form-label-modern">
-                                    <i class="fas fa-heading me-2"></i>Título *
+                                    <i class="fas fa-heading me-2" aria-hidden="true"></i>Título *
                                 </label>
                                 <input type="text" name="titulo" id="titulo" class="form-control-modern" 
                                        placeholder="Ej: Reunión de equipo">
@@ -157,7 +155,7 @@
                         <div class="col-md-6" id="responsableField" style="display: none;">
                             <div class="form-group-modern">
                                 <label for="responsable" class="form-label-modern">
-                                    <i class="fas fa-user me-2"></i>Responsable *
+                                    <i class="fas fa-user me-2" aria-hidden="true"></i>Responsable *
                                 </label>
                                 <input type="text" name="responsable" id="responsable" class="form-control-modern" 
                                        placeholder="Nombre del responsable">
@@ -169,7 +167,7 @@
                         <div class="col-md-4">
                             <div class="form-group-modern">
                                 <label for="fecha" class="form-label-modern">
-                                    <i class="fas fa-calendar me-2"></i>Fecha *
+                                    <i class="fas fa-calendar me-2" aria-hidden="true"></i>Fecha *
                                 </label>
                                 <input type="date" name="fecha" id="fecha" class="form-control-modern" required>
                             </div>
@@ -177,7 +175,7 @@
                         <div class="col-md-4">
                             <div class="form-group-modern">
                                 <label for="hora_inicio" class="form-label-modern">
-                                    <i class="fas fa-clock me-2"></i>Hora inicio *
+                                    <i class="fas fa-clock me-2" aria-hidden="true"></i>Hora inicio *
                                 </label>
                                 <select name="hora_inicio" id="hora_inicio" class="form-select-modern" required>
                                     <option value="">Seleccionar hora</option>
@@ -187,7 +185,7 @@
                         <div class="col-md-4">
                             <div class="form-group-modern">
                                 <label for="hora_fin" class="form-label-modern">
-                                    <i class="fas fa-clock me-2"></i>Hora fin *
+                                    <i class="fas fa-clock me-2" aria-hidden="true"></i>Hora fin *
                                 </label>
                                 <select name="hora_fin" id="hora_fin" class="form-select-modern" required>
                                     <option value="">Seleccionar hora</option>
@@ -201,14 +199,14 @@
                         <div class="col-md-6">
                             <div class="form-group-modern">
                                 <label for="fecha_vuelta" class="form-label-modern">
-                                    <i class="fas fa-calendar-check me-2"></i>Fecha de vuelta *
+                                    <i class="fas fa-calendar-check me-2" aria-hidden="true"></i>Fecha de vuelta *
                                 </label>
                                 <input type="date" name="fecha_vuelta" id="fecha_vuelta" class="form-control-modern">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="alert alert-info-modern">
-                                <i class="fas fa-info-circle me-2"></i>
+                                <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
                                 <small>Para vehículos, especifica la fecha de regreso del viaje.</small>
                             </div>
                         </div>
@@ -218,7 +216,7 @@
                         <div class="col-12">
                             <div class="form-group-modern">
                                 <label for="destino" class="form-label-modern">
-                                    <i class="fas fa-map-marker-alt me-2"></i>Destino *
+                                    <i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i>Destino *
                                 </label>
                                 <input type="text" name="destino" id="destino" class="form-control-modern" 
                                        placeholder="Destino del viaje">
@@ -228,7 +226,7 @@
                     
                     <div class="form-group-modern">
                         <label for="descripcion" class="form-label-modern">
-                            <i class="fas fa-align-left me-2"></i>Descripción
+                            <i class="fas fa-align-left me-2" aria-hidden="true"></i>Descripción
                         </label>
                         <textarea name="descripcion" id="descripcion" class="form-control-modern" rows="3" 
                                   placeholder="Descripción opcional de la reserva..."></textarea>
@@ -237,7 +235,7 @@
                     <!-- Información del recurso seleccionado -->
                     <div class="sala-selected-info" id="salaSelectedInfo" style="display: none;">
                         <div class="alert alert-info-modern">
-                            <i class="fas fa-info-circle me-2"></i>
+                            <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
                             <strong id="recursoSelectedLabel">Sala seleccionada:</strong> <span id="salaSelectedName"></span> 
                             - <span id="recursoSelectedCapacity">Capacidad: <span id="salaSelectedCapacity"></span> personas</span>
                         </div>
@@ -246,11 +244,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cerrar
+                    <i class="fas fa-times me-2" aria-hidden="true"></i>Cerrar
                 </button>
-                <button type="button" class="btn-crear-reserva" id="btnCrearReserva">
-                    <i class="fas fa-plus-circle me-2"></i>
-                    <span>Crear Reserva</span>
+                <button type="button" class="btn-modern btn-primary-modern" id="btnCrearReserva">
+                    <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>
+                    <span>Nueva reserva</span>
                 </button>
             </div>
         </div>
@@ -263,9 +261,9 @@
         <div class="modal-content modal-content-modern">
             <div class="modal-header modal-header-modern">
                 <h5 class="modal-title modal-title-modern" id="reservaModalDetallesLabel">
-                    <i class="fas fa-calendar-check me-2"></i>Detalles de la Reserva
+                    <i class="fas fa-calendar-check me-2" aria-hidden="true"></i>Detalles de la Reserva
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" title="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <div id="reservaDetailsContent">
@@ -277,7 +275,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cerrar
+                    <i class="fas fa-times me-2" aria-hidden="true"></i>Cerrar
                 </button>
             </div>
         </div>
@@ -290,10 +288,10 @@
         <div class="modal-content modal-content-modern">
             <div class="modal-header modal-header-modern">
                 <h5 class="modal-title modal-title-modern" id="salaDetailsModalLabel">
-                    <i class="fas fa-door-open me-2"></i>
+                    <i class="fas fa-door-open me-2" aria-hidden="true"></i>
                     <span id="salaDetailsTitle">Detalles de la Sala</span>
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" title="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <div id="salaDetailsContent">
@@ -305,7 +303,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cerrar
+                    <i class="fas fa-times me-2" aria-hidden="true"></i>Cerrar
                 </button>
             </div>
         </div>
@@ -315,7 +313,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static_v 'js/calendario-config.js' %}"></script>
+<script src="{% static 'js/calendario-config.js' %}"></script>
 <script>
     configurarUrlsCalendario({
         calendarioApiUrl: '{% url "calendario:api_reservas" %}',
@@ -422,8 +420,7 @@
                         horaFinSelect.innerHTML += `<option value="${valor}">${texto}</option>`;
                     }
                 }
-                // Agregar 00:00 como opción final para hora fin (representa el final del día siguiente)
-                horaFinSelect.innerHTML += `<option value="00:00">00:00 (fin del día siguiente)</option>`;
+
             } else {
                 // Generar opciones para horario laboral de salas
                 // Verificar si es el comedor
@@ -533,8 +530,9 @@
             document.getElementById('formCrearReserva').reset();
             document.getElementById('salaSelectedInfo').style.display = 'none';
             
-            // Configurar por defecto para sala
-            adaptarModalParaTipoRecurso('sala');
+            const selected = document.getElementById('salaFilter');
+            recursoSelect.value = selected.value;
+            recursoSelect.dispatchEvent(new Event('change'));
         });
         }
         
@@ -552,13 +550,11 @@
                 selectorTitle.textContent = 'Seleccionar Vehículo';
                 filterIcon.className = 'fas fa-car me-2';
                 filterLabel.textContent = 'Vehículo';
-                salaTitulo.textContent = 'Calendario de vehículo';
             } else {
                 selectorIcon.className = 'fas fa-door-open me-2';
-                selectorTitle.textContent = 'Seleccionar Sala de Reunión';
+                selectorTitle.textContent = 'Elegí un recurso';
                 filterIcon.className = 'fas fa-building me-2';
                 filterLabel.textContent = 'Sala de reunión';
-                salaTitulo.textContent = 'Calendario de sala';
             }
         }
         
@@ -616,7 +612,7 @@
                         },
                         timeGridWeek: {
                             slotMinTime: '07:00:00',
-                            slotMaxTime: '19:00:00',
+                            slotMaxTime: '20:00:00',
                             slotDuration: '00:30:00'
                         },
                         dayGridMonth: {
@@ -632,8 +628,8 @@
         }
         
         // Configurar al cargar la página
-        const initialOption = salaFilter.options[salaFilter.selectedIndex];
-        const initialTipo = initialOption.getAttribute('data-tipo');
+        const initialOption = salaFilter?.options[salaFilter.selectedIndex];
+        const initialTipo = initialOption?.getAttribute('data-tipo');
         if (initialTipo) {
             adaptarSelectorParaTipoRecurso(initialTipo);
             // Esperar a que el calendario esté inicializado antes de configurar horarios

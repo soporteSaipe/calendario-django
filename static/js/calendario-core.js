@@ -374,11 +374,8 @@ CalendarioApp.Core = {
 
       const errorDiv = document.createElement('div');
       errorDiv.className = 'validation-message error';
-      errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-        <span>${message}</span>
-      `;
-      
+      errorDiv.textContent = message;
+      errorDiv.id = `${field.id || field.name}-error`;
       field.parentNode.appendChild(errorDiv);
       field.setAttribute('aria-describedby', errorDiv.id || 'error');
     },

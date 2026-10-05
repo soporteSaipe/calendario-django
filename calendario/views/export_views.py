@@ -3,7 +3,9 @@ Vista de exportación simplificada para producción
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
@@ -15,13 +17,14 @@ logger = logging.getLogger('calendario')
 
 
 @login_required
+@require_GET
 def export_calendar_simple(request):
     """
     Vista de exportación completamente simplificada
     """
     try:
         # Verificar permisos de staff
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser):
             return JsonResponse({'error': 'Acceso denegado'}, status=403)
         
         logger.info(f'Exportación solicitada por: {request.user.username}')
@@ -82,8 +85,9 @@ def export_calendar_simple(request):
         try:
             reservas = Reserva.objects.filter(
                 recurso_id__in=salas_ids,
-                fecha_inicio__date__range=[fecha_inicio.date(), fecha_fin.date()],
-                estado='confirmada'
+                fecha_inicio__lt=timezone.make_aware(fecha_fin + timedelta(days=1)),
+                fecha_fin__gt=timezone.make_aware(fecha_inicio),
+                estado__in=('confirmada', 'en_curso', 'terminada')
             ).select_related('recurso', 'usuario').order_by('fecha_inicio')
             
             reservas_count = reservas.count()
@@ -128,13 +132,13 @@ def export_calendar_simple(request):
             logger.info('Exportación generada exitosamente')
             return response
         except Exception as e:
-            logger.error(f'Error generando exportación: {str(e)}')
+            logger.error('No se pudo generar la exportación.')
             import traceback
             logger.error(f'Traceback: {traceback.format_exc()}')
-            return JsonResponse({'error': f'Error generando exportación: {str(e)}'}, status=500)
+            return JsonResponse({'error': 'No se pudo generar la exportación.'}, status=500)
             
     except Exception as e:
         logger.error(f'Error inesperado en export_calendar_simple: {str(e)}')
         import traceback
         logger.error(f'Traceback completo: {traceback.format_exc()}')
-        return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
+        return JsonResponse({'error': 'No se pudo completar la exportación.'}, status=500)

@@ -7,6 +7,8 @@ from datetime import datetime, time, timedelta
 from django.http import JsonResponse
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.views.decorators.http import require_GET
+from ..exceptions import ConflictoReservaError, FechaInvalidaError, HorarioTrabajoError, RestriccionHorarioError
 
 from ..models import Recurso, Reserva
 from ..utils import ReservaService, DateTimeService
@@ -24,6 +26,7 @@ from ..http_responses import HTTP, ERROR_CODES
 logger = logging.getLogger('calendario')
 
 
+@require_GET
 @rate_limit(requests_per_minute=RateLimitConfig.API_REQUESTS)
 @log_view_access
 def api_sala_detalles(request, sala_id):
@@ -72,11 +75,12 @@ def api_sala_detalles(request, sala_id):
         )
     except Exception as e:
         logger.error(f'Error obteniendo detalles de sala {sala_id}: {str(e)}')
-        return HTTP.server_error(
-            message=ErrorMessages.INTERNAL_SERVER_ERROR
+        return HTTP.internal_server_error(
+            message='No se pudieron obtener los detalles del recurso.'
         )
 
 
+@require_GET
 @rate_limit(requests_per_minute=RateLimitConfig.API_REQUESTS)
 @log_view_access
 def api_reservas(request):
@@ -102,46 +106,53 @@ def api_reservas(request):
     fecha_fin_dt = None
     sala_id_int = None
     
-    if fecha_inicio and fecha_fin:
+    if fecha_inicio or fecha_fin:
+        if not fecha_inicio or not fecha_fin:
+            return HTTP.bad_request(message='start y end deben enviarse juntos.', request=request)
         try:
             fecha_inicio_dt = datetime.fromisoformat(fecha_inicio.replace('Z', '+00:00'))
             fecha_fin_dt = datetime.fromisoformat(fecha_fin.replace('Z', '+00:00'))
-            logger.debug(f'Filtro de fecha aplicado: {fecha_inicio_dt} - {fecha_fin_dt}')
-        except (ValueError, AttributeError) as e:
-            logger.warning(f'Error parseando fechas en API: {str(e)}')
-    
-    # Rango por defecto si no se envían start/end (evita devolver todas las reservas)
-    if fecha_inicio_dt is None or fecha_fin_dt is None:
+            if timezone.is_naive(fecha_inicio_dt):
+                fecha_inicio_dt = timezone.make_aware(fecha_inicio_dt)
+            if timezone.is_naive(fecha_fin_dt):
+                fecha_fin_dt = timezone.make_aware(fecha_fin_dt)
+            if not timedelta(0) < fecha_fin_dt - fecha_inicio_dt <= timedelta(days=366):
+                raise ValueError
+        except (ValueError, OverflowError):
+            return HTTP.bad_request(message='Rango de fechas inválido (máximo 366 días).', request=request)
+    else:
         now = timezone.now()
         fecha_inicio_dt = now - timedelta(days=APIConfig.API_DEFAULT_PAST_DAYS)
         fecha_fin_dt = now + timedelta(days=BusinessRules.MAX_FUTURE_DAYS)
-        logger.debug(f'Usando rango por defecto: {fecha_inicio_dt} - {fecha_fin_dt}')
-    
     if sala_id and sala_id != 'todas':
         try:
             sala_id_int = int(sala_id)
-            logger.debug(f'Filtro de sala aplicado: {sala_id}')
-        except ValueError as e:
-            logger.warning(f'Error parseando sala_id: {str(e)}')
-    
+            if not 0 < sala_id_int <= 2147483647:
+                raise ValueError
+        except (ValueError, OverflowError):
+            return HTTP.bad_request(message='El recurso debe ser un identificador válido.', request=request)
+
     # Obtener reservas usando el optimizador (con límite para evitar respuestas excesivas)
-    reservas = ReservaQueryOptimizer.get_reservas_para_calendario(
+    reservas = list(ReservaQueryOptimizer.get_reservas_para_calendario(
         fecha_inicio=fecha_inicio_dt,
         fecha_fin=fecha_fin_dt,
         sala_id=sala_id_int
-    )[:APIConfig.API_MAX_RESERVAS]
+    )[:APIConfig.API_MAX_RESERVAS + 1])
+    if len(reservas) > APIConfig.API_MAX_RESERVAS:
+        return HTTP.unprocessable_entity(
+            message='Hay demasiadas reservas. Selecciona un recurso o un período más corto.', request=request)
     
     eventos = [
         {
             'id': reserva.id,
-            'title': reserva.titulo,
+            'title': reserva.titulo if request.user.is_authenticated else 'Reservado',
             'start': reserva.fecha_inicio.isoformat(),
             'end': reserva.fecha_fin.isoformat(),
             'color': reserva.recurso.color,
             'resourceId': reserva.recurso.id,
             'extendedProps': {
-                'descripcion': reserva.descripcion,
-                'usuario': reserva.usuario.username,
+                'descripcion': reserva.descripcion if request.user.is_authenticated else '',
+                'usuario': reserva.usuario.username if request.user.is_authenticated else '',
                 'estado': reserva.estado,
                 'sala': reserva.recurso.nombre,
                 'capacidad': reserva.recurso.capacidad,
@@ -155,6 +166,8 @@ def api_reservas(request):
     return JsonResponse(eventos, safe=False)
 
 
+@require_GET
+@rate_limit(requests_per_minute=RateLimitConfig.API_REQUESTS)
 def api_horarios_ocupados(request):
     """
     API para obtener horarios ocupados de una sala en una fecha específica
@@ -178,37 +191,33 @@ def api_horarios_ocupados(request):
         )
     
     try:
-        # Convertir fecha a datetime
+        recurso_id = int(recurso_id)
+        if not 0 < recurso_id <= 2147483647:
+            raise ValueError
         fecha_dt = datetime.strptime(fecha, '%Y-%m-%d').date()
         fecha_inicio = timezone.make_aware(datetime.combine(fecha_dt, time.min))
-        fecha_fin = timezone.make_aware(datetime.combine(fecha_dt, time.max))
-        
-        # Obtener reservas confirmadas para esa sala y fecha
+        fecha_fin = fecha_inicio + timedelta(days=1)
+        try:
+            recurso = Recurso.objects.get(id=recurso_id, activo=True)
+        except Recurso.DoesNotExist:
+            return HTTP.not_found(message=ValidationMessages.RESOURCE_NOT_FOUND, request=request)
         reservas = Reserva.objects.filter(
-            recurso_id=recurso_id,
-            estado='confirmada',
-            fecha_inicio__date=fecha_dt
+            recurso=recurso,
+            estado__in=('confirmada', 'en_curso'),
+            fecha_inicio__lt=fecha_fin,
+            fecha_fin__gt=fecha_inicio,
         ).values('fecha_inicio', 'fecha_fin')
-        
-        # Convertir a formato de horas para el frontend
         horarios_ocupados = []
         for reserva in reservas:
-            inicio = reserva['fecha_inicio'].time()
-            fin = reserva['fecha_fin'].time()
+            inicio = max(timezone.localtime(reserva['fecha_inicio']), fecha_inicio)
+            fin = min(timezone.localtime(reserva['fecha_fin']), fecha_fin)
             horarios_ocupados.append({
                 'inicio': inicio.strftime('%H:%M'),
-                'fin': fin.strftime('%H:%M'),
-                'tipo': 'reserva'
+                'fin': '24:00' if fin == fecha_fin else fin.strftime('%H:%M'),
+                'tipo': 'reserva',
             })
-        
-        # Obtener restricciones específicas del recurso
-        try:
-            recurso = Recurso.objects.get(id=recurso_id)
-            horarios_restringidos = recurso.get_horarios_restringidos()
-            horarios_ocupados.extend(horarios_restringidos)
-        except Recurso.DoesNotExist:
-            pass
-        
+        horarios_ocupados.extend(recurso.get_horarios_restringidos())
+
         return JsonResponse({
             'horarios_ocupados': horarios_ocupados,
             'fecha': fecha,
@@ -217,7 +226,7 @@ def api_horarios_ocupados(request):
         
     except ValueError as e:
         return HTTP.bad_request(
-            message=f'Formato de fecha inválido: {str(e)}',
+            message='Fecha o recurso inválido.',
             error_code=ERROR_CODES.INVALID_DATE_FORMAT,
             details={'received_date': fecha},
             request=request
@@ -225,11 +234,12 @@ def api_horarios_ocupados(request):
     except Exception as e:
         logger.error(f'Error en api_horarios_ocupados: {str(e)}', exc_info=True)
         return HTTP.internal_server_error(
-            message=ErrorMessages.UNEXPECTED_ERROR.format(error=str(e)),
+            message='No se pudo completar la consulta.',
             request=request
         )
 
 
+@require_GET
 @rate_limit(requests_per_minute=RateLimitConfig.VALIDATION_REQUESTS)
 @log_view_access
 def api_validar_conflicto(request):
@@ -272,7 +282,7 @@ def api_validar_conflicto(request):
         # Obtener recurso
         try:
             recurso = Recurso.objects.get(id=sala_id, activo=True)
-        except Recurso.DoesNotExist:
+        except (Recurso.DoesNotExist, ValueError, OverflowError):
             logger.warning(f'Recurso no encontrado: {sala_id}')
             return HTTP.not_found(
                 message=ValidationMessages.RESOURCE_NOT_FOUND,
@@ -284,7 +294,9 @@ def api_validar_conflicto(request):
         # Crear fechas usando el servicio
         try:
             fecha_inicio = DateTimeService.parse_datetime_from_form(fecha, hora_inicio)
-            fecha_fin = DateTimeService.parse_datetime_from_form(fecha, hora_fin)
+            fecha_fin = DateTimeService.parse_datetime_from_form(
+                request.GET.get('fecha_vuelta') or fecha if recurso.es_vehiculo() else fecha, hora_fin
+            )
         except ValidationError as e:
             logger.warning(f'Error parseando fechas en validación: {str(e)}')
             return HTTP.bad_request(
@@ -308,12 +320,14 @@ def api_validar_conflicto(request):
                 'sala_id': sala_id
             })
             
-        except Exception as validation_error:
+        except (ValidationError, ConflictoReservaError, FechaInvalidaError, HorarioTrabajoError, RestriccionHorarioError) as validation_error:
             # El middleware manejará las excepciones específicas
             # Aquí solo capturamos cualquier error de validación
             conflictos = [{
                 'type': 'validation_error',
-                'message': str(validation_error)
+                'message': ('El recurso ya está reservado en ese horario.'
+                            if isinstance(validation_error, ConflictoReservaError) and not request.user.is_authenticated
+                            else str(validation_error))
             }]
             
             logger.debug(f'Validación completada: válida=False, errores={len(conflictos)}')
@@ -333,6 +347,6 @@ def api_validar_conflicto(request):
     except Exception as e:
         logger.error(f'Error inesperado en API validar conflicto: {str(e)}', exc_info=True)
         return HTTP.internal_server_error(
-            message=ErrorMessages.UNEXPECTED_ERROR.format(error=str(e)),
+            message='No se pudo completar la consulta.',
             request=request
         )

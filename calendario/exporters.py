@@ -8,13 +8,19 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from io import BytesIO
 from typing import List, Dict, Any
+from xml.sax.saxutils import escape
 
 from django.http import HttpResponse, JsonResponse
-from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from .models import Reserva
 
 logger = logging.getLogger('calendario')
+
+
+def local_datetime(value):
+    """Use the configured business timezone rather than the database's UTC."""
+    return timezone.localtime(value) if timezone.is_aware(value) else value
 
 
 class ExportStrategy(ABC):
@@ -59,7 +65,6 @@ class PDFExportStrategy(ExportStrategy):
             from reportlab.lib.units import inch
             from reportlab.lib import colors
             from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
-            from datetime import datetime as dt
             
             # Crear buffer para el PDF
             buffer = BytesIO()
@@ -116,7 +121,7 @@ class PDFExportStrategy(ExportStrategy):
             info_text = f"""
             <b>Período:</b> {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}<br/>
             <b>Total de reservas:</b> {len(reservas)}<br/>
-            <b>Generado el:</b> {dt.now().strftime('%d/%m/%Y %H:%M')}
+            <b>Generado el:</b> {timezone.localtime().strftime('%d/%m/%Y %H:%M')}
             """
             info = Paragraph(info_text, styles['Normal'])
             story.append(info)
@@ -153,7 +158,7 @@ class PDFExportStrategy(ExportStrategy):
             # Agrupar reservas por fecha
             reservas_por_fecha = {}
             for reserva in reservas:
-                fecha_str = reserva.fecha_inicio.date().strftime('%d/%m/%Y')
+                fecha_str = local_datetime(reserva.fecha_inicio).strftime('%d/%m/%Y')
                 if fecha_str not in reservas_por_fecha:
                     reservas_por_fecha[fecha_str] = []
                 reservas_por_fecha[fecha_str].append(reserva)
@@ -172,22 +177,25 @@ class PDFExportStrategy(ExportStrategy):
                     row = []
                     
                     # Hora
-                    hora_text = f"{reserva.fecha_inicio.strftime('%H:%M')} - {reserva.fecha_fin.strftime('%H:%M')}"
+                    inicio = local_datetime(reserva.fecha_inicio)
+                    fin = local_datetime(reserva.fecha_fin)
+                    fin_text = fin.strftime('%H:%M') if inicio.date() == fin.date() else fin.strftime('%d/%m/%Y %H:%M')
+                    hora_text = f"{inicio.strftime('%H:%M')} - {fin_text}"
                     row.append(Paragraph(hora_text, cell_style))
                     
                     # Sala
-                    row.append(Paragraph(reserva.recurso.nombre, cell_style))
+                    row.append(Paragraph(escape(reserva.recurso.nombre), cell_style))
                     
                     # Título (con wrap automático)
-                    row.append(Paragraph(reserva.titulo, cell_style))
+                    row.append(Paragraph(escape(reserva.titulo), cell_style))
                     
                     # Usuario
-                    row.append(Paragraph(reserva.usuario.username, cell_style))
+                    row.append(Paragraph(escape(reserva.usuario.username), cell_style))
                     
                     # Descripción (si se incluye)
                     if include_desc:
                         descripcion = reserva.descripcion or 'Sin descripción'
-                        row.append(Paragraph(descripcion, cell_style))
+                        row.append(Paragraph(escape(descripcion), cell_style))
                     
                     # Ubicación (si se incluye)
                     if include_ubic:
@@ -196,8 +204,9 @@ class PDFExportStrategy(ExportStrategy):
                     
                     table_data.append(row)
                 
-                # Crear tabla sin anchos específicos para evitar problemas
-                table = Table(table_data, repeatRows=1)
+                # Distribute the real page width so long user text wraps inside it.
+                column_widths = [doc.width * width / sum(widths) for width in widths]
+                table = Table(table_data, colWidths=column_widths, repeatRows=1, splitInRow=1)
                 
                 # Estilo de tabla mejorado
                 table_style = [
@@ -249,10 +258,10 @@ class PDFExportStrategy(ExportStrategy):
             
         except ImportError as e:
             logger.error(f'ReportLab no está instalado: {str(e)}')
-            return JsonResponse({'error': 'ReportLab no está instalado. Instala con: pip install reportlab'}, status=500)
+            return JsonResponse({'error': 'La exportación PDF no está disponible.'}, status=500)
         except Exception as e:
             logger.error(f'Error al generar PDF: {str(e)}', exc_info=True)
-            return JsonResponse({'error': f'Error al generar PDF: {str(e)}'}, status=500)
+            return JsonResponse({'error': 'No se pudo generar el PDF.'}, status=500)
     
     def get_content_type(self) -> str:
         return 'application/pdf'
@@ -273,7 +282,6 @@ class ExcelExportStrategy(ExportStrategy):
             from openpyxl.chart import BarChart, Reference
             from openpyxl.formatting.rule import ColorScaleRule
             from collections import defaultdict, Counter
-            import datetime as dt
             
             # Crear workbook
             wb = Workbook()
@@ -308,7 +316,7 @@ class ExcelExportStrategy(ExportStrategy):
             # Información del período
             ws_summary['A3'] = f"Período: {fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}"
             ws_summary['A3'].font = subtitle_style
-            ws_summary['A4'] = f"Generado: {dt.datetime.now().strftime('%d/%m/%Y %H:%M')}"
+            ws_summary['A4'] = f"Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}"
             ws_summary['A4'].font = data_style
             
             # === ESTADÍSTICAS PRINCIPALES ===
@@ -385,13 +393,15 @@ class ExcelExportStrategy(ExportStrategy):
             row = 2
             for reserva in reservas:
                 duracion_horas = (reserva.fecha_fin - reserva.fecha_inicio).total_seconds() / 3600
-                dia_semana = reserva.fecha_inicio.strftime('%A')
+                inicio = local_datetime(reserva.fecha_inicio)
+                fin = local_datetime(reserva.fecha_fin)
+                dia_semana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][inicio.weekday()]
                 
                 data = [
-                    reserva.fecha_inicio.date(),
+                    inicio.date(),
                     dia_semana,
-                    reserva.fecha_inicio.time(),
-                    reserva.fecha_fin.time(),
+                    inicio.time(),
+                    fin.time(),
                     round(duracion_horas, 2),
                     reserva.recurso.nombre,
                     reserva.recurso.capacidad,
@@ -481,6 +491,14 @@ class ExcelExportStrategy(ExportStrategy):
                     else:
                         duracion_cell.fill = PatternFill(start_color='E6FFE6', end_color='E6FFE6', fill_type='solid')
             
+            # No spreadsheet formulas are authored in this report. Treat every
+            # string as literal text, including user input beginning with '='.
+            for sheet in wb.worksheets:
+                for cells in sheet.iter_rows():
+                    for cell in cells:
+                        if isinstance(cell.value, str):
+                            cell.data_type = 's'
+
             # Crear buffer
             buffer = BytesIO()
             wb.save(buffer)
@@ -496,10 +514,10 @@ class ExcelExportStrategy(ExportStrategy):
             
         except ImportError as e:
             logger.error(f'OpenPyXL no está instalado: {str(e)}')
-            return JsonResponse({'error': 'OpenPyXL no está instalado. Instala con: pip install openpyxl'}, status=500)
+            return JsonResponse({'error': 'La exportación Excel no está disponible.'}, status=500)
         except Exception as e:
             logger.error(f'Error al generar Excel: {str(e)}', exc_info=True)
-            return JsonResponse({'error': f'Error al generar Excel: {str(e)}'}, status=500)
+            return JsonResponse({'error': 'No se pudo generar el archivo Excel.'}, status=500)
     
     def get_content_type(self) -> str:
         return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

@@ -1,6 +1,6 @@
 # Sistema de Reservas SAIPE - Dependencias
 # Django y dependencias principales
-Django>=5.2.6
+Django>=5.2.17,<5.3
 python-dotenv>=1.0.0
 dj-database-url>=2.1.0
 pytz>=2023.3
@@ -23,6 +23,7 @@ openpyxl==3.1.2
 # Dependencias adicionales
 Pillow>=9.0.0
 python-dateutil>=2.8.0
+redis>=5.0,<7
 
 # Logging y debugging
 django-debug-toolbar>=4.0.0

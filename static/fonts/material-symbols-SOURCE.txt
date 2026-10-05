@@ -1,0 +1,7 @@
+material-symbols 0.47.6
+https://registry.npmjs.org/material-symbols/-/material-symbols-0.47.6.tgz
+
+Subset from the original font with fonttools 4.66.1.
+Only ligatures mapped in static/css/icons.css are retained; rclt/rlig shaping is preserved.
+When adding icons, regenerate from the original package and retain the new ligatures.
+Included: account_circle, add, add_circle, admin_panel_settings, apartment, arrow_back, assignment, block, calendar_month, calendar_today, cancel, check, check_circle, chevron_left, chevron_right, circle, close, code, dashboard, database, date_range, delete, directions_car, download, edit, error, event, event_available, event_busy, file_export, filter_alt_off, flag, flight_land, flight_takeoff, group, history, home, info, lightbulb, list, location_on, lock, login, logout, meeting_room, menu, menu_book, monitor_heart, monitoring, notes, person, picture_as_pdf, progress_activity, refresh, save, schedule, search, settings, table_view, text_fields, timer, title, today, warning

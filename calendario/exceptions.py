@@ -2,6 +2,7 @@
 Excepciones personalizadas para el sistema de calendario
 """
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 class ReservaValidationError(ValidationError):
@@ -32,8 +33,8 @@ class ConflictoReservaError(Exception):
             message = (
                 f'Ya existe una reserva para este recurso en el horario seleccionado: '
                 f'{reserva_conflicto.titulo} '
-                f'({reserva_conflicto.fecha_inicio.strftime("%d/%m/%Y %H:%M")} - '
-                f'{reserva_conflicto.fecha_fin.strftime("%d/%m/%Y %H:%M")})'
+                f'({timezone.localtime(reserva_conflicto.fecha_inicio).strftime("%d/%m/%Y %H:%M")} - '
+                f'{timezone.localtime(reserva_conflicto.fecha_fin).strftime("%d/%m/%Y %H:%M")})'
             )
         super().__init__(message)
 

@@ -5,14 +5,14 @@
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item active" aria-current="page">
-    <i class="fas fa-search me-1"></i>Buscar Reservas
+    <i class="fas fa-search me-1" aria-hidden="true"></i>Buscar Reservas
 </li>
 {% endblock %}
 
 {% block content %}
 <div class="search-header">
     <h2 class="mb-2">
-        <i class="fas fa-search me-3"></i>Buscar Reservas
+        <i class="fas fa-search me-3" aria-hidden="true"></i>Buscar Reservas
     </h2>
     <p class="mb-0">Encuentra reservas usando filtros avanzados</p>
 </div>
@@ -23,7 +23,7 @@
             <!-- Búsqueda por texto -->
             <div class="col-md-12">
                 <label for="searchText" class="form-label-modern">
-                    <i class="fas fa-font me-2"></i>Búsqueda de texto
+                    <i class="fas fa-font me-2" aria-hidden="true"></i>Búsqueda de texto
                 </label>
                 <input type="text" 
                        id="searchText" 
@@ -36,7 +36,7 @@
             <!-- Rango de fechas -->
             <div class="col-md-6">
                 <label for="fechaDesde" class="form-label-modern">
-                    <i class="fas fa-calendar me-2"></i>Desde
+                    <i class="fas fa-calendar me-2" aria-hidden="true"></i>Desde
                 </label>
                 <input type="date" 
                        id="fechaDesde" 
@@ -47,7 +47,7 @@
 
             <div class="col-md-6">
                 <label for="fechaHasta" class="form-label-modern">
-                    <i class="fas fa-calendar me-2"></i>Hasta
+                    <i class="fas fa-calendar me-2" aria-hidden="true"></i>Hasta
                 </label>
                 <input type="date" 
                        id="fechaHasta" 
@@ -59,7 +59,7 @@
             <!-- Filtro por recurso -->
             <div class="col-md-6">
                 <label for="recursoFilter" class="form-label-modern">
-                    <i class="fas fa-door-open me-2"></i>Sala/Recurso
+                    <i class="fas fa-door-open me-2" aria-hidden="true"></i>Sala/Recurso
                 </label>
                 <select id="recursoFilter" name="recurso" class="form-select-modern">
                     <option value="todos" {% if filtros.recurso == 'todos' %}selected{% endif %}>Todos los recursos</option>
@@ -74,7 +74,7 @@
             <!-- Filtro por estado -->
             <div class="col-md-6">
                 <label for="estadoFilter" class="form-label-modern">
-                    <i class="fas fa-info-circle me-2"></i>Estado
+                    <i class="fas fa-info-circle me-2" aria-hidden="true"></i>Estado
                 </label>
                 <select id="estadoFilter" name="estado" class="form-select-modern">
                     <option value="todos" {% if filtros.estado == 'todos' %}selected{% endif %}>Todos los estados</option>
@@ -89,7 +89,7 @@
             {% if es_staff %}
             <div class="col-md-12">
                 <label for="usuarioFilter" class="form-label-modern">
-                    <i class="fas fa-user me-2"></i>Usuario
+                    <i class="fas fa-user me-2" aria-hidden="true"></i>Usuario
                 </label>
                 <select id="usuarioFilter" name="usuario" class="form-select-modern">
                     <option value="todos" {% if filtros.usuario == 'todos' %}selected{% endif %}>Todos los usuarios</option>
@@ -106,10 +106,10 @@
             <div class="col-12">
                 <div class="d-flex gap-2 justify-content-end">
                     <button type="button" class="btn-modern btn-secondary-modern" id="btnLimpiarFiltros">
-                        <i class="fas fa-eraser me-2"></i>Limpiar filtros
+                        <i class="fas fa-eraser me-2" aria-hidden="true"></i>Limpiar filtros
                     </button>
                     <button type="submit" class="btn-modern btn-primary-modern">
-                        <i class="fas fa-search me-2"></i>Buscar
+                        <i class="fas fa-search me-2" aria-hidden="true"></i>Buscar
                     </button>
                 </div>
             </div>
@@ -122,7 +122,7 @@
 <div class="results-summary">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <i class="fas fa-info-circle me-2"></i>
+            <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
             <strong>{{ total_resultados }}</strong> reserva{{ total_resultados|pluralize }} encontrada{{ total_resultados|pluralize }}
         </div>
         
@@ -131,13 +131,13 @@
             {% if filtros.q %}
             <span class="filter-badge">
                 Texto: "{{ filtros.q }}"
-                <button type="button" class="remove-filter" data-filter="q">×</button>
+                <button type="button" class="remove-filter" data-filter="q" aria-label="Quitar filtro de búsqueda" title="Quitar filtro de búsqueda">×</button>
             </span>
             {% endif %}
             
             {% if filtros.fecha_desde or filtros.fecha_hasta %}
             <span class="filter-badge">
-                <i class="fas fa-calendar me-1"></i>
+                <i class="fas fa-calendar me-1" aria-hidden="true"></i>
                 {% if filtros.fecha_desde %}{{ filtros.fecha_desde }}{% endif %}
                 {% if filtros.fecha_desde and filtros.fecha_hasta %} - {% endif %}
                 {% if filtros.fecha_hasta %}{{ filtros.fecha_hasta }}{% endif %}
@@ -152,7 +152,7 @@
 <div class="card-modern">
     <div class="card-header-modern">
         <h5 class="mb-0">
-            <i class="fas fa-list me-2"></i>Resultados de Búsqueda
+            <i class="fas fa-list me-2" aria-hidden="true"></i>Resultados de Búsqueda
         </h5>
     </div>
     <div class="card-body-modern">
@@ -161,15 +161,15 @@
             <table class="table table-modern">
                 <thead>
                     <tr>
-                        <th><i class="fas fa-heading me-2"></i>Título</th>
-                        <th><i class="fas fa-door-open me-2"></i>Recurso</th>
+                        <th><i class="fas fa-heading me-2" aria-hidden="true"></i>Título</th>
+                        <th><i class="fas fa-door-open me-2" aria-hidden="true"></i>Recurso</th>
                         {% if es_staff %}
-                        <th><i class="fas fa-user me-2"></i>Usuario</th>
+                        <th><i class="fas fa-user me-2" aria-hidden="true"></i>Usuario</th>
                         {% endif %}
-                        <th><i class="fas fa-calendar me-2"></i>Fecha Inicio</th>
-                        <th><i class="fas fa-calendar me-2"></i>Fecha Fin</th>
-                        <th><i class="fas fa-info-circle me-2"></i>Estado</th>
-                        <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                        <th><i class="fas fa-calendar me-2" aria-hidden="true"></i>Fecha Inicio</th>
+                        <th><i class="fas fa-calendar me-2" aria-hidden="true"></i>Fecha Fin</th>
+                        <th><i class="fas fa-info-circle me-2" aria-hidden="true"></i>Estado</th>
+                        <th><i class="fas fa-cogs me-2" aria-hidden="true"></i>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -207,14 +207,13 @@
                                 {% if reserva.usuario == user or es_staff %}
                                 <a href="{% url 'calendario:editar_reserva' reserva.id %}" 
                                    class="btn-action btn-action-edit"
-                                   title="Editar reserva">
-                                    <i class="fas fa-edit"></i>
+                                   title="Editar reserva" aria-label="Editar reserva">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
                                 </a>
                                 <a href="{% url 'calendario:eliminar_reserva' reserva.id %}" 
                                    class="btn-action btn-action-delete"
-                                   title="Eliminar reserva"
-                                   onclick="return confirm('¿Estás seguro de eliminar esta reserva?')">
-                                    <i class="fas fa-trash"></i>
+                                   title="Eliminar reserva" aria-label="Eliminar reserva">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
                                 </a>
                                 {% endif %}
                             </div>
@@ -232,7 +231,7 @@
                 {% if reservas.has_previous %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ reservas.previous_page_number }}{% for key, value in filtros.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        <i class="fas fa-chevron-left"></i>
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
                     </a>
                 </li>
                 {% endif %}
@@ -254,7 +253,7 @@
                 {% if reservas.has_next %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ reservas.next_page_number }}{% for key, value in filtros.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        <i class="fas fa-chevron-right"></i>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </a>
                 </li>
                 {% endif %}
@@ -264,11 +263,11 @@
 
         {% else %}
         <div class="text-center py-5">
-            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <i class="fas fa-search fa-3x text-muted mb-3" aria-hidden="true"></i>
             <h5 class="text-muted">No se encontraron reservas</h5>
             <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
             <a href="{% url 'calendario:calendario' %}" class="btn-modern btn-primary-modern mt-3">
-                <i class="fas fa-calendar me-2"></i>Ir al Calendario
+                <i class="fas fa-calendar me-2" aria-hidden="true"></i>Ir al Calendario
             </a>
         </div>
         {% endif %}

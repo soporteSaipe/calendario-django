@@ -20,6 +20,8 @@ from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
 from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
+from django.utils.decorators import method_decorator
+from calendario.decorators import rate_limit
 
 def redirect_to_calendario(request):
     return redirect('calendario:calendario')
@@ -37,6 +39,10 @@ class CustomLoginView(auth_views.LoginView):
     """Vista personalizada de login con mejor manejo de errores"""
     template_name = 'registration/login.html'
     redirect_authenticated_user = True
+
+    @method_decorator(rate_limit(requests_per_minute=10, window_seconds=60))
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
     
     def form_invalid(self, form):
         """Manejar formulario inválido con mensajes específicos"""

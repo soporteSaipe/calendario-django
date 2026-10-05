@@ -44,23 +44,23 @@ CalendarioApp.CalendarExport = {
     exportControls.innerHTML = `
       <div class="export-header">
         <h6 class="export-title">
-          <i class="fas fa-download me-2"></i>Exportar Calendario
+          <i class="fas fa-download me-2" aria-hidden="true"></i>Exportar Calendario
         </h6>
       <div class="export-actions">
         <button class="btn-export btn-export-pdf" data-format="pdf" title="Exportar como PDF">
-          <i class="fas fa-file-pdf me-1"></i>PDF
+          <i class="fas fa-file-pdf me-1" aria-hidden="true"></i>PDF
         </button>
         <button class="btn-export btn-export-excel" data-format="xlsx" title="Exportar como Excel">
-          <i class="fas fa-file-excel me-1"></i>Excel
+          <i class="fas fa-file-excel me-1" aria-hidden="true"></i>Excel
         </button>
         <button class="btn-export btn-export-options" title="Configurar exportación">
-          <i class="fas fa-calendar-alt me-1"></i>Configurar
+          <i class="fas fa-calendar-alt me-1" aria-hidden="true"></i>Configurar
         </button>
       </div>
       </div>
     `;
 
-    calendarContainer.insertAdjacentHTML('beforebegin', exportControls.outerHTML);
+    calendarContainer.insertAdjacentHTML('afterend', exportControls.outerHTML);
     
     // Crear modal de exportación
     this.createExportModal();
@@ -75,16 +75,16 @@ CalendarioApp.CalendarExport = {
           <div class="modal-content modal-content-modern">
             <div class="modal-header modal-header-modern">
               <h5 class="modal-title modal-title-modern" id="exportModalLabel">
-                <i class="fas fa-download me-2"></i>
+                <i class="fas fa-download me-2" aria-hidden="true"></i>
                 Configurar Exportación
               </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" title="Cerrar"></button>
             </div>
             <div class="modal-body">
               <div class="export-form">
                 <div class="form-group">
                   <label class="form-label">
-                    <i class="fas fa-calendar-alt"></i>
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                     Rango de Fechas
                   </label>
                   <div class="date-range-inputs">
@@ -98,21 +98,21 @@ CalendarioApp.CalendarExport = {
                     </div>
                   </div>
                   <div class="date-info">
-                    <i class="fas fa-info-circle"></i>
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
                     Máximo 365 días de diferencia
                   </div>
                 </div>
 
                 <div class="form-group">
                   <label class="form-label">
-                    <i class="fas fa-file-export"></i>
+                    <i class="fas fa-file-export" aria-hidden="true"></i>
                     Formato de Archivo
                   </label>
                   <div class="format-selector">
                     <label class="format-option">
                       <input type="radio" name="exportFormat" value="pdf" checked>
                       <div class="format-card">
-                        <i class="fas fa-file-pdf"></i>
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
                         <span>PDF</span>
                         <small>Documento imprimible</small>
                       </div>
@@ -120,7 +120,7 @@ CalendarioApp.CalendarExport = {
                     <label class="format-option">
                       <input type="radio" name="exportFormat" value="xlsx">
                       <div class="format-card">
-                        <i class="fas fa-file-excel"></i>
+                        <i class="fas fa-file-excel" aria-hidden="true"></i>
                         <span>Excel</span>
                         <small>Hoja de cálculo</small>
                       </div>
@@ -130,15 +130,15 @@ CalendarioApp.CalendarExport = {
 
                 <div class="export-info">
                   <div class="info-item">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-check-circle" aria-hidden="true"></i>
                     <span>Incluye todas las salas activas</span>
                   </div>
                   <div class="info-item">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-check-circle" aria-hidden="true"></i>
                     <span>Solo reservas confirmadas</span>
                   </div>
                   <div class="info-item">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-check-circle" aria-hidden="true"></i>
                     <span>Incluye descripciones</span>
                   </div>
                 </div>
@@ -146,10 +146,10 @@ CalendarioApp.CalendarExport = {
             </div>
             <div class="modal-footer">
               <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
-                <i class="fas fa-times me-1"></i>Cancelar
+                <i class="fas fa-times me-1" aria-hidden="true"></i>Cancelar
               </button>
               <button type="button" class="btn-modern btn-primary-modern" id="confirmExport">
-                <i class="fas fa-download me-1"></i>Exportar
+                <i class="fas fa-download me-1" aria-hidden="true"></i>Exportar
               </button>
             </div>
           </div>
@@ -191,12 +191,12 @@ CalendarioApp.CalendarExport = {
   setupEventListeners: function() {
     // Botones de exportación
     document.addEventListener('click', (e) => {
-      if (e.target.matches('.btn-export-pdf, .btn-export-excel')) {
-        const format = e.target.dataset.format;
+      if (e.target.closest('.btn-export-pdf, .btn-export-excel')) {
+        const format = e.target.closest('[data-format]').dataset.format;
         this.showExportModal(format);
-      } else if (e.target.matches('.btn-export-options')) {
+      } else if (e.target.closest('.btn-export-options')) {
         this.showExportModal();
-      } else if (e.target.matches('#confirmExport')) {
+      } else if (e.target.closest('#confirmExport')) {
         this.confirmExport();
       }
     });
@@ -452,10 +452,10 @@ CalendarioApp.CalendarExport = {
     notification.className = `export-notification ${type}`;
     notification.innerHTML = `
       <div class="notification-content">
-        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
-        <span>${message}</span>
-        <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
-          <i class="fas fa-times"></i>
+        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'info-circle'}" aria-hidden="true"></i>
+        <span>${CalendarioApp.Calendar.escapeHTML(message)}</span>
+        <button type="button" class="notification-close" aria-label="Cerrar notificación" title="Cerrar notificación" onclick="this.parentElement.parentElement.remove()">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </div>
     `;

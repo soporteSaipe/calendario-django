@@ -5,32 +5,32 @@
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item active" aria-current="page">
-    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+    <i class="fas fa-tachometer-alt me-1" aria-hidden="true"></i>Dashboard
 </li>
 {% endblock %}
 
 {% block content %}
-<div class="accounting-header animate-on-load">
-    <h1><i class="fas fa-tachometer-alt me-3"></i>Dashboard Administrativo</h1>
+<div class="accounting-header">
+    <h1><i class="fas fa-tachometer-alt me-3" aria-hidden="true"></i>Dashboard Administrativo</h1>
     <p>Vista general del sistema de reservas y métricas en tiempo real</p>
 </div>
 
 <div class="d-flex justify-content-end gap-2 mb-4">
     <a href="{% url 'calendario:calendario' %}" class="btn-modern btn-primary-modern">
-        <i class="fas fa-calendar me-2"></i>Calendario
+        <i class="fas fa-calendar me-2" aria-hidden="true"></i>Calendario
     </a>
     <a href="{% url 'calendario:buscar_reservas' %}" class="btn-modern btn-secondary-modern">
-        <i class="fas fa-search me-2"></i>Buscar
+        <i class="fas fa-search me-2" aria-hidden="true"></i>Buscar
     </a>
 </div>
 
 <!-- Métricas principales -->
-<div class="row mb-4 stagger-animation">
+<div class="row mb-4">
     <div class="col-md-3 mb-3">
         <div class="metric-card text-center">
             <div class="metric-value">{{ reservas_hoy }}</div>
             <div class="metric-label">
-                <i class="fas fa-calendar-day me-1"></i>Reservas Hoy
+                <i class="fas fa-calendar-day me-1" aria-hidden="true"></i>Reservas Hoy
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@
         <div class="metric-card text-center">
             <div class="metric-value">{{ reservas_semana }}</div>
             <div class="metric-label">
-                <i class="fas fa-calendar-week me-1"></i>Esta Semana
+                <i class="fas fa-calendar-week me-1" aria-hidden="true"></i>Esta Semana
             </div>
         </div>
     </div>
@@ -48,7 +48,7 @@
         <div class="metric-card text-center">
             <div class="metric-value">{{ reservas_mes }}</div>
             <div class="metric-label">
-                <i class="fas fa-calendar-alt me-1"></i>Este Mes
+                <i class="fas fa-calendar-alt me-1" aria-hidden="true"></i>Este Mes
             </div>
         </div>
     </div>
@@ -57,7 +57,7 @@
         <div class="metric-card text-center">
             <div class="metric-value">{{ recursos_activos }}</div>
             <div class="metric-label">
-                <i class="fas fa-door-open me-1"></i>Recursos Activos
+                <i class="fas fa-door-open me-1" aria-hidden="true"></i>Recursos Activos
             </div>
         </div>
     </div>
@@ -69,7 +69,7 @@
         <div class="card-modern animate-slide-in-left">
             <div class="card-header-modern">
                 <h5 class="mb-0">
-                    <i class="fas fa-clock me-2"></i>
+                    <i class="fas fa-clock me-2" aria-hidden="true"></i>
                     Próxima Reserva
                 </h5>
             </div>
@@ -78,15 +78,15 @@
                     <div class="alert-modern alert-info-modern mb-0">
                         <h6 class="mb-3 fw-bold">
                             {% if proxima_reserva.recurso.tipo == 'vehiculo' %}
-                                <i class="fas fa-car me-2"></i>{{ proxima_reserva.responsable }}
+                                <i class="fas fa-car me-2" aria-hidden="true"></i>{{ proxima_reserva.responsable }}
                             {% else %}
-                                <i class="fas fa-calendar-check me-2"></i>{{ proxima_reserva.titulo }}
+                                <i class="fas fa-calendar-check me-2" aria-hidden="true"></i>{{ proxima_reserva.titulo }}
                             {% endif %}
                         </h6>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-{% if proxima_reserva.recurso.tipo == 'vehiculo' %}car{% else %}door-open{% endif %} me-2"></i>
+                                    <i class="fas fa-{% if proxima_reserva.recurso.tipo == 'vehiculo' %}car{% else %}door-open{% endif %} me-2" aria-hidden="true"></i>
                                     <div>
                                         <small class="text-muted d-block">Recurso</small>
                                         <strong>{{ proxima_reserva.recurso.nombre }}</strong>
@@ -95,7 +95,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-calendar me-2"></i>
+                                    <i class="fas fa-calendar me-2" aria-hidden="true"></i>
                                     <div>
                                         <small class="text-muted d-block">Fecha</small>
                                         <strong>{{ proxima_reserva.fecha_inicio|date:"d/m/Y" }}</strong>
@@ -104,7 +104,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-clock me-2"></i>
+                                    <i class="fas fa-clock me-2" aria-hidden="true"></i>
                                     <div>
                                         <small class="text-muted d-block">Horario</small>
                                         <strong>{{ proxima_reserva.fecha_inicio|time:"H:i" }} - {{ proxima_reserva.fecha_fin|time:"H:i" }}</strong>
@@ -114,7 +114,7 @@
                             {% if proxima_reserva.recurso.tipo == 'vehiculo' and proxima_reserva.destino %}
                             <div class="col-md-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    <i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i>
                                     <div>
                                         <small class="text-muted d-block">Destino</small>
                                         <strong>{{ proxima_reserva.destino }}</strong>
@@ -126,7 +126,7 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4">
-                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3" aria-hidden="true"></i>
                         <h6 class="text-muted">No tienes reservas próximas</h6>
                     </div>
                 {% endif %}
@@ -139,7 +139,7 @@
         <div class="card-modern animate-slide-in-right">
             <div class="card-header-modern">
                 <h5 class="mb-0">
-                    <i class="fas fa-users me-2"></i>
+                    <i class="fas fa-users me-2" aria-hidden="true"></i>
                     Usuarios Más Activos
                 </h5>
             </div>
@@ -158,7 +158,7 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <i class="fas fa-users fa-3x text-muted mb-3" aria-hidden="true"></i>
                         <h6 class="text-muted">No hay datos suficientes</h6>
                     </div>
                 {% endif %}
@@ -170,14 +170,14 @@
 <!-- Reservas recientes -->
 <div class="row">
     <div class="col-12">
-        <div class="card-modern animate-slide-in-up">
+        <div class="card-modern">
             <div class="card-header-modern d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <i class="fas fa-history me-2"></i>
+                    <i class="fas fa-history me-2" aria-hidden="true"></i>
                     Reservas Recientes
                 </h5>
                 <a href="{% url 'calendario:mis_reservas' %}" class="btn-modern btn-primary-modern">
-                    <i class="fas fa-list me-2"></i>Ver Todas
+                    <i class="fas fa-list me-2" aria-hidden="true"></i>Ver Todas
                 </a>
             </div>
             <div class="card-body-modern">
@@ -186,12 +186,12 @@
                         <table class="table table-modern">
                             <thead>
                                 <tr>
-                                    <th><i class="fas fa-heading me-2"></i>Título / Responsable</th>
-                                    <th><i class="fas fa-door-open me-2"></i>Recurso</th>
-                                    <th><i class="fas fa-user me-2"></i>Usuario</th>
-                                    <th><i class="fas fa-calendar me-2"></i>Fecha</th>
-                                    <th><i class="fas fa-clock me-2"></i>Hora</th>
-                                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                                    <th><i class="fas fa-heading me-2" aria-hidden="true"></i>Título / Responsable</th>
+                                    <th><i class="fas fa-door-open me-2" aria-hidden="true"></i>Recurso</th>
+                                    <th><i class="fas fa-user me-2" aria-hidden="true"></i>Usuario</th>
+                                    <th><i class="fas fa-calendar me-2" aria-hidden="true"></i>Fecha</th>
+                                    <th><i class="fas fa-clock me-2" aria-hidden="true"></i>Hora</th>
+                                    <th><i class="fas fa-info-circle me-2" aria-hidden="true"></i>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -201,7 +201,7 @@
                                         {% if reserva.recurso.tipo == 'vehiculo' %}
                                             <strong>{{ reserva.responsable|default:"Responsable no especificado" }}</strong>
                                             {% if reserva.destino %}
-                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ reserva.destino|truncatechars:30 }}</small>
+                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1" aria-hidden="true"></i>{{ reserva.destino|truncatechars:30 }}</small>
                                             {% endif %}
                                         {% else %}
                                             <strong>{{ reserva.titulo }}</strong>
@@ -213,9 +213,9 @@
                                     <td>
                                         <span class="badge-modern" style="background-color: {{ reserva.recurso.color }}; color: white;">
                                             {% if reserva.recurso.tipo == 'vehiculo' %}
-                                                <i class="fas fa-car me-1"></i>
+                                                <i class="fas fa-car me-1" aria-hidden="true"></i>
                                             {% else %}
-                                                <i class="fas fa-door-open me-1"></i>
+                                                <i class="fas fa-door-open me-1" aria-hidden="true"></i>
                                             {% endif %}
                                             {{ reserva.recurso.nombre }}
                                         </span>
@@ -229,19 +229,19 @@
                                     <td>
                                         {% if reserva.estado == 'confirmada' %}
                                             <span class="badge-modern badge-success">
-                                                <i class="fas fa-check-circle me-1"></i>{{ reserva.get_estado_display }}
+                                                <i class="fas fa-check-circle me-1" aria-hidden="true"></i>{{ reserva.get_estado_display }}
                                             </span>
                                         {% elif reserva.estado == 'en_curso' %}
                                             <span class="badge-modern badge-warning">
-                                                <i class="fas fa-clock me-1"></i>{{ reserva.get_estado_display }}
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i>{{ reserva.get_estado_display }}
                                             </span>
                                         {% elif reserva.estado == 'terminada' %}
                                             <span class="badge-modern badge-info">
-                                                <i class="fas fa-flag-checkered me-1"></i>{{ reserva.get_estado_display }}
+                                                <i class="fas fa-flag-checkered me-1" aria-hidden="true"></i>{{ reserva.get_estado_display }}
                                             </span>
                                         {% elif reserva.estado == 'cancelada' %}
                                             <span class="badge-modern badge-danger">
-                                                <i class="fas fa-times-circle me-1"></i>{{ reserva.get_estado_display }}
+                                                <i class="fas fa-times-circle me-1" aria-hidden="true"></i>{{ reserva.get_estado_display }}
                                             </span>
                                         {% else %}
                                             <span class="badge-modern badge-secondary">{{ reserva.get_estado_display }}</span>
@@ -254,12 +254,12 @@
                     </div>
                 {% else %}
                     <div class="text-center py-5">
-                        <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                        <i class="fas fa-calendar-plus fa-3x text-muted mb-3" aria-hidden="true"></i>
                         <h6 class="text-muted">No hay reservas recientes</h6>
                         <a href="{% url 'calendario:calendario' %}" class="btn-reserva-elegant mt-3">
                             <div class="btn-reserva-content">
                                 <div class="btn-reserva-icon">
-                                    <i class="fas fa-calendar-plus"></i>
+                                    <i class="fas fa-calendar-plus" aria-hidden="true"></i>
                                 </div>
                                 <div class="btn-reserva-text">
                                     <span class="btn-reserva-title">Crear Primera Reserva</span>

@@ -5,7 +5,7 @@
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item active" aria-current="page">
-    <i class="fas fa-chart-line me-1"></i>Métricas del Sistema
+    <i class="fas fa-chart-line me-1" aria-hidden="true"></i>Métricas del Sistema
 </li>
 {% endblock %}
 
@@ -15,13 +15,13 @@
         <div class="card-modern">
             <div class="card-header-modern">
                 <h3 class="mb-0">
-                    <i class="fas fa-chart-line me-3"></i>Métricas del Sistema
+                    <i class="fas fa-chart-line me-3" aria-hidden="true"></i>Métricas del Sistema
                 </h3>
             </div>
             <div class="card-body-modern">
                 {% if error %}
                 <div class="alert alert-danger-modern">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
                     Error al obtener métricas: {{ error }}
                 </div>
                 {% else %}
@@ -30,10 +30,10 @@
                 <div class="row mb-4">
                     <div class="col-12">
                         <h5 class="mb-3">
-                            <i class="fas fa-heartbeat me-2"></i>Estado General
+                            <i class="fas fa-heartbeat me-2" aria-hidden="true"></i>Estado General
                         </h5>
                         <div class="health-status health-{{ health.overall_status|default:'healthy' }}">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-circle" aria-hidden="true"></i>
                             Sistema {{ health.overall_status|default:'Saludable'|upper }}
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                 <div class="row mb-4">
                     <div class="col-12">
                         <h5 class="mb-3">
-                            <i class="fas fa-database me-2"></i>Base de Datos
+                            <i class="fas fa-database me-2" aria-hidden="true"></i>Base de Datos
                         </h5>
                     </div>
                     <div class="col-md-3">
@@ -76,7 +76,7 @@
                 <div class="row mb-4">
                     <div class="col-12">
                         <h5 class="mb-3">
-                            <i class="fas fa-tachometer-alt me-2"></i>Rendimiento
+                            <i class="fas fa-tachometer-alt me-2" aria-hidden="true"></i>Rendimiento
                         </h5>
                     </div>
                     <div class="col-md-4">
@@ -101,7 +101,7 @@
 
                 <!-- Información del Sistema -->
                 <div class="alert alert-info-modern">
-                    <h6><i class="fas fa-info-circle me-2"></i>Información del Sistema</h6>
+                    <h6><i class="fas fa-info-circle me-2" aria-hidden="true"></i>Información del Sistema</h6>
                     <ul class="mb-0">
                         <li><strong>Django Version:</strong> {{ metrics.system.django_version|default:'N/A' }}</li>
                         <li><strong>Python Version:</strong> {{ metrics.system.python_version|default:'N/A' }}</li>
@@ -115,13 +115,13 @@
                 <!-- Acciones -->
                 <div class="d-flex gap-2 mt-4">
                     <a href="{% url 'calendario:health_check' %}" class="btn-modern btn-primary-modern" target="_blank">
-                        <i class="fas fa-heartbeat me-2"></i>Health Check (JSON)
+                        <i class="fas fa-heartbeat me-2" aria-hidden="true"></i>Health Check (JSON)
                     </a>
                     <a href="{% url 'calendario:api_docs_json' %}" class="btn-modern btn-secondary-modern" target="_blank">
-                        <i class="fas fa-file-code me-2"></i>API Docs (JSON)
+                        <i class="fas fa-file-code me-2" aria-hidden="true"></i>API Docs (JSON)
                     </a>
                     <button type="button" class="btn-modern btn-secondary-modern" onclick="location.reload()">
-                        <i class="fas fa-sync me-2"></i>Actualizar Métricas
+                        <i class="fas fa-sync me-2" aria-hidden="true"></i>Actualizar Métricas
                     </button>
                 </div>
             </div>

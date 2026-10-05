@@ -10,6 +10,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Drop composite indexes before their fields; SQLite rebuilds the table
+        # for RemoveField and cannot recreate an index on a removed column.
+        migrations.RemoveIndex(
+            model_name='vehiculoreserva',
+            name='calendario__vehicul_da7a06_idx',
+        ),
+        migrations.RemoveIndex(
+            model_name='vehiculoreserva',
+            name='calendario__usuario_dd9f91_idx',
+        ),
         migrations.RemoveField(
             model_name='vehiculoreserva',
             name='vehiculo',

@@ -1,71 +1,70 @@
 {% extends 'calendario/base.html' %}
 {% load static %}
-{% load mundial_static %}
 
 {% block title %}Mis Reservas - Equipos Internos{% endblock %}
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item">
     <a href="{% url 'calendario:calendario' %}" class="breadcrumb-link">
-        <i class="fas fa-calendar-alt me-1"></i>Calendario
+        <i class="fas fa-calendar-alt me-1" aria-hidden="true"></i>Calendario
     </a>
 </li>
 <li class="breadcrumb-item active" aria-current="page">
-    <i class="fas fa-clipboard-list me-1"></i>Mis Reservas
+    <i class="fas fa-clipboard-list me-1" aria-hidden="true"></i>Mis Reservas
 </li>
 {% endblock %}
 
 {% block content %}
 <div class="accounting-header">
     {% if es_staff %}
-        <h1><i class="fas fa-clipboard-list me-3"></i>Todas las Reservas del Sistema</h1>
+        <h1><i class="fas fa-clipboard-list me-3" aria-hidden="true"></i>Todas las Reservas del Sistema</h1>
         <p>Administra y controla todas las reservas de salas de reunión del sistema</p>
     {% else %}
-        <h1><i class="fas fa-clipboard-list me-3"></i>Mis Reservas de Salas</h1>
+        <h1><i class="fas fa-clipboard-list me-3" aria-hidden="true"></i>Mis Reservas de Salas</h1>
         <p>Administra y controla todas tus reservas de salas de reunión</p>
     {% endif %}
 </div>
 
 <div class="row">
     <div class="col-12">
-        <div class="card-modern animate-slide-in-up">
+        <div class="card-modern">
             <div class="card-header-modern">
                 <h4 class="mb-0">
                     {% if es_staff %}
-                        <i class="fas fa-clipboard-list me-2 spring-icon"></i>Todas las Reservas del Sistema
-                        <small class="ms-2 text-light opacity-75">
-                            <i class="fas fa-user-shield me-1"></i>Vista Administrativa
+                        <i class="fas fa-clipboard-list me-2" aria-hidden="true"></i>Todas las Reservas del Sistema
+                        <small class="ms-2 text-muted">
+                            <i class="fas fa-user-shield me-1" aria-hidden="true"></i>Vista Administrativa
                         </small>
                     {% else %}
-                        <i class="fas fa-clipboard-list me-2 spring-icon"></i>Mis Reservas de Salas
+                        <i class="fas fa-clipboard-list me-2" aria-hidden="true"></i>Mis Reservas de Salas
                     {% endif %}
                 </h4>
             </div>
             <div class="card-body-modern">
                 {% if reservas %}
-                    <div class="table-responsive" style="overflow-x: hidden;">
-                        <table class="table table-modern stagger-animation">
+                    <div class="table-responsive" >
+                        <table class="table table-modern">
                             <thead>
                                 <tr>
-                                    <th><i class="fas fa-heading me-2"></i>Título / Responsable</th>
-                                    <th><i class="fas fa-door-open me-2"></i>Recurso</th>
+                                    <th><i class="fas fa-heading me-2" aria-hidden="true"></i>Título / Responsable</th>
+                                    <th><i class="fas fa-door-open me-2" aria-hidden="true"></i>Recurso</th>
                                     {% if es_staff %}
-                                    <th><i class="fas fa-user me-2"></i>Usuario</th>
+                                    <th><i class="fas fa-user me-2" aria-hidden="true"></i>Usuario</th>
                                     {% endif %}
-                                    <th><i class="fas fa-calendar me-2"></i>Inicio / Salida</th>
-                                    <th><i class="fas fa-calendar-check me-2"></i>Fin / Vuelta</th>
-                                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
-                                    <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                                    <th><i class="fas fa-calendar me-2" aria-hidden="true"></i>Inicio / Salida</th>
+                                    <th><i class="fas fa-calendar-check me-2" aria-hidden="true"></i>Fin / Vuelta</th>
+                                    <th><i class="fas fa-info-circle me-2" aria-hidden="true"></i>Estado</th>
+                                    <th><i class="fas fa-cogs me-2" aria-hidden="true"></i>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for reserva in reservas %}
-                                <tr data-estado="{{ reserva.estado|default:'confirmada' }}" class="smooth-transition hover-lift">
+                                <tr data-estado="{{ reserva.estado|default:'confirmada' }}" >
                                     <td>
                                         {% if reserva.recurso.tipo == 'vehiculo' %}
                                             <strong>{{ reserva.responsable|default:"Responsable no especificado" }}</strong>
                                             {% if reserva.destino %}
-                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ reserva.destino|truncatechars:50 }}</small>
+                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1" aria-hidden="true"></i>{{ reserva.destino|truncatechars:50 }}</small>
                                             {% endif %}
                                         {% else %}
                                             <strong>{{ reserva.titulo }}</strong>
@@ -77,9 +76,9 @@
                                     <td>
                                         <span class="badge-modern" data-color="{{ reserva.recurso.color|default:'#64748B' }}">
                                             {% if reserva.recurso.tipo == 'vehiculo' %}
-                                                <i class="fas fa-car me-1"></i>
+                                                <i class="fas fa-car me-1" aria-hidden="true"></i>
                                             {% else %}
-                                                <i class="fas fa-door-open me-1"></i>
+                                                <i class="fas fa-door-open me-1" aria-hidden="true"></i>
                                             {% endif %}
                                             {{ reserva.recurso.nombre }}
                                         </span>
@@ -87,7 +86,7 @@
                                     {% if es_staff %}
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-user-circle me-2 text-muted"></i>
+                                            <i class="fas fa-user-circle me-2 text-muted" aria-hidden="true"></i>
                                             <span class="fw-medium">{{ reserva.usuario.username }}</span>
                                             {% if reserva.usuario == usuario_actual %}
                                                 <span class="badge-modern badge-info ms-2">Tú</span>
@@ -98,13 +97,13 @@
                                     <td>
                                         {{ reserva.fecha_inicio|date:"d/m/Y H:i" }}
                                         {% if reserva.recurso.tipo == 'vehiculo' %}
-                                            <br><small class="text-muted"><i class="fas fa-plane-departure me-1"></i>Salida</small>
+                                            <br><small class="text-muted"><i class="fas fa-plane-departure me-1" aria-hidden="true"></i>Salida</small>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if reserva.recurso.tipo == 'vehiculo' %}
                                             {{ reserva.fecha_vuelta|date:"d/m/Y"|default:"N/A" }}
-                                            <br><small class="text-muted"><i class="fas fa-plane-arrival me-1"></i>Vuelta</small>
+                                            <br><small class="text-muted"><i class="fas fa-plane-arrival me-1" aria-hidden="true"></i>Vuelta</small>
                                         {% else %}
                                             {{ reserva.fecha_fin|date:"d/m/Y H:i" }}
                                         {% endif %}
@@ -112,28 +111,28 @@
                                     <td>
                                         {% if reserva.estado == 'confirmada' %}
                                             <span class="badge-modern badge-success tooltip-modern tooltip-info tooltip-small" 
-                                                  data-tooltip="<i class='fas fa-check-circle tooltip-icon'></i>Lista para usar">
-                                                <i class="fas fa-check-circle me-1"></i>Confirmada
+                                                  data-tooltip="<i class='fas fa-check-circle tooltip-icon' aria-hidden='true'></i>Lista para usar">
+                                                <i class="fas fa-check-circle me-1" aria-hidden="true"></i>Confirmada
                                             </span>
                                         {% elif reserva.estado == 'cancelada' %}
                                             <span class="badge-modern badge-danger tooltip-modern tooltip-danger tooltip-small" 
-                                                  data-tooltip="<i class='fas fa-times-circle tooltip-icon'></i>No disponible">
-                                                <i class="fas fa-times-circle me-1"></i>Cancelada
+                                                  data-tooltip="<i class='fas fa-times-circle tooltip-icon' aria-hidden='true'></i>No disponible">
+                                                <i class="fas fa-times-circle me-1" aria-hidden="true"></i>Cancelada
                                             </span>
                                         {% elif reserva.estado == 'en_curso' %}
                                             <span class="badge-modern badge-warning tooltip-modern tooltip-warning tooltip-small" 
-                                                  data-tooltip="<i class='fas fa-clock tooltip-icon'></i>Actualmente en uso">
-                                                <i class="fas fa-clock me-1"></i>En Curso
+                                                  data-tooltip="<i class='fas fa-clock tooltip-icon' aria-hidden='true'></i>Actualmente en uso">
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i>En Curso
                                             </span>
                                         {% elif reserva.estado == 'terminada' %}
                                             <span class="badge-modern badge-info tooltip-modern tooltip-info tooltip-small" 
-                                                  data-tooltip="<i class='fas fa-flag-checkered tooltip-icon'></i>Completada">
-                                                <i class="fas fa-flag-checkered me-1"></i>Terminada
+                                                  data-tooltip="<i class='fas fa-flag-checkered tooltip-icon' aria-hidden='true'></i>Completada">
+                                                <i class="fas fa-flag-checkered me-1" aria-hidden="true"></i>Terminada
                                             </span>
                                         {% else %}
                                             <span class="badge-modern badge-success tooltip-modern tooltip-info tooltip-small" 
-                                                  data-tooltip="<i class='fas fa-check-circle tooltip-icon'></i>Lista para usar">
-                                                <i class="fas fa-check-circle me-1"></i>Confirmada
+                                                  data-tooltip="<i class='fas fa-check-circle tooltip-icon' aria-hidden='true'></i>Lista para usar">
+                                                <i class="fas fa-check-circle me-1" aria-hidden="true"></i>Confirmada
                                             </span>
                                         {% endif %}
                                     </td>
@@ -141,7 +140,7 @@
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Acciones de reserva">
                                             {% if reserva.estado != 'cancelada' %}
                                                 <button type="button" 
-                                                        class="btn-action btn-action-edit edit-reserva-btn hover-scale icon-bounce btn-ripple interactive-element" 
+                                                        class="btn-action btn-action-edit edit-reserva-btn"
                                                         title="Editar reserva: {{ reserva.titulo|default:reserva.responsable }}"
                                                         aria-label="Editar reserva: {{ reserva.titulo|default:reserva.responsable }}"
                                                         data-reserva-id="{{ reserva.id }}"
@@ -156,7 +155,7 @@
                                                         data-destino="{{ reserva.destino|escapejs }}"
                                                         data-fecha-vuelta="{{ reserva.fecha_vuelta|date:'Y-m-d'|default:'' }}">
                                                     <i class="fas fa-edit" aria-hidden="true"></i>
-                                                    <span class="sr-only">Editar</span>
+                                                    <span class="visually-hidden">Editar</span>
                                                 </button>
                                             {% else %}
                                                 <button type="button" 
@@ -165,27 +164,26 @@
                                                         title="No se puede editar una reserva cancelada"
                                                         aria-label="No se puede editar una reserva cancelada">
                                                     <i class="fas fa-lock" aria-hidden="true"></i>
-                                                    <span class="sr-only">No editable</span>
+                                                    <span class="visually-hidden">No editable</span>
                                                 </button>
                                             {% endif %}
                                             
                                             {% if reserva.estado != 'cancelada' %}
                                                 <a href="{% url 'calendario:eliminar_reserva' reserva.id %}" 
-                                                   class="btn-action btn-action-delete hover-scale icon-bounce btn-ripple interactive-element" 
+                                                   class="btn-action btn-action-delete"
                                                    title="Eliminar reserva: {{ reserva.titulo }}"
-                                                   aria-label="Eliminar reserva: {{ reserva.titulo }}"
-                                                   data-confirm="¿Estás seguro de que quieres eliminar esta reserva?">
+                                                   aria-label="Eliminar reserva: {{ reserva.titulo }}">
                                                     <i class="fas fa-trash" aria-hidden="true"></i>
-                                                    <span class="sr-only">Eliminar</span>
+                                                    <span class="visually-hidden">Eliminar</span>
                                                 </a>
                                             {% else %}
                                                 <button type="button" 
-                                                        class="btn-action btn-action-delete" 
+                                                        class="btn-action btn-action-delete"
                                                         disabled
                                                         title="No se puede eliminar una reserva cancelada"
                                                         aria-label="No se puede eliminar una reserva cancelada">
                                                     <i class="fas fa-ban" aria-hidden="true"></i>
-                                                    <span class="sr-only">No eliminable</span>
+                                                    <span class="visually-hidden">No eliminable</span>
                                                 </button>
                                             {% endif %}
                                         </div>
@@ -198,17 +196,17 @@
                 {% else %}
                     <div class="text-center py-5">
                         {% if es_staff %}
-                            <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                            <i class="fas fa-database fa-3x text-muted mb-3" aria-hidden="true"></i>
                             <h5 class="text-muted">No hay reservas en el sistema</h5>
                             <p class="text-muted">No se encontraron reservas para mostrar en este momento.</p>
                         {% else %}
-                            <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                            <i class="fas fa-calendar-plus fa-3x text-muted mb-3" aria-hidden="true"></i>
                             <h5 class="text-muted">No tienes reservas de salas</h5>
                             <p class="text-muted">Comienza a reservar salas para tus reuniones de equipo.</p>
                             <a href="{% url 'calendario:calendario' %}" class="btn-reserva-elegant">
                                 <div class="btn-reserva-content">
                                     <div class="btn-reserva-icon">
-                                        <i class="fas fa-calendar-plus"></i>
+                                        <i class="fas fa-calendar-plus" aria-hidden="true"></i>
                                     </div>
                                     <div class="btn-reserva-text">
                                         <span class="btn-reserva-title">Hacer Primera Reserva</span>
@@ -230,9 +228,9 @@
         <div class="modal-content modal-content-modern">
             <div class="modal-header modal-header-modern">
                 <h5 class="modal-title modal-title-modern" id="modalEditarReservaTitle">
-                    <i class="fas fa-edit me-2"></i>Editar Reserva
+                    <i class="fas fa-edit me-2" aria-hidden="true"></i>Editar Reserva
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" title="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <form id="formEditarReserva" method="post">
@@ -242,7 +240,7 @@
                     <!-- Recurso -->
                     <div class="form-group-modern">
                         <label for="editRecurso" class="form-label-modern">
-                            <i class="fas fa-door-open me-2" id="editRecursoIcon"></i>
+                            <i class="fas fa-door-open me-2" id="editRecursoIcon" aria-hidden="true"></i>
                             <span id="editRecursoLabel">Recurso *</span>
                         </label>
                         <select name="recurso" id="editRecurso" class="form-select-modern" required>
@@ -250,7 +248,7 @@
                             {% for recurso in recursos %}
                             <option value="{{ recurso.id }}" data-tipo="{{ recurso.tipo }}">
                                 {% if recurso.tipo == 'vehiculo' %}
-                                    {{ recurso.nombre }} - {{ recurso.patente }}
+                                    {{ recurso.nombre }}{% if recurso.patente %} · {{ recurso.patente }}{% endif %}
                                 {% else %}
                                     {{ recurso.nombre }}
                                 {% endif %}
@@ -262,7 +260,7 @@
                     <!-- Campos para SALAS -->
                     <div class="form-group-modern" id="editTituloField">
                         <label for="editTitulo" class="form-label-modern">
-                            <i class="fas fa-heading me-2"></i>Título *
+                            <i class="fas fa-heading me-2" aria-hidden="true"></i>Título *
                         </label>
                         <input type="text" name="titulo" id="editTitulo" class="form-control-modern" placeholder="Título de la reserva">
                     </div>
@@ -270,14 +268,14 @@
                     <!-- Campos para VEHÍCULOS -->
                     <div class="form-group-modern" id="editResponsableField" style="display: none;">
                         <label for="editResponsable" class="form-label-modern">
-                            <i class="fas fa-user me-2"></i>Responsable *
+                            <i class="fas fa-user me-2" aria-hidden="true"></i>Responsable *
                         </label>
                         <input type="text" name="responsable" id="editResponsable" class="form-control-modern" placeholder="Nombre del responsable">
                     </div>
                     
                     <div class="form-group-modern" id="editDestinoField" style="display: none;">
                         <label for="editDestino" class="form-label-modern">
-                            <i class="fas fa-map-marker-alt me-2"></i>Destino *
+                            <i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i>Destino *
                         </label>
                         <input type="text" name="destino" id="editDestino" class="form-control-modern" placeholder="Destino del viaje">
                     </div>
@@ -287,7 +285,7 @@
                         <div class="col-md-4">
                             <div class="form-group-modern">
                                 <label for="editFecha" class="form-label-modern">
-                                    <i class="fas fa-calendar me-2"></i>
+                                    <i class="fas fa-calendar me-2" aria-hidden="true"></i>
                                     <span id="editFechaLabel">Fecha *</span>
                                 </label>
                                 <input type="date" name="fecha" id="editFecha" class="form-control-modern" required>
@@ -296,7 +294,7 @@
                         <div class="col-md-4">
                             <div class="form-group-modern">
                                 <label for="editHoraInicio" class="form-label-modern">
-                                    <i class="fas fa-clock me-2"></i>
+                                    <i class="fas fa-clock me-2" aria-hidden="true"></i>
                                     <span id="editHoraInicioLabel">Hora inicio *</span>
                                 </label>
                                 <select name="hora_inicio" id="editHoraInicio" class="form-select-modern" required>
@@ -307,7 +305,7 @@
                         <div class="col-md-4">
                             <div class="form-group-modern">
                                 <label for="editHoraFin" class="form-label-modern">
-                                    <i class="fas fa-clock me-2"></i>
+                                    <i class="fas fa-clock me-2" aria-hidden="true"></i>
                                     <span id="editHoraFinLabel">Hora fin *</span>
                                 </label>
                                 <select name="hora_fin" id="editHoraFin" class="form-select-modern" required>
@@ -320,7 +318,7 @@
                     <!-- Fecha de vuelta para VEHÍCULOS -->
                     <div class="form-group-modern" id="editFechaVueltaField" style="display: none;">
                         <label for="editFechaVuelta" class="form-label-modern">
-                            <i class="fas fa-calendar-check me-2"></i>Fecha de Vuelta *
+                            <i class="fas fa-calendar-check me-2" aria-hidden="true"></i>Fecha de Vuelta *
                         </label>
                         <input type="date" name="fecha_vuelta" id="editFechaVuelta" class="form-control-modern">
                     </div>
@@ -328,7 +326,7 @@
                     <!-- Descripción -->
                     <div class="form-group-modern">
                         <label for="editDescripcion" class="form-label-modern">
-                            <i class="fas fa-align-left me-2"></i>Descripción
+                            <i class="fas fa-align-left me-2" aria-hidden="true"></i>Descripción
                         </label>
                         <textarea name="descripcion" id="editDescripcion" class="form-control-modern" rows="3" placeholder="Descripción opcional"></textarea>
                     </div>
@@ -336,10 +334,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modern btn-secondary-modern" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cancelar
+                    <i class="fas fa-times me-2" aria-hidden="true"></i>Cancelar
                 </button>
                 <button type="button" class="btn-modern btn-primary-modern" id="btnEditarReserva">
-                    <i class="fas fa-save me-2"></i>Guardar Cambios
+                    <i class="fas fa-save me-2" aria-hidden="true"></i>Guardar Cambios
                 </button>
             </div>
         </div>
@@ -378,6 +376,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="application/json" id="salas-data">{{ salas_json|safe }}</script>
-<script src="{% static_v 'js/mis-reservas.js' %}"></script>
+{{ salas_data|json_script:"salas-data" }}
+<script src="{% static 'js/mis-reservas.js' %}"></script>
 {% endblock %}

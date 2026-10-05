@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction, router
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
@@ -51,6 +51,17 @@ class Recurso(models.Model):
         if self.tipo == 'vehiculo' and self.patente:
             return f"{self.nombre} - {self.patente}"
         return self.nombre
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        from .utils import CacheService
+        transaction.on_commit(CacheService.invalidar_cache_recursos)
+
+    def delete(self, *args, **kwargs):
+        result = super().delete(*args, **kwargs)
+        from .utils import CacheService
+        transaction.on_commit(CacheService.invalidar_cache_recursos)
+        return result
     
     def get_horarios_restringidos(self):
         """Obtener horarios restringidos específicos para este recurso"""
@@ -175,33 +186,90 @@ class Reserva(models.Model):
     
     def clean(self):
         from django.core.exceptions import ValidationError
-        import logging
-        logger = logging.getLogger(__name__)
-        
-        # Para vehículos, usar fecha_vuelta para validación
-        if self.recurso and self.recurso.es_vehiculo():
-            if self.fecha_vuelta and str(self.fecha_vuelta).strip():
-                # Si hay fecha_vuelta, debe ser posterior o igual a fecha_inicio
-                # Convertir fecha_vuelta a date si es string
-                if isinstance(self.fecha_vuelta, str):
-                    from datetime import datetime
-                    fecha_vuelta_str = self.fecha_vuelta.strip()
-                    if fecha_vuelta_str:  # Verificar que no esté vacío después del strip
-                        fecha_vuelta_date = datetime.strptime(fecha_vuelta_str, "%Y-%m-%d").date()
-                    else:
-                        return  # Si está vacío, no validar
-                else:
-                    fecha_vuelta_date = self.fecha_vuelta
-                
-                if fecha_vuelta_date < self.fecha_inicio.date():
-                    raise ValidationError("La fecha de vuelta debe ser posterior o igual a la fecha de salida")
-        else:
-            # Para salas, validar que fecha fin sea posterior a fecha inicio
-            if self.fecha_fin <= self.fecha_inicio:
-                raise ValidationError("La fecha de fin debe ser posterior a la fecha de inicio")
-    
+
+        super().clean()
+        if not self.fecha_inicio or not self.fecha_fin or not self.recurso_id:
+            return  # ModelForm reports missing/invalid fields itself.
+        try:
+            self.recurso
+        except (Recurso.DoesNotExist, ValueError, TypeError):
+            raise ValidationError({'recurso': 'El recurso seleccionado no existe.'})
+        if self.pk and self.estado == 'cancelada':
+            # Allow cancelling legacy records without first repairing their old
+            # dates/required fields. Changing reservation data still validates.
+            fields = ('recurso_id', 'usuario_id', 'titulo', 'descripcion', 'fecha_inicio',
+                      'fecha_fin', 'fecha_vuelta', 'responsable', 'destino')
+            previous = type(self).objects.filter(pk=self.pk).values(*fields).first()
+            if previous and all(previous[field] == getattr(self, field) for field in fields):
+                return
+        if self.fecha_fin <= self.fecha_inicio:
+            raise ValidationError({'fecha_fin': 'La fecha de fin debe ser posterior a la fecha de inicio.'})
+        if self.recurso.es_vehiculo():
+            errors = {}
+            if not self.responsable.strip():
+                errors['responsable'] = 'El responsable es obligatorio para vehículos.'
+            if not self.destino.strip():
+                errors['destino'] = 'El destino es obligatorio para vehículos.'
+            if self.fecha_vuelta and self.fecha_vuelta != timezone.localtime(self.fecha_fin).date():
+                errors['fecha_vuelta'] = 'La fecha de vuelta debe coincidir con la fecha de fin.'
+            if errors:
+                raise ValidationError(errors)
+            if not self.titulo.strip():
+                self.titulo = f'{self.responsable.strip()} - {self.destino.strip()}'[:200]
+        elif not self.titulo.strip():
+            raise ValidationError({'titulo': 'El título es obligatorio para salas.'})
+
+        if self.estado in ('confirmada', 'en_curso'):
+            from .utils import ReservaService
+            from .exceptions import ConflictoReservaError, HorarioTrabajoError, RestriccionHorarioError
+            if not self.recurso.activo:
+                raise ValidationError('El recurso no está activo.')
+            inicio = timezone.localtime(self.fecha_inicio)
+            fin = timezone.localtime(self.fecha_fin)
+            try:
+                if self.recurso.es_sala():
+                    if inicio.date() != fin.date():
+                        raise ValidationError('Las reservas de salas deben comenzar y terminar el mismo día.')
+                    ReservaService.validar_horarios_trabajo(inicio, fin)
+                ReservaService.validar_restricciones_recurso(self.recurso, inicio, fin)
+                ReservaService.validar_conflictos_reserva(self.recurso, inicio, fin, self.pk)
+            except (ConflictoReservaError, HorarioTrabajoError, RestriccionHorarioError) as exc:
+                raise ValidationError(str(exc)) from exc
+
     def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-        # Limpiar cache de recursos cuando se actualiza un recurso
-        cache.delete('recursos_activos')
+        # Lock the resource, including when it has no reservations yet. On
+        # PostgreSQL this serializes availability checks across Vercel workers.
+        using = kwargs.get('using') or router.db_for_write(type(self), instance=self)
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None:
+            update_fields = set(update_fields)
+            if not update_fields:
+                return
+            kwargs['update_fields'] = update_fields
+            if self.pk and self.estado == 'cancelada' and update_fields <= {'estado', 'fecha_actualizacion'}:
+                # A partial cancellation does not persist any scheduling fields;
+                # validate only the field being written, not stale instance data.
+                self._meta.get_field('estado').clean(self.estado, self)
+                return super().save(*args, **kwargs)
+        with transaction.atomic(using=using):
+            validation_instance = self
+            if self.pk and update_fields is not None:
+                # Validate the values that will actually be persisted. A caller
+                # may have changed other attributes without including them in
+                # update_fields; those must not conceal an existing conflict.
+                validation_instance = type(self).objects.using(using).get(pk=self.pk)
+                for field_name in update_fields:
+                    field = self._meta.get_field(field_name)
+                    setattr(validation_instance, field.attname, getattr(self, field.attname))
+            try:
+                recurso = Recurso.objects.using(using).select_for_update().get(pk=validation_instance.recurso_id)
+            except (Recurso.DoesNotExist, ValueError, TypeError):
+                from django.core.exceptions import ValidationError
+                raise ValidationError({'recurso': 'El recurso seleccionado no existe.'})
+            validation_instance.recurso = recurso
+            validation_instance.full_clean()
+            if validation_instance is not self:
+                for field_name in update_fields:
+                    field = self._meta.get_field(field_name)
+                    setattr(self, field.attname, getattr(validation_instance, field.attname))
+            super().save(*args, **kwargs)

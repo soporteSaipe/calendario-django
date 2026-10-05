@@ -213,7 +213,8 @@ CalendarioApp.ModalFactory = {
         type: 'button',
         className: 'btn-close',
         'data-bs-dismiss': 'modal',
-        'aria-label': 'Cerrar'
+        'aria-label': 'Cerrar',
+        title: 'Cerrar'
       });
       header.appendChild(closeButton);
     }
@@ -240,7 +241,8 @@ CalendarioApp.ModalFactory = {
       // Agregar iconos si se especifican
       if (buttonConfig.icon) {
         const icon = CalendarioApp.Core.UIUtils.createElement('i', {
-          className: `${buttonConfig.icon} me-1`
+          className: `${buttonConfig.icon} me-1`,
+          'aria-hidden': 'true'
         });
         button.insertBefore(icon, button.firstChild);
       }

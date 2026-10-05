@@ -19,21 +19,21 @@ class ReservaForm(forms.ModelForm):
                 'placeholder': 'Descripción de la reserva',
                 'autocomplete': 'off'
             }),
-            'fecha_inicio': forms.DateTimeInput(attrs={
+            'fecha_inicio': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={
                 'class': 'form-control-modern',
                 'type': 'datetime-local',
                 'min': '07:00',
                 'max': '20:00',
                 'data-validation': 'datetime'
             }),
-            'fecha_fin': forms.DateTimeInput(attrs={
+            'fecha_fin': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={
                 'class': 'form-control-modern',
                 'type': 'datetime-local',
                 'min': '07:00',
                 'max': '20:00',
                 'data-validation': 'datetime'
             }),
-            'fecha_vuelta': forms.DateInput(attrs={
+            'fecha_vuelta': forms.DateInput(format='%Y-%m-%d', attrs={
                 'class': 'form-control-modern',
                 'type': 'date',
                 'data-validation': 'date'
@@ -99,8 +99,7 @@ class ReservaForm(forms.ModelForm):
         if recurso and recurso.es_vehiculo():
             # Para vehículos: configurar placeholders y widgets
             self.fields['titulo'].widget.attrs['placeholder'] = 'Título opcional'
-            # Ocultar fecha_fin para vehículos ya que usamos fecha_vuelta
-            self.fields['fecha_fin'].widget = forms.HiddenInput()
+            self.fields['fecha_fin'].label = 'Fecha y hora de regreso'
         else:
             # Para salas: configurar placeholders y widgets
             self.fields['titulo'].widget.attrs['placeholder'] = 'Título de la reserva'
@@ -108,108 +107,23 @@ class ReservaForm(forms.ModelForm):
             self.fields['fecha_vuelta'].widget = forms.HiddenInput()
     
     def clean(self):
+        from .utils import ReservaService
+        from .exceptions import ConflictoReservaError, FechaInvalidaError, HorarioTrabajoError, RestriccionHorarioError
+
         cleaned_data = super().clean()
-        fecha_inicio = cleaned_data.get('fecha_inicio')
-        fecha_fin = cleaned_data.get('fecha_fin')
-        fecha_vuelta = cleaned_data.get('fecha_vuelta')
         recurso = cleaned_data.get('recurso')
-        responsable = cleaned_data.get('responsable')
-        destino = cleaned_data.get('destino')
-        titulo = cleaned_data.get('titulo')
-        
-        # Validar fechas
-        if fecha_inicio and fecha_fin:
-            # Para vehículos, usar fecha_vuelta para validación
-            if recurso and recurso.es_vehiculo():
-                if fecha_vuelta:
-                    # Si hay fecha_vuelta, debe ser posterior o igual a fecha_inicio
-                    # fecha_vuelta ya es un objeto date del formulario
-                    from datetime import date
-                    if isinstance(fecha_vuelta, str):
-                        from datetime import datetime
-                        fecha_vuelta_date = datetime.strptime(fecha_vuelta, "%Y-%m-%d").date()
-                    else:
-                        fecha_vuelta_date = fecha_vuelta
-                    
-                    if fecha_vuelta_date < fecha_inicio.date():
-                        raise forms.ValidationError("La fecha de vuelta debe ser posterior o igual a la fecha de salida.")
-            else:
-                # Para salas, validar que fecha fin sea posterior a fecha inicio
-                if fecha_fin <= fecha_inicio:
-                    raise forms.ValidationError("La fecha de fin debe ser posterior a la fecha de inicio.")
-            
-            # Verificar conflictos de horarios solo si hay recurso
-            if recurso:
-                self._check_schedule_conflicts(fecha_inicio, fecha_fin, recurso)
-        
-        # Validaciones específicas por tipo de recurso
-        if recurso:
-            if recurso.es_vehiculo():
-                # Validaciones para VEHÍCULOS
-                if not responsable:
-                    raise forms.ValidationError("El campo 'Responsable' es obligatorio para vehículos.")
-                if not responsable.strip():
-                    raise forms.ValidationError("El campo 'Responsable' no puede estar vacío.")
-                    
-                if not destino:
-                    raise forms.ValidationError("El campo 'Destino' es obligatorio para vehículos.")
-                if not destino.strip():
-                    raise forms.ValidationError("El campo 'Destino' no puede estar vacío.")
-                    
-                if not fecha_vuelta:
-                    raise forms.ValidationError("El campo 'Fecha de Vuelta' es obligatorio para vehículos.")
-                    
-                # Para vehículos, el título es OPCIONAL
-                # Si está vacío, generar automáticamente
-                if not titulo or not titulo.strip():
-                    cleaned_data['titulo'] = f"{responsable.strip()} - {destino.strip()}"
-                    
-            else:
-                # Validaciones para SALAS
-                if not titulo:
-                    raise forms.ValidationError("El campo 'Título' es obligatorio para salas.")
-                if not titulo.strip():
-                    raise forms.ValidationError("El campo 'Título' no puede estar vacío.")
-        else:
-            # Si no hay recurso seleccionado
-            raise forms.ValidationError("Debe seleccionar un recurso.")
-        
+        inicio = cleaned_data.get('fecha_inicio')
+        fin = cleaned_data.get('fecha_fin')
+        if recurso and recurso.es_vehiculo() and inicio and fin:
+            vuelta = cleaned_data.get('fecha_vuelta')
+            if vuelta:
+                from datetime import datetime
+                from django.utils import timezone
+                fin = timezone.make_aware(datetime.combine(vuelta, timezone.localtime(fin).time()))
+                cleaned_data['fecha_fin'] = fin
+        if recurso and inicio and fin:
+            try:
+                ReservaService.validar_reserva_completa(recurso, inicio, fin, self.instance.pk)
+            except (ConflictoReservaError, FechaInvalidaError, HorarioTrabajoError, RestriccionHorarioError) as exc:
+                raise forms.ValidationError(str(exc)) from exc
         return cleaned_data
-    
-    def _check_schedule_conflicts(self, fecha_inicio, fecha_fin, recurso):
-        """Verificar conflictos de horarios para un recurso"""
-        reservas_existentes = Reserva.objects.filter(
-            recurso=recurso,
-            estado__in=['confirmada'] 
-        ).exclude(pk=self.instance.pk if self.instance else None)
-        
-        for reserva in reservas_existentes:
-            if (fecha_inicio < reserva.fecha_fin and fecha_fin > reserva.fecha_inicio):
-                raise forms.ValidationError(
-                    f"Ya existe una reserva para este recurso en el horario seleccionado: "
-                    f"{reserva.titulo} ({reserva.fecha_inicio.strftime('%d/%m/%Y %H:%M')} - "
-                    f"{reserva.fecha_fin.strftime('%d/%m/%Y %H:%M')})"
-                )
-        
-        # Validar restricciones específicas del comedor
-        if recurso.es_sala() and recurso.nombre.lower() == 'comedor':
-            self._validate_comedor_schedule(fecha_inicio, fecha_fin)
-    
-    def _validate_comedor_schedule(self, fecha_inicio, fecha_fin):
-        """Validar horarios específicos del comedor"""
-        from datetime import datetime, time
-        
-        # Convertir a objetos time para comparación
-        hora_inicio = fecha_inicio.time()
-        hora_fin = fecha_fin.time()
-        
-        # Horario de almuerzo restringido (12:00-14:30)
-        hora_almuerzo_inicio = time(12, 0)  # 12:00
-        hora_almuerzo_fin = time(14, 30)    # 14:30
-        
-        # Verificar si la reserva se extiende durante el horario de almuerzo
-        if (hora_inicio < hora_almuerzo_fin and hora_fin > hora_almuerzo_inicio):
-            raise forms.ValidationError(
-                "No se pueden hacer reservas en el comedor durante el horario de almuerzo (12:00-14:30). "
-                "Por favor, selecciona un horario fuera de este rango."
-            )
