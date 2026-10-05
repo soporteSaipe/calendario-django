@@ -172,12 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar modal de edición
     initializeEditModal();
     // Aplicar colores dinámicos a los badges
-    const badges = document.querySelectorAll('.badge-modern[data-color]');
-    badges.forEach(badge => {
-        const color = badge.getAttribute('data-color');
-        badge.style.backgroundColor = color;
-        badge.style.color = 'white';
-    });
+    CalendarioApp.Core.ColorUtils.applyDynamicColors();
     
     // Mejorar accesibilidad de la tabla
     const table = document.querySelector('.table-modern');

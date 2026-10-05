@@ -118,7 +118,7 @@ test('reservation modal renders untrusted fields as literal content', () => {
 });
 
 test('room details escape API content and reject CSS attribute injection', async () => {
-  const { context, app, elements } = browser('calendario-main.js');
+  const { context, app, elements } = browser('calendario-core.js', 'calendario-main.js');
   const content = { innerHTML: '' };
   elements.set('salaDetailsContent', content);
   const payload = '<svg onload="alert(1)"></svg>';
@@ -135,6 +135,41 @@ test('room details escape API content and reject CSS attribute injection', async
   assert.ok(!content.innerHTML.includes('onmouseover='));
   assert.ok(content.innerHTML.includes('background-color: #445371;'));
   assert.equal(app.Calendar.safeColor('#aA00ff'), '#aA00ff');
+});
+
+test('resource text stays readable over light, dark and mid-tone colors', () => {
+  const { app } = browser('calendario-core.js');
+  const colors = app.Core.ColorUtils;
+  for (const color of ['#FFFFFF', '#000000', '#007bff', '#ffc107', '#28a745', '#dc3545', '#777777']) {
+    const channels = [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16) / 255)
+      .map(channel => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+    const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+    const textColor = colors.getTextColor(color);
+    const contrast = textColor === '#FFFFFF' ? 1.05 / (luminance + 0.05) : (luminance + 0.05) / 0.05;
+    assert.ok(contrast >= 4.5, `${color}: ${contrast}`);
+  }
+  const element = { style: {} };
+  colors.applyResourceColor(element, '#fff000');
+  assert.equal(element.style.backgroundColor, '#fff000');
+  assert.equal(element.style.color, '#000000');
+  colors.applyResourceColor(element, 'invalid');
+  assert.equal(element.style.backgroundColor, '#445371');
+  assert.equal(element.style.color, '#FFFFFF');
+});
+
+test('calendar events retain each resource color and receive contrasting text', async () => {
+  const { context, app } = browser('calendario-core.js', 'calendario-main.js');
+  context.calendarioApiUrl = '/api/reservas/';
+  app.Calendar.currentSalaFilter = '1';
+  context.fetch = async () => ({ ok: true, json: async () => [
+    { id: 1, title: 'Sala azul', color: '#007bff' },
+    { id: 2, title: 'Sala amarilla', color: '#ffc107' },
+    { id: 3, title: 'Sala verde', color: '#28a745' },
+  ] });
+  const events = await app.Calendar.getEventsUrl();
+  assert.deepEqual(Array.from(events, event => event.color), ['#007bff', '#ffc107', '#28a745']);
+  assert.equal(events[1].textColor, '#000000');
+  assert.equal(events[0].title, 'Sala azul');
 });
 
 test('conflict validation sends the vehicle return date and retains server conflicts', async () => {

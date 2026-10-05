@@ -614,6 +614,26 @@ CalendarioApp.Core = {
 
   // Utilidades de colores
   ColorUtils: {
+    safeColor: function(value) {
+      return /^#[0-9a-f]{6}$/i.test(value) ? value : '#445371';
+    },
+
+    // Choose black or white using WCAG relative luminance so either meets 4.5:1.
+    getTextColor: function(value) {
+      const color = this.safeColor(value);
+      const channels = [1, 3, 5].map(offset => {
+        const channel = parseInt(color.slice(offset, offset + 2), 16) / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+      const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+      return (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) ? '#000000' : '#FFFFFF';
+    },
+
+    applyResourceColor: function(element, value) {
+      element.style.backgroundColor = this.safeColor(value);
+      element.style.color = this.getTextColor(value);
+    },
+
     /**
      * Obtener color para estado
      */
@@ -634,11 +654,7 @@ CalendarioApp.Core = {
     applyDynamicColors: function() {
       const badges = document.querySelectorAll('.badge-modern[data-color]');
       badges.forEach(badge => {
-        const color = badge.getAttribute('data-color');
-        if (color) {
-          badge.style.backgroundColor = color;
-          badge.style.color = 'white';
-        }
+        this.applyResourceColor(badge, badge.getAttribute('data-color'));
       });
     }
   },

@@ -224,7 +224,11 @@ CalendarioApp.Calendar = {
       })
       .then(data => {
         this.setStatus(data.length ? '' : 'No hay reservas en este período para el recurso seleccionado.');
-        return data;
+        return data.map(event => ({
+          ...event,
+          color: this.safeColor(event.color),
+          textColor: CalendarioApp.Core.ColorUtils.getTextColor(event.color)
+        }));
       })
       .catch(error => {
         console.error('Error al cargar eventos:', error);
@@ -1094,7 +1098,7 @@ CalendarioApp.Calendar = {
         content.innerHTML = `
           <div class="sala-details-card">
             <div class="sala-details-header">
-              <div class="sala-color-preview" style="background-color: ${this.safeColor(datosSala.color)};">
+              <div class="sala-color-preview" style="background-color: ${this.safeColor(datosSala.color)}; color: ${CalendarioApp.Core.ColorUtils.getTextColor(datosSala.color)};">
                 <i class="fas fa-door-open" aria-hidden="true"></i>
               </div>
               <div class="sala-details-info">
@@ -1138,7 +1142,7 @@ CalendarioApp.Calendar = {
         content.innerHTML = `
           <div class="sala-details-card">
             <div class="sala-details-header">
-              <div class="sala-color-preview" style="background-color: ${this.safeColor(salaData.color)};">
+              <div class="sala-color-preview" style="background-color: ${this.safeColor(salaData.color)}; color: ${CalendarioApp.Core.ColorUtils.getTextColor(salaData.color)};">
                 <i class="fas fa-door-open" aria-hidden="true"></i>
               </div>
               <div class="sala-details-info">
@@ -1201,7 +1205,7 @@ CalendarioApp.Calendar = {
       if (salaData) {
         // Actualizar preview de color
         if (salaColorPreview) {
-          salaColorPreview.style.backgroundColor = salaData.color;
+          CalendarioApp.Core.ColorUtils.applyResourceColor(salaColorPreview, salaData.color);
           salaColorPreview.innerHTML = '<i class="fas fa-door-open" aria-hidden="true"></i>';
         }
         
